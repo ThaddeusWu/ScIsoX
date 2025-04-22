@@ -4,7 +4,9 @@
 
 *A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution*
 
-==Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data.==
+```
+Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data.
+```
 
 ---
 
