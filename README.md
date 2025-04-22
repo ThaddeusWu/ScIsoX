@@ -642,8 +642,8 @@ If you encounter problems not addressed here, please:
 If you use ScIsoX in your research, please cite:
 
 ```
-Wu S, Schmitz U (2025). ScIsoX: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline
-and Transcriptomic Complexity Analysis in R. R package version 1.0.0,
+Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data.
+R package version 1.0.0,
 https://github.com/siyuanwu/ScIsoX.
 ```
 
@@ -651,7 +651,7 @@ BibTeX entry:
 
 ```bibtex
 @Manual{,
-  title = {ScIsoX: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R},
+  title = {ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data},
   author = {Siyuan Wu and Ulf Schmitz},
   year = {2025},
   note = {R package version 1.0.0},
