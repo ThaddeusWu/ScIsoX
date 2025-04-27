@@ -324,13 +324,13 @@ tc_results <- calculate_isoform_complexity_metrics(
 
 # Option 2: Calculate with custom thresholds based on prior knowledge
 custom_thresholds <- list(
-  intra_cellular_diversity = 0.5,
-  inter_cellular_diversity = 0.5,
+  intra_cellular_isoform_diversity = 0.5,
+  inter_cellular_isoform_diversity = 0.5,
   intra_cell_type_heterogeneity = 0.3,
   inter_cell_type_specificity = 0.7,
   intra_cell_type_heterogeneity_variability = 0.4,
   inter_cell_type_difference_variability = 0.3,
-  cell_type_diversity_mechanism_variability = 0.4
+  cell_type_coexpression_variability = 0.4
 )
 
 tc_results_custom <- calculate_isoform_complexity_metrics(
@@ -359,8 +359,8 @@ Create standard visualisations for exploring transcriptomic complexity:
 # Create complexity landscape plot with default settings
 landscape_plot <- plot_tc_landscape(
   tc_results = tc_results,
-  x_metric = "inter_cellular_diversity",
-  y_metric = "inter_cell_type_specificity",
+  x_metric = "inter_cellular_isoform_diversity",
+  y_metric = "inter_cell_type_isoform_specificity",
   highlight_genes = NULL,  # Optionally specify genes to highlight
   label_annotation = "intra_cell_type_heterogeneity",  # Metric used for colour intensity
   label_top = 10,  # Number of genes to label
@@ -374,7 +374,7 @@ print(landscape_plot)
 # Create density plot for complexity landscape
 density_plot <- plot_tc_density(
   tc_results = tc_results,
-  x_metric = "inter_cellular_diversity",
+  x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   use_thresholds = TRUE,
   show_threshold_lines = TRUE
@@ -407,8 +407,8 @@ Identify genes with interesting complexity patterns:
 complex_genes <- find_complexity_pattern(
   tc_results$metrics,
   pattern = list(
-    intra_cellular_diversity_class = "Strong Isoform Co-expression",
-    inter_cell_type_specificity_class = "Cell Type-Specific"
+    intra_cellular_isoform_diversity_class = "Strong Isoform Co-expression",
+    inter_cell_type_specificity_class = "Cell-Type-Specific Expression"
   ),
   top_n = 20,
   sort_by = "inter_cell_type_specificity"  # Sort by this metric
