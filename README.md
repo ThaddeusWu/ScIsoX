@@ -5,7 +5,7 @@
 *A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution*
 
 ```
-Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data.
+Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Transcriptomic Complexity in Single-Cell Long-Read Sequencing Data.
 ```
 
 ---
@@ -39,13 +39,13 @@ ScIsoX provides a robust computational framework for investigating transcriptomi
 
 ScIsoX implements a novel analytical framework based on hierarchical tensor decomposition to quantify transcriptomic complexity across multiple dimensions. The seven core metrics capture:
 
-1. **Intra-cellular diversity**: Co-expression of multiple isoforms within individual cells
-2. **Inter-cellular diversity**: Distribution of different isoforms across the cellular population
-3. **Intra-cell type heterogeneity**: Cell-to-cell variation in isoform usage within a cell type
-4. **Inter-cell type dpecificity**: Cell type-specific patterns of isoform usage
-5. **Intra-cell type heterogeneity variability**: Variation in cellular heterogeneity across cell types
-6. **Inter-cell type hifference variability**: Identification of cell type pairs with distinctive isoform usage
-7. **Cell type diversity mechanism variability**: Variation in cellular co-expression mechanisms across cell types
+1. **Intra-cellular isoform diversity**: Co-expression of multiple isoforms within individual cells
+2. **Inter-cellular isoform  diversity**: Distribution of different isoforms across the cellular population
+3. **Intra-cell-type heterogeneity**: Cell-to-cell variation in isoform usage within a cell type
+4. **Inter-cell-type dpecificity**: Cell-type-specific patterns of isoform usage
+5. **Intra-cell-type heterogeneity variability**: Variation in cellular heterogeneity across cell types
+6. **Inter-cell-type hifference variability**: Identification of cell type pairs with distinctive isoform usage
+7. **Cell-type-specific co-expression variability**: Variation in cellular co-expression mechanisms across cell types
 
 ---
 
@@ -646,7 +646,7 @@ If you encounter problems not addressed here, please:
 If you use ScIsoX in your research, please cite:
 
 ```
-Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data.
+Wu S, Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Transcriptomic Complexity in Single-Cell Long-Read Sequencing Data.
 R package version 1.0.0,
 https://github.com/Thaddeus/ScIsoX.
 ```
@@ -655,7 +655,7 @@ BibTeX entry:
 
 ```bibtex
 @article{,
-  title = {ScIsoX: A Multidimensional Framework for Quantifying Transcriptomic Complexity for Single-Cell Long-Read Sequencing Data},
+  title = {ScIsoX: A Multidimensional Framework for Measuring Transcriptomic Complexity in Single-Cell Long-Read Sequencing Data},
   author = {Siyuan Wu and Ulf Schmitz},
   year = {2025},
   note = {R package version 1.0.0},
