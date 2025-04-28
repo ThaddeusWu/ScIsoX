@@ -96,7 +96,8 @@ required_packages <- c(
   "diptest",    # For multimodality tests
   "scales",     # For scale transformations
   "gridExtra",  # For arranging multiple plots
-  "magrittr"    # For pipe operations
+  "magrittr",    # For pipe operations
+  "MASS"             # For statistical functions
 )
 
 # Check and install missing required packages
@@ -121,7 +122,6 @@ suggested_packages <- c(
   "cowplot",          # For plot composition
   "grid",             # For advanced graphics
   "tidyr",            # For data reshaping
-  "MASS",             # For statistical functions
   "RColorBrewer",     # For colour palettes
   "circlize",   # For colour palettes
   "patchwork"         # For combining plots
@@ -134,9 +134,9 @@ if (length(missing_suggested) > 0) {
 }
 ```
 
-#### GitHub Packages
+#### Other Packages
 
-Some advanced features require packages from GitHub:
+Some advanced features require packages:
 
 ```r
 # Install devtools if needed
@@ -148,6 +148,11 @@ if (!requireNamespace("devtools", quietly = TRUE)) {
 if (!requireNamespace("ggradar", quietly = TRUE)) {
   devtools::install_github("ricardo-bion/ggradar")
 }
+
+# Install ComplexHeatmap for heat maps
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("ComplexHeatmap")
 ```
 
 To ensure maximum compatibility and functionality, you can install all dependencies with:
