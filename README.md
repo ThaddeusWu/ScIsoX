@@ -113,17 +113,18 @@ These packages provide enhanced functionality:
 ```r
 # Optional packages for advanced visualisations
 suggested_packages <- c(
-  "ggridges",     # For ridge plots
-  "ggrepel",      # For repelling text labels
-  "ggExtra",      # For marginal plots
-  "viridis",      # For colour palettes
-  "pheatmap",     # For heatmaps
-  "cowplot",      # For plot composition
-  "grid",         # For advanced graphics
-  "tidyr",        # For data reshaping
-  "MASS",         # For statistical functions
-  "RColorBrewer", # For colour palettes
-  "patchwork"     # For combining plots
+  "ggridges",         # For ridge plots
+  "ggrepel",          # For repelling text labels
+  "ggExtra",          # For marginal plots
+  "viridis",          # For colour palettes
+  "ComplexHeatmap",   # For heatmaps
+  "cowplot",          # For plot composition
+  "grid",             # For advanced graphics
+  "tidyr",            # For data reshaping
+  "MASS",             # For statistical functions
+  "RColorBrewer",     # For colour palettes
+  "circlize",   # For colour palettes
+  "patchwork"         # For combining plots
 )
 
 # Check and install missing suggested packages
@@ -206,7 +207,7 @@ ScIsoX is organised into several functional modules:
    - `plot_single_gene_radar_cell_type()`: Create radar chart for a single gene across cell types
    - `plot_compare_multiple_genes_radar_cell_type()`: Compare multiple genes across cell types with radar charts
    - `plot_compare_tc_density_difference()`: Compare complexity density differences between groups
-   - `plot_compare_tc_difference_heatmap()`: Create comparative heatmaps of complexity differences
+   - `plot_compare_tc_complexity_heatmap()`: Create comparative heatmaps of complexity differences
 
 ---
 
@@ -562,7 +563,7 @@ diff_plot <- plot_compare_tc_density_difference(
 )
 
 # Create heatmaps for metrics across conditions
-heatmap_results <- plot_compare_tc_difference_heatmap(
+heatmap_results <- plot_compare_tc_complexity_heatmap(
   tc_results_list = tc_results_list,
   groups = c("Control", "Treatment"),
   metrics = NULL,  # NULL will use all metrics, or specify a subset
@@ -580,7 +581,7 @@ print(heatmap_results$heatmaps$intra_cellular_diversity)
 These comparative functions are designed for experimental designs with multiple conditions:
 
 - `plot_compare_tc_density_difference()` highlights regions in the complexity landscape where genes shift between conditions
-- `plot_compare_tc_difference_heatmap()` creates heatmaps for visualising multiple complexity metrics and their changes across different groups or conditions.
+- `plot_compare_tc_complexity_heatmap()` creates heatmaps for visualising multiple complexity metrics and their changes across different groups or conditions.
 
 Each function offers different ways to select genes of interest, including variance-based selection (genes with highest variation across conditions), magnitude-based selection (genes with largest absolute changes), or custom selection (specific genes of interest).
 
