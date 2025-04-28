@@ -6,11 +6,11 @@
 \usage{
 .determine_optimal_thresholds(
   metrics_df,
-  default_thresholds = list(intra_cellular_diversity = 0.6, inter_cellular_diversity =
-    0.6, intra_cell_type_heterogeneity = 0.4, inter_cell_type_specificity = 0.6,
-    intra_cell_type_heterogeneity_variability = 0.5,
-    inter_cell_type_difference_variability = 0.3,
-    cell_type_diversity_mechanism_variability = 0.4),
+  default_thresholds = list(intra_cellular_isoform_diversity = 0.6,
+    inter_cellular_isoform_diversity = 0.6, intra_cell_type_heterogeneity = 0.4,
+    inter_cell_type_specificity = 0.6, intra_cell_type_heterogeneity_variability = 0.5,
+    inter_cell_type_difference_variability = 0.3, cell_type_coexpression_variability =
+    0.4),
   visualise = TRUE,
   min_samples = 20,
   verbose = TRUE

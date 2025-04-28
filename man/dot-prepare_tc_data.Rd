@@ -6,7 +6,7 @@
 \usage{
 .prepare_tc_data(
   tc_results,
-  x_metric = "inter_cellular_diversity",
+  x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   highlight_genes = NULL,
   label_annotation = "intra_cell_type_heterogeneity",

@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualisation_analysis.R
 \name{plot_isoform_coexpression}
 \alias{plot_isoform_coexpression}
-\title{Create a heatmap of isoform co-expression patterns}
+\title{Create a heatmap of isoform co-expression patterns using ComplexHeatmap}
 \usage{
 plot_isoform_coexpression(scht_obj, gene, display_numbers = FALSE)
 }
@@ -14,7 +14,7 @@ plot_isoform_coexpression(scht_obj, gene, display_numbers = FALSE)
 \item{display_numbers}{Logical, whether to show correlation values in cells (default: FALSE)}
 }
 \value{
-A pheatmap object that can be printed or saved
+A ComplexHeatmap object that can be printed or saved
 }
 \description{
 This function creates a heatmap visualisation showing the correlation between
@@ -29,6 +29,9 @@ plot_isoform_coexpression(scht_obj, "GENE1")
 
 # With correlation values displayed
 plot_isoform_coexpression(scht_obj, "GENE1", display_numbers = TRUE)
+
+# With custom legend title
+plot_isoform_coexpression(scht_obj, "GENE1", legend_title = "Co-expression")
 }
 
 }

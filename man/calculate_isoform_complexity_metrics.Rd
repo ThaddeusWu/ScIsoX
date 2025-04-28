@@ -6,11 +6,11 @@
 \usage{
 calculate_isoform_complexity_metrics(
   scht_obj,
-  default_thresholds = list(intra_cellular_diversity = 0.6, inter_cellular_diversity =
-    0.6, intra_cell_type_heterogeneity = 0.4, inter_cell_type_specificity = 0.6,
-    intra_cell_type_heterogeneity_variability = 0.5,
-    inter_cell_type_difference_variability = 0.3,
-    cell_type_diversity_mechanism_variability = 0.4),
+  default_thresholds = list(intra_cellular_isoform_diversity = 0.6,
+    inter_cellular_isoform_diversity = 0.6, intra_cell_type_heterogeneity = 0.4,
+    inter_cell_type_specificity = 0.6, intra_cell_type_heterogeneity_variability = 0.5,
+    inter_cell_type_difference_variability = 0.3, cell_type_coexpression_variability =
+    0.4),
   data_driven_thresholds = TRUE,
   visualise = TRUE,
   batch_size = 500,
@@ -53,9 +53,9 @@ characterisation of transcriptomic complexity.
 \details{
 The function calculates seven core complexity metrics:
 \enumerate{
-\item Intra-cellular Diversity: Measures the tendency for cells to co-express multiple
+\item Intra-cellular Isoform Diversity: Measures the tendency for cells to co-express multiple
 isoforms of a gene
-\item Inter-cellular Diversity: Measures the overall diversity of isoforms used
+\item Inter-cellular Isoform Diversity: Measures the overall diversity of isoforms used
 across the entire cell population
 \item Intra-cell type Heterogeneity: Measures the cell-to-cell variation in isoform
 usage within each cell type
@@ -65,8 +65,8 @@ across different cell types
 particularly high cellular heterogeneity
 \item Inter-cell type Difference Variability: Measures whether certain cell type pairs
 show particularly significant differences in isoform usage patterns
-\item Cell Type Diversity Mechanism Variability: Measures whether a gene employs different
-isoform co-expression mechanisms in different cell types
+\item Cell-type-specific Co-expression Variability: Measures whether a gene employs different
+isoform co-expression patterns in different cell types
 }
 
 For each metric, a classification column is created to categorise genes based on

@@ -6,7 +6,7 @@
 \usage{
 plot_genes_per_cell_distribution(
   gene_counts,
-  plot_type = "density",
+  plot_type = "hist",
   percentile_cutoffs = c(0.05, 0.95),
   return_suggestions = TRUE
 )

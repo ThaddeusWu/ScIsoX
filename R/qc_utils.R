@@ -28,7 +28,7 @@
 #'
 #' @export
 plot_genes_per_cell_distribution <- function(gene_counts,
-                                             plot_type = "density",
+                                             plot_type = "hist",
                                              percentile_cutoffs = c(0.05, 0.95),
                                              return_suggestions = TRUE) {
   # Detect matrix type and process accordingly for memory efficiency

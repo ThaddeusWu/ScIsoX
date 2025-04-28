@@ -8,7 +8,7 @@ plot_compare_tc_density_difference(
   tc_results_list,
   group_names = NULL,
   pair_indices = NULL,
-  x_metric = "inter_cellular_diversity",
+  x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   grid_size = 100,
   show_threshold_lines = FALSE,
@@ -23,7 +23,7 @@ plot_compare_tc_density_difference(
 
 \item{pair_indices}{List of integer pairs for which groups to compare (if NULL, consecutive pairs are used)}
 
-\item{x_metric}{Name of metric for x-axis (default: "inter_cellular_diversity")}
+\item{x_metric}{Name of metric for x-axis (default: "inter_cellular_isoform_diversity")}
 
 \item{y_metric}{Name of metric for y-axis (default: "inter_cell_type_specificity")}
 

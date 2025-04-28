@@ -6,7 +6,7 @@
 \usage{
 plot_tc_landscape(
   tc_results,
-  x_metric = "inter_cellular_diversity",
+  x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   highlight_genes = NULL,
   label_annotation = "intra_cell_type_heterogeneity",
@@ -20,7 +20,7 @@ plot_tc_landscape(
 \arguments{
 \item{tc_results}{Transcriptomic complexity results object or metrics data frame}
 
-\item{x_metric}{Name of metric for x-axis (default: "inter_cellular_diversity")}
+\item{x_metric}{Name of metric for x-axis (default: "inter_cellular_isoform_diversity")}
 
 \item{y_metric}{Name of metric for y-axis (default: "inter_cell_type_specificity")}
 
@@ -56,8 +56,8 @@ plot_tc_landscape(tc_results)
 
 # Use different metrics and highlight specific genes
 plot_tc_landscape(tc_results, 
-                 x_metric = "intra_cellular_diversity", 
-                 y_metric = "inter_cellular_diversity",
+                 x_metric = "intra_cellular_isoform_diversity", 
+                 y_metric = "inter_cellular_isoform_diversity",
                  highlight_genes = c("GENE1", "GENE2", "GENE3"))
 }
 

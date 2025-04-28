@@ -6,7 +6,7 @@
 \usage{
 plot_tc_density(
   tc_results,
-  x_metric = "inter_cellular_diversity",
+  x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   use_thresholds = TRUE,
   x_threshold = 0.6,
@@ -16,7 +16,7 @@ plot_tc_density(
 \arguments{
 \item{tc_results}{Transcriptomic complexity results object or metrics data frame}
 
-\item{x_metric}{Name of metric for x-axis (default: "inter_cellular_diversity")}
+\item{x_metric}{Name of metric for x-axis (default: "inter_cellular_isoform_diversity")}
 
 \item{y_metric}{Name of metric for y-axis (default: "inter_cell_type_specificity")}
 
@@ -44,8 +44,8 @@ plot_tc_density(tc_results)
 
 # Use different metrics
 plot_tc_density(tc_results, 
-                x_metric = "intra_cellular_diversity", 
-                y_metric = "inter_cellular_diversity")
+                x_metric = "intra_cellular_isoform_diversity", 
+                y_metric = "inter_cellular_isoform_diversity")
 }
 
 }

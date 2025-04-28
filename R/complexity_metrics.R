@@ -34,9 +34,9 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' for cells to co-express multiple isoforms of a gene.
 #'
 #' @param iso_mat Matrix of isoform expression, rows = isoforms, columns = cells
-#' @return Named list containing intra_cellular_diversity and individual cell IDI values
+#' @return Named list containing intra_cellular_isoform_diversity and individual cell IDI values
 #' @keywords internal
-.calculate_intra_cellular_diversity <- function(iso_mat) {
+.calculate_intra_cellular_isoform_diversity <- function(iso_mat) {
   # Get cell sums
   cell_sums <- colSums(iso_mat)
   
@@ -71,14 +71,14 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   
   # Calculate weighted average entropy
   if(sum(cell_sums) == 0) {
-    intra_cellular_diversity <- 0
+    intra_cellular_isoform_diversity <- 0
   } else {
-    intra_cellular_diversity <- sum(cell_entropies * cell_sums) / sum(cell_sums)
+    intra_cellular_isoform_diversity <- sum(cell_entropies * cell_sums) / sum(cell_sums)
   }
   
   # Return both the overall metric and individual cell values
   return(list(
-    intra_cellular_diversity = intra_cellular_diversity,
+    intra_cellular_isoform_diversity = intra_cellular_isoform_diversity,
     cell_entropies = cell_entropies
   ))
 }
@@ -93,7 +93,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' @param iso_mat Matrix of isoform expression, rows = isoforms, columns = cells
 #' @return Inter-cellular isoform diversity index
 #' @keywords internal
-.calculate_inter_cellular_diversity <- function(iso_mat) {
+.calculate_inter_cellular_isoform_diversity <- function(iso_mat) {
   # Calculate average expression for each isoform
   iso_means <- rowMeans(iso_mat, na.rm = TRUE)
   
@@ -111,9 +111,9 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   
   # Normalise by maximum possible entropy using TOTAL isoform count
   n_isoforms <- length(iso_props)
-  inter_cellular_diversity <- ifelse(n_isoforms > 1, shannon / log2(n_isoforms), 0)
+  inter_cellular_isoform_diversity <- ifelse(n_isoforms > 1, shannon / log2(n_isoforms), 0)
   
-  return(inter_cellular_diversity)
+  return(inter_cellular_isoform_diversity)
 }
 
 #' Calculate Jensen-Shannon distance between two probability distributions
@@ -396,17 +396,17 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   return(cv)
 }
 
-#' Calculate CV of cell type diversity mechanism
+#' Calculate CV of cell-type-specific co-expression varaibility
 #'
 #' This function calculates the coefficient of variation of mean intra-cellular
 #' diversity across cell types. High values indicate that a gene employs dramatically
-#' different isoform co-expression mechanisms in different cell types.
+#' different isoform co-expression patterns in different cell types.
 #'
 #' @param scht_obj Single-Cell Hierarchical Tensor object
 #' @param gene Gene name to analyse
 #' @return List containing CV and cell type-specific mean IDI values
 #' @keywords internal
-.calculate_cell_type_diversity_mechanism_variability <- function(scht_obj, gene) {
+.calculate_cell_type_coexpression_variability <- function(scht_obj, gene) {
   # Get all cell types
   cell_types <- names(scht_obj$cell_type_matrices)
   cell_type_mean_idi <- numeric(length(cell_types))
@@ -425,7 +425,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
       }
       
       # Calculate cell IDI values
-      cell_results <- .calculate_intra_cellular_diversity(cell_type_mat)
+      cell_results <- .calculate_intra_cellular_isoform_diversity(cell_type_mat)
       
       # Calculate mean for this cell type
       cell_type_mean_idi[cell_type] <- mean(cell_results$cell_entropies, na.rm = TRUE)
@@ -445,7 +445,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   }
   
   return(list(
-    mechanism_variability = cv,
+    coexpression_variability = cv,
     cell_type_mean_idi = cell_type_mean_idi,
     valid_cell_types = valid_cell_types
   ))
@@ -3626,13 +3626,13 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' @keywords internal
 .determine_optimal_thresholds <- function(metrics_df,
                                           default_thresholds = list(
-                                            intra_cellular_diversity = 0.6,
-                                            inter_cellular_diversity = 0.6,
+                                            intra_cellular_isoform_diversity = 0.6,
+                                            inter_cellular_isoform_diversity = 0.6,
                                             intra_cell_type_heterogeneity = 0.4,
                                             inter_cell_type_specificity = 0.6,
                                             intra_cell_type_heterogeneity_variability = 0.5,
                                             inter_cell_type_difference_variability = 0.3,
-                                            cell_type_diversity_mechanism_variability = 0.4
+                                            cell_type_coexpression_variability = 0.4
                                           ),
                                           visualise = TRUE,
                                           min_samples = 20,
@@ -3642,21 +3642,29 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   
   # Calculate and report NA statistics
   core_metrics <- c(
-    "intra_cellular_diversity",
-    "inter_cellular_diversity",
+    "intra_cellular_isoform_diversity",
+    "inter_cellular_isoform_diversity",
     "intra_cell_type_heterogeneity",
     "inter_cell_type_specificity",
     "intra_cell_type_heterogeneity_variability",
     "inter_cell_type_difference_variability",
-    "cell_type_diversity_mechanism_variability"
+    "cell_type_coexpression_variability"
   )
+  
+  core_metrics_names <-  c("Intra-cellular Isoform Diversity",
+                           "Inter-cellular Isoform Diversity",
+                           "Intra-cell-type Heterogeneity",
+                           "Inter-cell-type Specificity",
+                           "Intra-cell-type Heterogeneity Variability",
+                           "Inter-cell-type Difference Variability",
+                           "Cell-type-specific Co-expression Variability")
   
   na_counts <- sapply(metrics_df[core_metrics], function(x) sum(is.na(x)))
   na_percentages <- round(100 * na_counts / nrow(metrics_df), 1)
   
   message("\nNA value proportions for core metrics:")
   for(i in seq_along(core_metrics)) {
-    metric_name <- gsub("_", " ", core_metrics[i])
+    metric_name <- core_metrics_names[i]
     message(sprintf("  - %s: %d NA values (%.1f%%)",
                     metric_name, na_counts[i], na_percentages[i]))
   }
@@ -3678,6 +3686,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   for (i in seq_along(core_metrics)) {
     metric <- core_metrics[i]
     values <- metrics_df[[metric]]
+    metric_name <- core_metrics_names[i]
     
     # Use the advanced threshold detection with enhanced algorithms
     result <- .detect_optimal_threshold(
@@ -3699,7 +3708,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
       plot_list[[metric]] <- .visualise_threshold_fitting(
         values,
         result$threshold,
-        metric,
+        metric_name,
         model = list(
           method = result$method,
           reliability = result$reliability,
@@ -3713,13 +3722,13 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   # Summary message
   message(paste0(
     "\nOptimal thresholds determined:",
-    "\n- Intra-cellular Diversity: ", round(thresholds$intra_cellular_diversity, 3),
-    "\n- Inter-cellular Diversity: ", round(thresholds$inter_cellular_diversity, 3),
-    "\n- Intra-cell type Heterogeneity: ", round(thresholds$intra_cell_type_heterogeneity, 3),
-    "\n- Inter-cell type Specificity: ", round(thresholds$inter_cell_type_specificity, 3),
-    "\n- Intra-cell type Heterogeneity Variability: ", round(thresholds$intra_cell_type_heterogeneity_variability, 3),
-    "\n- Inter-cell type Difference Variability: ", round(thresholds$inter_cell_type_difference_variability, 3),
-    "\n- Cell Type Diversity Mechanism Variability: ", round(thresholds$cell_type_diversity_mechanism_variability, 3)
+    "\n- Intra-cellular Isoform Diversity: ", round(thresholds$intra_cellular_isoform_diversity, 3),
+    "\n- Inter-cellular Isoform Diversity: ", round(thresholds$inter_cellular_isoform_diversity, 3),
+    "\n- Intra-cell-type Heterogeneity: ", round(thresholds$intra_cell_type_heterogeneity, 3),
+    "\n- Inter-cell-type Specificity: ", round(thresholds$inter_cell_type_specificity, 3),
+    "\n- Intra-cell-type Heterogeneity Variability: ", round(thresholds$intra_cell_type_heterogeneity_variability, 3),
+    "\n- Inter-cell-type Difference Variability: ", round(thresholds$inter_cell_type_difference_variability, 3),
+    "\n- Cell-type-specific Co-expression Variability: ", round(thresholds$cell_type_coexpression_variability, 3)
   ))
   
   # Return thresholds, visualisations, and NA statistics
@@ -3754,9 +3763,9 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   }
   
   # Format metric name for title
-  readable_name <- gsub("_", " ", metric_name)
-  readable_name <- paste0(toupper(substr(readable_name, 1, 1)),
-                          substr(readable_name, 2, nchar(readable_name)))
+ # readable_name <- gsub("_", " ", metric_name)
+ # readable_name <- paste0(toupper(substr(readable_name, 1, 1)),
+ #                         substr(readable_name, 2, nchar(readable_name)))
   
   # Calculate basic statistics for reference
   stats <- list(
@@ -3808,8 +3817,8 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
       linetype = "dashed"
     ) +
     ggplot2::labs(
-      title = paste(readable_name),
-      x = readable_name,
+      title = paste(metric_name),
+      x = metric_name,
       y = "Density"
     ) +
     ggplot2::theme_minimal(base_size = 12) +
@@ -3878,69 +3887,69 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' @return Data frame with added classification columns
 #' @keywords internal
 .classify_genes <- function(metrics_df, thresholds) {
-  # 1. Intra-cellular Diversity Classification
-  metrics_df$intra_cellular_diversity_class <- ifelse(
-    is.na(metrics_df$intra_cellular_diversity), "Unclassified",
-    ifelse(metrics_df$intra_cellular_diversity > thresholds$intra_cellular_diversity,
+  # 1. Intra-cellular Isoform Diversity Classification
+  metrics_df$intra_cellular_isoform_diversity_class <- ifelse(
+    is.na(metrics_df$intra_cellular_isoform_diversity), "Unclassified",
+    ifelse(metrics_df$intra_cellular_isoform_diversity > thresholds$intra_cellular_isoform_diversity,
            "Strong Isoform Co-expression", "Weak Isoform Co-expression")
   )
   
-  # 2. Inter-cellular Diversity Classification
-  metrics_df$inter_cellular_diversity_class <- ifelse(
-    is.na(metrics_df$inter_cellular_diversity), "Unclassified",
-    ifelse(metrics_df$inter_cellular_diversity > thresholds$inter_cellular_diversity,
+  # 2. Inter-cellular Isoform Diversity Classification
+  metrics_df$inter_cellular_isoform_diversity_class <- ifelse(
+    is.na(metrics_df$inter_cellular_isoform_diversity), "Unclassified",
+    ifelse(metrics_df$inter_cellular_isoform_diversity > thresholds$inter_cellular_isoform_diversity,
            "High Isoform Diversity", "Low Isoform Diversity")
   )
   
-  # 3. Intra-cell_type Heterogeneity Classification
+  # 3. Intra-cell-type Heterogeneity Classification
   metrics_df$intra_cell_type_heterogeneity_class <- ifelse(
     is.na(metrics_df$intra_cell_type_heterogeneity), "Unclassified",
     ifelse(metrics_df$intra_cell_type_heterogeneity > thresholds$intra_cell_type_heterogeneity,
            "High Cellular Heterogeneity", "Low Cellular Heterogeneity")
   )
   
-  # 4. Inter-cell_type Specificity Classification
+  # 4. Inter-cell-type Specificity Classification
   metrics_df$inter_cell_type_specificity_class <- ifelse(
     is.na(metrics_df$inter_cell_type_specificity), "Single-Cell Type Expression",
     ifelse(metrics_df$inter_cell_type_specificity > thresholds$inter_cell_type_specificity,
-           "Cell Type-Specific", "Cell Type-Consistent")
+           "Cell-Type-Specific Expression", "Cell-Type-Consistent Expression")
   )
   
-  # 5. Intra-cell_type Heterogeneity Variability Classification
+  # 5. Intra-cell-type Heterogeneity Variability Classification
   metrics_df$intra_cell_type_heterogeneity_variability_class <- ifelse(
     is.na(metrics_df$intra_cell_type_heterogeneity_variability), "Insufficient Cell Type Data",
     ifelse(metrics_df$intra_cell_type_heterogeneity_variability > thresholds$intra_cell_type_heterogeneity_variability,
            "Variable Heterogeneity Across Cell Types", "Consistent Heterogeneity Across Cell Types")
   )
   
-  # 6. Inter-cell_type Difference Variability Classification
+  # 6. Inter-cell-type Difference Variability Classification
   metrics_df$inter_cell_type_difference_variability_class <- ifelse(
     is.na(metrics_df$inter_cell_type_difference_variability), "Insufficient Difference Data",
     ifelse(metrics_df$inter_cell_type_difference_variability > thresholds$inter_cell_type_difference_variability,
-           "High Cell Type Distinctions", "Low Cell Type Distinctions")
+           "High Cell-Type Distinctions", "Low Cell-Type Distinctions")
   )
   
-  # 7. Cell Type Diversity Mechanism Variability Classification
-  metrics_df$cell_type_diversity_mechanism_variability_class <- ifelse(
-    is.na(metrics_df$cell_type_diversity_mechanism_variability), "Insufficient Data",
-    ifelse(metrics_df$cell_type_diversity_mechanism_variability > thresholds$cell_type_diversity_mechanism_variability,
-           "Cell Type-Adaptive Mechanism", "Cell Type-Consistent Mechanism")
+  # 7. Cell-type-specific Co-expression Variability Classification
+  metrics_df$cell_type_coexpression_variability_class <- ifelse(
+    is.na(metrics_df$cell_type_coexpression_variability), "Insufficient Data",
+    ifelse(metrics_df$cell_type_coexpression_variability > thresholds$cell_type_coexpression_variability,
+           "Cell-Type-Adaptive Co-expression", "Cell-Type-Consistent Co-expression")
   )
   
   # Traditional complexity category (based on diversity and specificity)
   metrics_df$complexity_category <- case_when(
-    is.na(metrics_df$inter_cellular_diversity) | is.na(metrics_df$inter_cell_type_specificity) ~
+    is.na(metrics_df$inter_cellular_isoform_diversity) | is.na(metrics_df$inter_cell_type_specificity) ~
       "Unclassified",
     
-    metrics_df$inter_cellular_diversity > thresholds$inter_cellular_diversity &
+    metrics_df$inter_cellular_isoform_diversity > thresholds$inter_cellular_isoform_diversity &
       metrics_df$inter_cell_type_specificity > thresholds$inter_cell_type_specificity ~
       "High Diversity + High Specificity",
     
-    metrics_df$inter_cellular_diversity <= thresholds$inter_cellular_diversity &
+    metrics_df$inter_cellular_isoform_diversity <= thresholds$inter_cellular_isoform_diversity &
       metrics_df$inter_cell_type_specificity > thresholds$inter_cell_type_specificity ~
       "Low Diversity + High Specificity",
     
-    metrics_df$inter_cellular_diversity > thresholds$inter_cellular_diversity &
+    metrics_df$inter_cellular_isoform_diversity > thresholds$inter_cellular_isoform_diversity &
       metrics_df$inter_cell_type_specificity <= thresholds$inter_cell_type_specificity ~
       "High Diversity + Low Specificity",
     
@@ -3969,36 +3978,36 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   
   #------------ 2. Calculate Core Metrics ------------#
   
-  # Calculate intra-cellular diversity (Core Metric 1)
-  cell_idi_results <- .calculate_intra_cellular_diversity(iso_mat)
-  intra_cellular_diversity <- cell_idi_results$intra_cellular_diversity
+  # Calculate intra-cellular isoform diversity (Core Metric 1)
+  cell_idi_results <- .calculate_intra_cellular_isoform_diversity(iso_mat)
+  intra_cellular_isoform_diversity <- cell_idi_results$intra_cellular_isoform_diversity
   
-  # Calculate inter-cellular diversity (Core Metric 2)
+  # Calculate inter-cellular isoform diversity (Core Metric 2)
   # Using the specified diversity function
-  inter_cellular_diversity <- .calculate_inter_cellular_diversity(iso_mat)
+  inter_cellular_isoform_diversity <- .calculate_inter_cellular_isoform_diversity(iso_mat)
   
   # Calculate the difference between inter and intra-cellular diversity
-  idi_difference <- inter_cellular_diversity - intra_cellular_diversity
+  idi_difference <- inter_cellular_isoform_diversity - intra_cellular_isoform_diversity
   
-  # Calculate inter-cell_type specificity (Core Metric 3)
+  # Calculate inter-cell-type specificity (Core Metric 3)
   specificity_result <- .calculate_inter_cell_type_specificity(scht_obj, gene)
   inter_cell_type_specificity <- specificity_result$inter_cell_type_specificity
   is_single_cell_type <- specificity_result$single_cell_type
   specific_cell_type <- specificity_result$cell_type_name
   expressed_cell_types <- specificity_result$expressed_cell_types
   
-  # Calculate intra-cell_type heterogeneity (Core Metric 4)
+  # Calculate intra-cell-type heterogeneity (Core Metric 4)
   # and its variability (Core Metric 5)
   heterogeneity_result <- .calculate_intra_cell_type_heterogeneity_variability(scht_obj, gene)
   intra_cell_type_heterogeneity <- mean(heterogeneity_result$cell_type_heterogeneity, na.rm = TRUE)
   intra_cell_type_heterogeneity_variability <- heterogeneity_result$heterogeneity_variability
   
-  # Calculate inter-cell_type difference variability (Core Metric 6)
+  # Calculate inter-cell-type difference variability (Core Metric 6)
   inter_cell_type_difference_variability <- .calculate_inter_cell_type_difference_variability(specificity_result)
   
-  # Calculate cell type diversity mechanism variability (Core Metric 7)
-  mechanism_result <- .calculate_cell_type_diversity_mechanism_variability(scht_obj, gene)
-  cell_type_diversity_mechanism_variability <- mechanism_result$mechanism_variability
+  # Calculate cell-type-specific co-expression variability (Core Metric 7)
+  coexpression_result <- .calculate_cell_type_coexpression_variability(scht_obj, gene)
+  cell_type_coexpression_variability <- coexpression_result$coexpression_variability
   
   #------------ 3. Calculate Additional Metrics ------------#
   
@@ -4029,7 +4038,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   
   # Calculate evenness (how equally expressed the isoforms are)
   evenness <- ifelse(n_expressed_isoforms > 1,
-                     inter_cellular_diversity / log2(n_expressed_isoforms),
+                     inter_cellular_isoform_diversity / log2(n_expressed_isoforms),
                      0)
   
   # Calculate cell-level metrics
@@ -4056,13 +4065,13 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
     gene = gene,
     
     # Core metrics
-    intra_cellular_diversity = intra_cellular_diversity,
-    inter_cellular_diversity = inter_cellular_diversity,
+    intra_cellular_isoform_diversity = intra_cellular_isoform_diversity,
+    inter_cellular_isoform_diversity = inter_cellular_isoform_diversity,
     intra_cell_type_heterogeneity = intra_cell_type_heterogeneity,
     inter_cell_type_specificity = inter_cell_type_specificity,
     intra_cell_type_heterogeneity_variability = intra_cell_type_heterogeneity_variability,
     inter_cell_type_difference_variability = inter_cell_type_difference_variability,
-    cell_type_diversity_mechanism_variability = cell_type_diversity_mechanism_variability,
+    cell_type_coexpression_variability = cell_type_coexpression_variability,
     
     # Additional characterisation metrics
     idi_difference = idi_difference,
@@ -4117,13 +4126,13 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
       
       #------------ 1. Core Metric Calculations ------------#
       
-      # Calculate cell type-specific intra-cellular diversity
+      # Calculate cell type-specific intra-cellular isoform diversity
       # Measures how cells within this cell type co-express multiple isoforms
-      ct_intra_results <- .calculate_intra_cellular_diversity(ct_iso_mat)
+      ct_intra_results <- .calculate_intra_cellular_isoform_diversity(ct_iso_mat)
       
-      # Calculate cell type-specific inter-cellular diversity
+      # Calculate cell type-specific inter-cellular isoform diversity
       # Measures the overall diversity of isoforms used by this cell type
-      ct_inter_diversity <- .calculate_inter_cellular_diversity(ct_iso_mat)
+      ct_inter_diversity <- .calculate_inter_cellular_isoform_diversity(ct_iso_mat)
       
       # Calculate cell type heterogeneity
       # Measures cell-to-cell variation in isoform usage within this cell type
@@ -4190,8 +4199,8 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
       # Store comprehensive set of metrics for this cell type
       cell_type_metrics[[cell_type]] <- list(
         # Core metrics
-        intra_cellular_diversity = ct_intra_results$intra_cellular_diversity,
-        inter_cellular_diversity = ct_inter_diversity,
+        intra_cellular_isoform_diversity = ct_intra_results$intra_cellular_isoform_diversity,
+        inter_cellular_isoform_diversity = ct_inter_diversity,
         intra_cell_type_heterogeneity = ct_heterogeneity,
         
         # Isoform dominance metrics
@@ -4229,10 +4238,10 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' @details
 #' The function calculates seven core complexity metrics:
 #'
-#' 1. Intra-cellular Diversity: Measures the tendency for cells to co-express multiple
+#' 1. Intra-cellular Isoform Diversity: Measures the tendency for cells to co-express multiple
 #'    isoforms of a gene
 #'
-#' 2. Inter-cellular Diversity: Measures the overall diversity of isoforms used
+#' 2. Inter-cellular Isoform Diversity: Measures the overall diversity of isoforms used
 #'    across the entire cell population
 #'
 #' 3. Intra-cell type Heterogeneity: Measures the cell-to-cell variation in isoform
@@ -4247,8 +4256,8 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' 6. Inter-cell type Difference Variability: Measures whether certain cell type pairs
 #'    show particularly significant differences in isoform usage patterns
 #'
-#' 7. Cell Type Diversity Mechanism Variability: Measures whether a gene employs different
-#'    isoform co-expression mechanisms in different cell types
+#' 7. Cell-type-specific Co-expression Variability: Measures whether a gene employs different
+#'    isoform co-expression patterns in different cell types
 #'
 #' For each metric, a classification column is created to categorise genes based on
 #' statistically determined thresholds. This provides a comprehensive complexity
@@ -4278,13 +4287,13 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' @export
 calculate_isoform_complexity_metrics <- function(scht_obj,
                                                  default_thresholds = list(
-                                                   intra_cellular_diversity = 0.6,
-                                                   inter_cellular_diversity = 0.6,
+                                                   intra_cellular_isoform_diversity = 0.6,
+                                                   inter_cellular_isoform_diversity = 0.6,
                                                    intra_cell_type_heterogeneity = 0.4,
                                                    inter_cell_type_specificity = 0.6,
                                                    intra_cell_type_heterogeneity_variability = 0.5,
                                                    inter_cell_type_difference_variability = 0.3,
-                                                   cell_type_diversity_mechanism_variability = 0.4
+                                                   cell_type_coexpression_variability = 0.4
                                                  ),
                                                  data_driven_thresholds = TRUE,
                                                  visualise = TRUE,
@@ -4409,14 +4418,22 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
     
     # Calculate basic NA statistics
     core_metrics <- c(
-      "intra_cellular_diversity",
-      "inter_cellular_diversity",
+      "intra_cellular_isoform_diversity",
+      "inter_cellular_isoform_diversity",
       "intra_cell_type_heterogeneity",
       "inter_cell_type_specificity",
       "intra_cell_type_heterogeneity_variability",
       "inter_cell_type_difference_variability",
-      "cell_type_diversity_mechanism_variability"
+      "cell_type_coexpression_variability"
     )
+    
+    core_metrics_names <-  c("Intra-cellular Isoform Diversity",
+                             "Inter-cellular Isoform Diversity",
+                             "Intra-cell-type Heterogeneity",
+                             "Inter-cell-type Specificity",
+                             "Intra-cell-type Heterogeneity Variability",
+                             "Inter-cell-type Difference Variability",
+                             "Cell-type-specific Co-expression Variability")
     
     na_counts <- sapply(results[core_metrics], function(x) sum(is.na(x)))
     na_percentages <- round(100 * na_counts / nrow(results), 1)
@@ -4429,7 +4446,7 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
     # Report NA statistics
     message("\nNA value proportions for core metrics:")
     for(i in seq_along(core_metrics)) {
-      metric_name <- gsub("_", " ", core_metrics[i])
+      metric_name <- core_metrics_names[i]
       message(sprintf("  - %s: %d NA values (%.1f%%)",
                       metric_name, na_counts[i], na_percentages[i]))
     }
@@ -4442,7 +4459,7 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
           threshold_plots[[metric]] <- .visualise_threshold_fitting(
             results[[metric]],
             default_thresholds[[metric]],
-            metric
+            metric_name
           )
         }
       }
@@ -4530,14 +4547,22 @@ summary.transcriptomic_complexity <- function(object, ...) {
     cat("NA Value Statistics (representing biologically meaningful cases):\n")
     
     core_metrics <- c(
-      "intra_cellular_diversity",
-      "inter_cellular_diversity",
+      "intra_cellular_isoform_diversity",
+      "inter_cellular_isoform_diversity",
       "intra_cell_type_heterogeneity",
       "inter_cell_type_specificity",
       "intra_cell_type_heterogeneity_variability",
       "inter_cell_type_difference_variability",
-      "cell_type_diversity_mechanism_variability"
+      "cell_type_coexpression_variability"
     )
+    
+    core_metrics_names <-  c("Intra-cellular Isoform Diversity",
+                             "Inter-cellular Isoform Diversity",
+                             "Intra-cell-type Heterogeneity",
+                             "Inter-cell-type Specificity",
+                             "Intra-cell-type Heterogeneity Variability",
+                             "Inter-cell-type Difference Variability",
+                             "Cell-type-specific Co-expression Variability")
     
     na_explanations <- c(
       "Occurs when genes have only one expressed isoform, indicating lack of alternative splicing",
@@ -4546,11 +4571,11 @@ summary.transcriptomic_complexity <- function(object, ...) {
       "Occurs for genes expressed in only a single cell type (high cell type-specificity)",
       "Occurs when a gene is expressed in fewer than 2 cell types with sufficient data",
       "Occurs when there are insufficient pairwise differences between cell types to calculate variability",
-      "Occurs when a gene lacks sufficient cell type-specific expression data to compare mechanisms"
+      "Occurs when a gene lacks sufficient cell type-specific expression data to compare co-expression patterns"
     )
     
     for(i in seq_along(core_metrics)) {
-      metric_name <- gsub("_", " ", core_metrics[i])
+      metric_name <- core_metrics_names[i]
       count <- na_statistics$counts[i]
       percentage <- na_statistics$percentages[i]
       explanation <- na_explanations[i]
@@ -4566,14 +4591,23 @@ summary.transcriptomic_complexity <- function(object, ...) {
   
   # List of classification columns
   class_columns <- c(
-    "intra_cellular_diversity_class",
-    "inter_cellular_diversity_class",
+    "intra_cellular_isoform_diversity_class",
+    "inter_cellular_isoform_diversity_class",
     "intra_cell_type_heterogeneity_class",
     "inter_cell_type_specificity_class",
     "intra_cell_type_heterogeneity_variability_class",
     "inter_cell_type_difference_variability_class",
-    "cell_type_diversity_mechanism_variability_class"
+    "cell_type_coexpression_variability_class"
   )
+  
+  core_class_columns_names <-  c("Intra-cellular Isoform Diversity",
+                                 "Inter-cellular Isoform Diversity",
+                                 "Intra-cell-type Heterogeneity",
+                                 "Inter-cell-type Specificity",
+                                 "Intra-cell-type Heterogeneity Variability",
+                                 "Inter-cell-type Difference Variability",
+                                 "Cell-type-specific Co-expression Variability")
+  
   
   # Add distribution for each dimension with better formatting
   for(col in class_columns) {
@@ -4585,7 +4619,10 @@ summary.transcriptomic_complexity <- function(object, ...) {
     percentages <- round(100 * counts / gene_count, 1)
     
     # Add to summary with proper formatting
-    cat(sprintf("\n%s:\n", gsub("_class", "", gsub("_", " ", col), fixed = TRUE)))
+    idx <- match(col, class_columns)
+    metrics_name <- core_class_columns_names[idx]
+    
+    cat(sprintf("\n%s:\n", metrics_name))
     
     for(category in names(counts)) {
       cat(sprintf("  - %-40s: %4d genes (%.1f%%)\n",
@@ -4593,7 +4630,7 @@ summary.transcriptomic_complexity <- function(object, ...) {
     }
   }
   
-  # Add traditional complexity categories with better formatting
+  # Add traditional complexity categories 
   cat("\nTraditional Complexity Categories:\n")
   
   complexity_counts <- table(metrics_df$complexity_category)
@@ -4604,73 +4641,73 @@ summary.transcriptomic_complexity <- function(object, ...) {
                 category, complexity_counts[category], complexity_percentages[category]))
   }
   
-  # Single-cell_type genes with better formatting
+  # Single-cell_type genes
   single_cell_type_count <- sum(metrics_df$is_single_cell_type, na.rm = TRUE)
-  cat("\nCell Type-Specific Genes:\n")
+  cat("\nCell-Type-Specific Genes:\n")
   cat(sprintf("  - %-40s: %4d genes (%.1f%%)\n",
-              "Single-cell type genes", single_cell_type_count, round(100*single_cell_type_count/gene_count, 1)))
+              "Single cell-type genes", single_cell_type_count, round(100*single_cell_type_count/gene_count, 1)))
   
   # Print metric statistics as a formatted table
   cat("\nCore Metrics Statistics:\n")
   
   metric_stats <- data.frame(
-    Metric = c("Intra-cellular Diversity",
-               "Inter-cellular Diversity",
-               "Intra-cell type Heterogeneity",
-               "Inter-cell type Specificity",
-               "Intra-cell type Heterogeneity Variability",
-               "Inter-cell type Difference Variability",
-               "Cell Type Diversity Mechanism Variability"),
-    Mean = c(mean(metrics_df$intra_cellular_diversity, na.rm = TRUE),
-             mean(metrics_df$inter_cellular_diversity, na.rm = TRUE),
+    Metric = c("Intra-cellular Isoform Diversity",
+               "Inter-cellular Isoform Diversity",
+               "Intra-cell-type Heterogeneity",
+               "Inter-cell-type Specificity",
+               "Intra-cell-type Heterogeneity Variability",
+               "Inter-cell-type Difference Variability",
+               "Cell-type-specific Co-expression Variability"),
+    Mean = c(mean(metrics_df$intra_cellular_isoform_diversity, na.rm = TRUE),
+             mean(metrics_df$inter_cellular_isoform_diversity, na.rm = TRUE),
              mean(metrics_df$intra_cell_type_heterogeneity, na.rm = TRUE),
              mean(metrics_df$inter_cell_type_specificity, na.rm = TRUE),
              mean(metrics_df$intra_cell_type_heterogeneity_variability, na.rm = TRUE),
              mean(metrics_df$inter_cell_type_difference_variability, na.rm = TRUE),
-             mean(metrics_df$cell_type_diversity_mechanism_variability, na.rm = TRUE)),
-    Median = c(median(metrics_df$intra_cellular_diversity, na.rm = TRUE),
-               median(metrics_df$inter_cellular_diversity, na.rm = TRUE),
+             mean(metrics_df$cell_type_coexpression_variability, na.rm = TRUE)),
+    Median = c(median(metrics_df$intra_cellular_isoform_diversity, na.rm = TRUE),
+               median(metrics_df$inter_cellular_isoform_diversity, na.rm = TRUE),
                median(metrics_df$intra_cell_type_heterogeneity, na.rm = TRUE),
                median(metrics_df$inter_cell_type_specificity, na.rm = TRUE),
                median(metrics_df$intra_cell_type_heterogeneity_variability, na.rm = TRUE),
                median(metrics_df$inter_cell_type_difference_variability, na.rm = TRUE),
-               median(metrics_df$cell_type_diversity_mechanism_variability, na.rm = TRUE)),
-    SD = c(sd(metrics_df$intra_cellular_diversity, na.rm = TRUE),
-           sd(metrics_df$inter_cellular_diversity, na.rm = TRUE),
+               median(metrics_df$cell_type_coexpression_variability, na.rm = TRUE)),
+    SD = c(sd(metrics_df$intra_cellular_isoform_diversity, na.rm = TRUE),
+           sd(metrics_df$inter_cellular_isoform_diversity, na.rm = TRUE),
            sd(metrics_df$intra_cell_type_heterogeneity, na.rm = TRUE),
            sd(metrics_df$inter_cell_type_specificity, na.rm = TRUE),
            sd(metrics_df$intra_cell_type_heterogeneity_variability, na.rm = TRUE),
            sd(metrics_df$inter_cell_type_difference_variability, na.rm = TRUE),
-           sd(metrics_df$cell_type_diversity_mechanism_variability, na.rm = TRUE)),
-    Min = c(min(metrics_df$intra_cellular_diversity, na.rm = TRUE),
-            min(metrics_df$inter_cellular_diversity, na.rm = TRUE),
+           sd(metrics_df$cell_type_coexpression_variability, na.rm = TRUE)),
+    Min = c(min(metrics_df$intra_cellular_isoform_diversity, na.rm = TRUE),
+            min(metrics_df$inter_cellular_isoform_diversity, na.rm = TRUE),
             min(metrics_df$intra_cell_type_heterogeneity, na.rm = TRUE),
             min(metrics_df$inter_cell_type_specificity, na.rm = TRUE),
             min(metrics_df$intra_cell_type_heterogeneity_variability, na.rm = TRUE),
             min(metrics_df$inter_cell_type_difference_variability, na.rm = TRUE),
-            min(metrics_df$cell_type_diversity_mechanism_variability, na.rm = TRUE)),
-    Max = c(max(metrics_df$intra_cellular_diversity, na.rm = TRUE),
-            max(metrics_df$inter_cellular_diversity, na.rm = TRUE),
+            min(metrics_df$cell_type_coexpression_variability, na.rm = TRUE)),
+    Max = c(max(metrics_df$intra_cellular_isoform_diversity, na.rm = TRUE),
+            max(metrics_df$inter_cellular_isoform_diversity, na.rm = TRUE),
             max(metrics_df$intra_cell_type_heterogeneity, na.rm = TRUE),
             max(metrics_df$inter_cell_type_specificity, na.rm = TRUE),
             max(metrics_df$intra_cell_type_heterogeneity_variability, na.rm = TRUE),
             max(metrics_df$inter_cell_type_difference_variability, na.rm = TRUE),
-            max(metrics_df$cell_type_diversity_mechanism_variability, na.rm = TRUE)),
-    Threshold = c(thresholds$intra_cellular_diversity,
-                  thresholds$inter_cellular_diversity,
+            max(metrics_df$cell_type_coexpression_variability, na.rm = TRUE)),
+    Threshold = c(thresholds$intra_cellular_isoform_diversity,
+                  thresholds$inter_cellular_isoform_diversity,
                   thresholds$intra_cell_type_heterogeneity,
                   thresholds$inter_cell_type_specificity,
                   thresholds$intra_cell_type_heterogeneity_variability,
                   thresholds$inter_cell_type_difference_variability,
-                  thresholds$cell_type_diversity_mechanism_variability),
+                  thresholds$cell_type_coexpression_variability),
     NA_Percent = c(
-      mean(is.na(metrics_df$intra_cellular_diversity)) * 100,
-      mean(is.na(metrics_df$inter_cellular_diversity)) * 100,
+      mean(is.na(metrics_df$intra_cellular_isoform_diversity)) * 100,
+      mean(is.na(metrics_df$inter_cellular_isoform_diversity)) * 100,
       mean(is.na(metrics_df$intra_cell_type_heterogeneity)) * 100,
       mean(is.na(metrics_df$inter_cell_type_specificity)) * 100,
       mean(is.na(metrics_df$intra_cell_type_heterogeneity_variability)) * 100,
       mean(is.na(metrics_df$inter_cell_type_difference_variability)) * 100,
-      mean(is.na(metrics_df$cell_type_diversity_mechanism_variability)) * 100
+      mean(is.na(metrics_df$cell_type_coexpression_variability)) * 100
     )
   )
   
@@ -4691,7 +4728,6 @@ summary.transcriptomic_complexity <- function(object, ...) {
     gene_count = gene_count,
     metric_stats = metric_stats,
     complexity_counts = complexity_counts,
-    unclassified_count = unclassified_count,
     single_cell_type_count = single_cell_type_count,
     thresholds = thresholds,
     na_statistics = na_statistics
@@ -4721,10 +4757,10 @@ select_genes_of_interest <- function(metrics_df,
   # Handle column selection
   if(is.null(column)) {
     # Try to find matching column based on category
-    if(grepl("Co-expression", category)) {
-      column <- "intra_cellular_diversity_class"
+    if(grepl("Isoform Co-expression", category)) {
+      column <- "intra_cellular_isoform_diversity_class"
     } else if(grepl("Isoform Diversity", category)) {
-      column <- "inter_cellular_diversity_class"
+      column <- "inter_cellular_isoform_diversity_class"
     } else if(grepl("Cellular Heterogeneity", category) && !grepl("Variability", category)) {
       column <- "intra_cell_type_heterogeneity_class"
     } else if(grepl("Cell Type-Specific", category) || grepl("Cell Type-Consistent", category)) {
@@ -4733,8 +4769,8 @@ select_genes_of_interest <- function(metrics_df,
       column <- "intra_cell_type_heterogeneity_variability_class"
     } else if(grepl("Cell Type Distinctions", category)) {
       column <- "inter_cell_type_difference_variability_class"
-    } else if(grepl("Mechanism", category)) {
-      column <- "cell_type_diversity_mechanism_variability_class"
+    } else if(grepl("Cell-Type-Adaptive Co-expression", category) || grepl("Cell-Type-Consistent Co-expression", category)) {
+      column <- "cell_type_coexpression_variability_class"
     } else if(grepl("Diversity", category) && grepl("Specificity", category)) {
       column <- "complexity_category"
     } else {
@@ -4758,10 +4794,10 @@ select_genes_of_interest <- function(metrics_df,
   
   # Determine column to sort by if not specified
   if(is.null(sort_by)) {
-    if(column == "intra_cellular_diversity_class") {
-      sort_by <- "intra_cellular_diversity"
-    } else if(column == "inter_cellular_diversity_class") {
-      sort_by <- "inter_cellular_diversity"
+    if(column == "intra_cellular_isoform_diversity_class") {
+      sort_by <- "intra_cellular_isoform_diversity"
+    } else if(column == "inter_cellular_isoform_diversity_class") {
+      sort_by <- "inter_cellular_isoform_diversity"
     } else if(column == "intra_cell_type_heterogeneity_class") {
       sort_by <- "intra_cell_type_heterogeneity"
     } else if(column == "inter_cell_type_specificity_class") {
@@ -4770,8 +4806,8 @@ select_genes_of_interest <- function(metrics_df,
       sort_by <- "intra_cell_type_heterogeneity_variability"
     } else if(column == "inter_cell_type_difference_variability_class") {
       sort_by <- "inter_cell_type_difference_variability"
-    } else if(column == "cell_type_diversity_mechanism_variability_class") {
-      sort_by <- "cell_type_diversity_mechanism_variability"
+    } else if(column == "cell_type_coexpression_variability_class") {
+      sort_by <- "cell_type_coexpression_variability"
     } else {
       sort_by <- "inter_cell_type_specificity"  # Default
     }

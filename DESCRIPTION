@@ -31,17 +31,18 @@ Imports:
     diptest,
     scales,
     gridExtra,
-    magrittr
+    magrittr,
+    MASS
 Suggests:
     ggridges,
     ggrepel,
     ggExtra,
     viridis,
-    pheatmap,
+    ComplexHeatmap,
+    circlize,
     cowplot,
     grid,
     tidyr,
-    MASS,
     RColorBrewer,
     ggradar,
     patchwork

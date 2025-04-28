@@ -14,12 +14,14 @@
 #' @importFrom ggplot2 geom_density geom_point theme_minimal labs facet_wrap scale_fill_gradient2
 #' @importFrom ggplot2 theme element_text ggtitle xlab ylab
 #' @importFrom gridExtra grid.arrange arrangeGrob
-#' @importFrom grid textGrob gpar
+#' @importFrom grid textGrob gpar unit
 #' @importFrom scales rescale
 #' @importFrom stats setNames quantile density kmeans cor as.dist
 #' @importFrom utils head
 #' @importFrom grDevices colorRampPalette
 #' @importFrom magrittr %>%
+#' @importFrom MASS kde2d
+#' @importFrom dplyr case_when
 NULL
 
 # Define global variables to avoid R CMD check notes
@@ -153,20 +155,20 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' 
 #' @keywords internal
 .get_metric_names <- function(metric) {
-  if(metric == "intra_cellular_diversity") {
+  if(metric == "intra_cellular_isoform_diversity") {
     return(c("Strong Isoform Co-expression", "Weak Isoform Co-expression"))
-  } else if(metric == "inter_cellular_diversity") {
+  } else if(metric == "inter_cellular_isoform_diversity") {
     return(c("High Isoform Diversity", "Low Isoform Diversity"))
   } else if(metric == "intra_cell_type_heterogeneity") {
     return(c("High Cellular Heterogeneity", "Low Cellular Heterogeneity"))
   } else if(metric == "inter_cell_type_specificity") {
-    return(c("Cell Type-Specific", "Cell Type-Consistent"))
+    return(c("Cell-Type-Specific Expression", "Cell-Type-Consistent Expression"))
   } else if(metric == "intra_cell_type_heterogeneity_variability") {
-    return(c("Cell Type-Dependent Heterogeneity", "Cell Type-Independent Heterogeneity"))
+    return(c("Cell-Type-Dependent Heterogeneity", "Cell-Type-Independent Heterogeneity"))
   } else if(metric == "inter_cell_type_difference_variability") {
-    return(c("High Cell Type Distinctions", "Low Cell Type Distinctions"))
-  } else if(metric == "cell_type_diversity_mechanism_variability") {
-    return(c("Cell Type-Adaptive Mechanism", "Cell Type-Consistent Mechanism"))
+    return(c("High Cell-Type Distinctions", "Low Cell-Type Distinctions"))
+  } else if(metric == "cell_type_coexpression_variability") {
+    return(c("Cell-Type-Adaptive Co-Expression", "Cell-Type-Consistent Co-Expression"))
   } else {
     return(c(paste0("High ", metric), paste0("Low ", metric)))
   }
@@ -190,7 +192,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' 
 #' @keywords internal
 .prepare_tc_data <- function(tc_results, 
-                             x_metric = "inter_cellular_diversity",
+                             x_metric = "inter_cellular_isoform_diversity",
                              y_metric = "inter_cell_type_specificity",
                              highlight_genes = NULL,
                              label_annotation = "intra_cell_type_heterogeneity",
@@ -222,12 +224,33 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
   x_class_names <- .get_metric_names(x_metric)
   y_class_names <- .get_metric_names(y_metric)
   
-  # Create readable metric names for labels
-  x_label <- gsub("_", " ", x_metric)
-  x_label <- paste0(toupper(substr(x_label, 1, 1)), substr(x_label, 2, nchar(x_label)))
   
-  y_label <- gsub("_", " ", y_metric)
-  y_label <- paste0(toupper(substr(y_label, 1, 1)), substr(y_label, 2, nchar(y_label)))
+  all_metrics <- c(
+    "intra_cellular_isoform_diversity",
+    "inter_cellular_isoform_diversity", 
+    "intra_cell_type_heterogeneity",
+    "inter_cell_type_specificity",
+    "intra_cell_type_heterogeneity_variability",
+    "inter_cell_type_difference_variability",
+    "cell_type_coexpression_variability"
+  )
+  
+  # Create readable metric names for labels
+  readable_metrics <- c(
+    "Intra-cellular Isoform Diversity",
+    "Inter-cellular Isoform Diversity",
+    "Intra-cell-type Heterogeneity",
+    "Inter-cell-type Specificity",
+    "Intra-cell-type Heterogeneity Variability",
+    "Inter-cell-type Difference Variability",
+    "Cell-Type-Specific Co-Expression Variability"
+  )
+  
+  x_label_idx <- match(x_metric, all_metrics)
+  x_label <- readable_metrics[x_label_idx]
+  
+  y_label_idx <- match(y_metric, all_metrics)
+  y_label <- readable_metrics[y_label_idx]
   
   # Filter data to remove NA values for the selected metrics
   plot_data <- metrics[!is.na(metrics[[x_metric]]) & !is.na(metrics[[y_metric]]), ]
@@ -370,7 +393,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
   # Create label positions for quadrants
   label_positions <- data.frame(
     quadrant = c(q1, q2, q3, q4),
-    x = c(0.9, 0.15, 0.15, 0.9),  # Q1, Q2, Q3, Q4 positions
+    x = c(0.9, 0.2, 0.2, 0.9),  # Q1, Q2, Q3, Q4 positions
     y = c(0.85, 0.85, 0.15, 0.15)   # Q1, Q2, Q3, Q4 positions
   )
   
@@ -409,7 +432,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' different complexity dimensions and helps identify genes with interesting patterns.
 #' 
 #' @param tc_results Transcriptomic complexity results object or metrics data frame
-#' @param x_metric Name of metric for x-axis (default: "inter_cellular_diversity")
+#' @param x_metric Name of metric for x-axis (default: "inter_cellular_isoform_diversity")
 #' @param y_metric Name of metric for y-axis (default: "inter_cell_type_specificity")
 #' @param highlight_genes Optional vector of gene names to highlight
 #' @param label_annotation Column name to use for highlighting/labelling genes
@@ -431,14 +454,14 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' 
 #' # Use different metrics and highlight specific genes
 #' plot_tc_landscape(tc_results, 
-#'                  x_metric = "intra_cellular_diversity", 
-#'                  y_metric = "inter_cellular_diversity",
+#'                  x_metric = "intra_cellular_isoform_diversity", 
+#'                  y_metric = "inter_cellular_isoform_diversity",
 #'                  highlight_genes = c("GENE1", "GENE2", "GENE3"))
 #' }
 #' 
 #' @export
 plot_tc_landscape <- function(tc_results, 
-                              x_metric = "inter_cellular_diversity",
+                              x_metric = "inter_cellular_isoform_diversity",
                               y_metric = "inter_cell_type_specificity",
                               highlight_genes = NULL,
                               label_annotation = "intra_cell_type_heterogeneity",
@@ -519,7 +542,7 @@ plot_tc_landscape <- function(tc_results,
       label = paste0(short_name, ": ", count, " genes (", percentage, "%)"),
       fill = quadrant
     ),
-    size = 3.2,
+    size = 6,
     fontface = "bold",
     color = "white",
     alpha = 0.9,
@@ -545,7 +568,7 @@ plot_tc_landscape <- function(tc_results,
     p <- p + ggrepel::geom_text_repel(
       data = highlight_data_vis,
       ggplot2::aes(label = gene),
-      size = 3.5,
+      size = 8,
       fontface = "bold",
       box.padding = 0.5,
       point.padding = 0.4,
@@ -618,7 +641,7 @@ plot_tc_landscape <- function(tc_results,
   ) + 
     ggplot2::theme(
       axis.title = ggplot2::element_text(size = 18, face = "bold"), 
-      axis.text = ggplot2::element_text(size = 16)
+      axis.text = ggplot2::element_text(size = 18)
     )
     
   
@@ -666,7 +689,7 @@ plot_tc_landscape <- function(tc_results,
 #' gene concentration across the complexity landscape, highlighting hotspots.
 #' 
 #' @param tc_results Transcriptomic complexity results object or metrics data frame
-#' @param x_metric Name of metric for x-axis (default: "inter_cellular_diversity")
+#' @param x_metric Name of metric for x-axis (default: "inter_cellular_isoform_diversity")
 #' @param y_metric Name of metric for y-axis (default: "inter_cell_type_specificity")
 #' @param use_thresholds Whether to use thresholds from tc_results
 #' @param x_threshold Manual threshold value for x-axis
@@ -684,13 +707,13 @@ plot_tc_landscape <- function(tc_results,
 #' 
 #' # Use different metrics
 #' plot_tc_density(tc_results, 
-#'                 x_metric = "intra_cellular_diversity", 
-#'                 y_metric = "inter_cellular_diversity")
+#'                 x_metric = "intra_cellular_isoform_diversity", 
+#'                 y_metric = "inter_cellular_isoform_diversity")
 #' }
 #' 
 #' @export
 plot_tc_density <- function(tc_results, 
-                            x_metric = "inter_cellular_diversity",
+                            x_metric = "inter_cellular_isoform_diversity",
                             y_metric = "inter_cell_type_specificity",
                             use_thresholds = TRUE,
                             x_threshold = 0.6,
@@ -862,8 +885,8 @@ plot_diversity_comparison <- function(tc_results,
   }
   
   # Define metrics to use for the dual diversity plot
-  x_metric <- "intra_cellular_diversity"
-  y_metric <- "inter_cellular_diversity"
+  x_metric <- "intra_cellular_isoform_diversity"
+  y_metric <- "inter_cellular_isoform_diversity"
   
   # Use data preparation function from the landscape plot
   data_prep <- .prepare_tc_data(
@@ -989,7 +1012,7 @@ plot_diversity_comparison <- function(tc_results,
     p <- p + ggrepel::geom_text_repel(
       data = genes_to_label,
       ggplot2::aes(label = gene),
-      size = 3.5,
+      size = 6,
       fontface = "bold",
       box.padding = 0.6,
       point.padding = 0.5,
@@ -1018,8 +1041,8 @@ plot_diversity_comparison <- function(tc_results,
     ggplot2::labs(
       title = "Dual Diversity Comparison",
       subtitle = "Intra-cellular vs. Inter-cellular Isoform Diversity",
-      x = "Intra-cellular Diversity",
-      y = "Inter-cellular Diversity"
+      x = "Intra-cellular Isoform Diversity",
+      y = "Inter-cellular Isoform Diversity"
     ) + 
     ggplot2::guides(
       colour = ggplot2::guide_legend(
@@ -1089,30 +1112,30 @@ plot_complexity_ridges <- function(tc_results,
   
   # Set up metric names and map to readable labels
   all_metrics <- c(
-    "intra_cellular_diversity",
-    "inter_cellular_diversity", 
+    "intra_cellular_isoform_diversity",
+    "inter_cellular_isoform_diversity", 
     "intra_cell_type_heterogeneity",
     "inter_cell_type_specificity",
     "intra_cell_type_heterogeneity_variability",
     "inter_cell_type_difference_variability",
-    "cell_type_diversity_mechanism_variability"
+    "cell_type_coexpression_variability"
   )
   
   readable_metrics <- c(
-    "Intra-cellular Diversity",
-    "Inter-cellular Diversity",
-    "Intra-cell type Heterogeneity",
-    "Inter-cell type Specificity",
-    "Intra-cell type Heterogeneity Variability",
-    "Inter-cell type Difference Variability",
-    "Cell Type Diversity Mechanism Variability"
+    "Intra-cellular Isoform Diversity",
+    "Inter-cellular Isoform Diversity",
+    "Intra-cell-type Heterogeneity",
+    "Inter-cell-type Specificity",
+    "Intra-cell-type Heterogeneity Variability",
+    "Inter-cell-type Difference Variability",
+    "Cell-Type-Specific Co-Expression Variability"
   )
   
   metric_map <- stats::setNames(readable_metrics, all_metrics)
   
   core_cell_metrics <- c(
-    "intra_cellular_diversity",
-    "inter_cellular_diversity",
+    "intra_cellular_isoform_diversity",
+    "inter_cellular_isoform_diversity",
     "intra_cell_type_heterogeneity"
   )
   
@@ -1136,7 +1159,7 @@ plot_complexity_ridges <- function(tc_results,
     # Scale the variables that exceed 0-1 range for visualisation purposes only
     hv <- metrics_df$intra_cell_type_heterogeneity_variability
     dv <- metrics_df$inter_cell_type_difference_variability
-    sv <- metrics_df$cell_type_diversity_mechanism_variability
+    sv <- metrics_df$cell_type_coexpression_variability
     
     hv_max <- max(hv, na.rm = TRUE)
     hv_min <- min(hv, na.rm = TRUE)
@@ -1147,7 +1170,7 @@ plot_complexity_ridges <- function(tc_results,
     
     metrics_df$intra_cell_type_heterogeneity_variability <- (hv - hv_min)/(hv_max - hv_min)
     metrics_df$inter_cell_type_difference_variability <- (dv - dv_min)/(dv_max - dv_min)
-    metrics_df$cell_type_diversity_mechanism_variability <- (sv - sv_min)/(sv_max - sv_min)
+    metrics_df$cell_type_coexpression_variability <- (sv - sv_min)/(sv_max - sv_min)
     
     # Select only the specified metrics
     metrics_subset <- metrics_df[, metrics, drop = FALSE]
@@ -1309,7 +1332,7 @@ plot_complexity_ridges <- function(tc_results,
   return(p)
 }
 
-#' Create a heatmap of isoform co-expression patterns
+#' Create a heatmap of isoform co-expression patterns using ComplexHeatmap
 #' 
 #' This function creates a heatmap visualisation showing the correlation between 
 #' different isoforms of a gene. Strong positive correlations suggest coordinated 
@@ -1319,7 +1342,7 @@ plot_complexity_ridges <- function(tc_results,
 #' @param gene Gene name to analyse
 #' @param display_numbers Logical, whether to show correlation values in cells (default: FALSE)
 #' 
-#' @return A pheatmap object that can be printed or saved
+#' @return A ComplexHeatmap object that can be printed or saved
 #' 
 #' @examples
 #' \dontrun{
@@ -1329,15 +1352,21 @@ plot_complexity_ridges <- function(tc_results,
 #' 
 #' # With correlation values displayed
 #' plot_isoform_coexpression(scht_obj, "GENE1", display_numbers = TRUE)
+#' 
+#' # With custom legend title
+#' plot_isoform_coexpression(scht_obj, "GENE1", legend_title = "Co-expression")
 #' }
 #' 
 #' @export
 plot_isoform_coexpression <- function(scht_obj, gene, display_numbers = FALSE) {
-  # Check if pheatmap is available
-  if (!requireNamespace("pheatmap", quietly = TRUE)) {
-    stop("Package 'pheatmap' is needed for this function. Please install it with: install.packages('pheatmap')")
+  # Check if packages is available
+  if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+    stop("Package 'ComplexHeatmap' is needed for this function. Please install it with: BiocManager::install('ComplexHeatmap')")
   }
   
+  if (!requireNamespace("circlize", quietly = TRUE)) {
+    stop("Package 'circlize' is needed for this function. Please install it with: install.packages('circlize')")
+  }
   # Check if gene exists
   if(!gene %in% names(scht_obj$original_results)) {
     stop(paste("Gene", gene, "not found in SCHT object"))
@@ -1354,29 +1383,66 @@ plot_isoform_coexpression <- function(scht_obj, gene, display_numbers = FALSE) {
   # Calculate correlation matrix between isoforms
   cor_mat <- cor(t(iso_mat))
   
-  # Create heatmap with colour palette matching the previous function
-  heatmap_colors <- colorRampPalette(c("#6a0624", "#8b0824", "#b71c2c", "#feab88", "#fbd2bc", 
-                                       "#c7e0ed", "#6fafd2", "#327db7", "#134b87", "#053061"))(100)
-  
-  p <- pheatmap::pheatmap(
-    cor_mat,
-    main = paste("Isoform Co-expression Pattern:", gene),
-    color = heatmap_colors,
-    breaks = seq(-1, 1, length.out = 101),
-    border_color = "white",
-    cluster_rows = TRUE,
-    cluster_cols = TRUE,
-    treeheight_col = 0,
-    display_numbers = display_numbers,
-    number_format = "%.2f",
-    fontsize_number = 12,
-    number_color = "grey30",
-    fontsize_row = 14,
-    fontsize_col = 14,
-    angle_col = 315, 
-    angle_row = 0
+  # Create a diverging color mapping function from -1 to 1
+  heatmap_colors <- circlize::colorRamp2(
+    c(-1, -0.5, 0, 0.5, 1),
+    c("#6a0624", "#feab88", "#f7f7f7", "#6fafd2", "#053061")
   )
-  return(p)
+  
+  # Format cell labels if display_numbers is TRUE
+  if (display_numbers) {
+    cell_fun <- function(j, i, x, y, width, height, fill) {
+      # Only show text for cells that are not on the diagonal
+      if (i != j) {
+        value <- sprintf("%.2f", cor_mat[i, j])
+        grid::grid.text(value, x, y, gp = grid::gpar(
+          fontsize = 10,
+          col = ifelse(abs(cor_mat[i, j]) < 0.5, "black", "white")
+        ))
+      }
+    }
+  } else {
+    cell_fun <- NULL
+  }
+  
+  # Create heatmap with ComplexHeatmap
+  ht <- ComplexHeatmap::Heatmap(
+    cor_mat,
+    name = "Correlation\nCoefficient", 
+    col = heatmap_colors,             
+    row_title_gp = grid::gpar(fontsize = 16, fontface = "bold"),
+    column_title = paste("Isoform Co-expression Pattern:", gene),
+    column_title_gp = grid::gpar(fontsize = 16, fontface = "bold"),
+    
+    # Clustering parameters
+    cluster_rows = TRUE,
+    cluster_columns = TRUE,
+    show_column_dend = FALSE,
+    clustering_distance_rows = "euclidean",
+    clustering_distance_columns = "euclidean", 
+    clustering_method_rows = "complete",
+    clustering_method_columns = "complete",
+    row_dend_width = unit(20, "mm"),
+    
+    # Cell and text appearance
+    rect_gp = grid::gpar(col = "white", lwd = 1),
+    cell_fun = cell_fun,
+    row_names_gp = grid::gpar(fontsize = 14),
+    column_names_gp = grid::gpar(fontsize = 14),
+    column_names_rot = 45,
+    column_names_side = "top",
+    
+    # Legend parameters
+    heatmap_legend_param = list(
+      title = "Correlation\nCoefficient",
+      at = seq(-1, 1, 0.5),
+      labels = c("-1.0", "-0.5", "0.0", "0.5", "1.0"),
+      legend_height = grid::unit(5, "cm"),
+      title_gp = grid::gpar(fontsize = 14, fontface = "bold")
+    )
+  )
+  
+  return(ht)
 }
 
 #' Extract and compare metrics for multiple genes
@@ -1425,8 +1491,8 @@ compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
       df <- data.frame(
         gene = gene,
         cell_type = cell_type,
-        intra_cellular_diversity = ct_data$intra_cellular_diversity,
-        inter_cellular_diversity = ct_data$inter_cellular_diversity,
+        intra_cellular_isoform_diversity = ct_data$intra_cellular_isoform_diversity,
+        inter_cellular_isoform_diversity = ct_data$inter_cellular_isoform_diversity,
         intra_cell_type_heterogeneity = ct_data$intra_cell_type_heterogeneity,
         simpson_index = ct_data$simpson_index,
         evenness = ct_data$evenness,
@@ -1448,8 +1514,8 @@ compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
         mean_metrics <- data.frame(
           gene = gene,
           cell_type = "MEAN",
-          intra_cellular_diversity = mean(gene_metrics$intra_cellular_diversity, na.rm = TRUE),
-          inter_cellular_diversity = mean(gene_metrics$inter_cellular_diversity, na.rm = TRUE),
+          intra_cellular_isoform_diversity = mean(gene_metrics$intra_cellular_isoform_diversity, na.rm = TRUE),
+          inter_cellular_isoform_diversity = mean(gene_metrics$inter_cellular_isoform_diversity, na.rm = TRUE),
           intra_cell_type_heterogeneity = mean(gene_metrics$intra_cell_type_heterogeneity, na.rm = TRUE),
           simpson_index = mean(gene_metrics$simpson_index, na.rm = TRUE),
           evenness = mean(gene_metrics$evenness, na.rm = TRUE),
@@ -1579,7 +1645,7 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
     if(length(minor_isos) > 0) {
       other_prop <- sum(minor_isos)
       if(other_prop > 0) {
-        major_isos <- c(major_isos, Other = other_prop)
+        major_isos <- c(major_isos, setNames(other_prop, paste0("Other (expression < ", min_prop*100, "%)")))
       }
     }
 
@@ -1597,27 +1663,26 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
   # Order cell types if provided
   plot_data$cell_type <- factor(plot_data$cell_type, levels = names(usage_data))
   
+  isoforms <- unique(plot_data$isoform)
+  plot_data$isoform <- factor(plot_data$isoform, levels = isoforms)
+  
   # Prepare colours for better differentiation
   isoforms <- unique(plot_data$isoform)
   n_colors <- length(isoforms)
   
   if(is.null(color_palette)) {
     # Generate a colour palette
-    if(n_colors <= 8) {
-      # For 8 or fewer colours, use RColorBrewer qualitative palette
-      colors <- RColorBrewer::brewer.pal(max(3, min(8, n_colors)), "Set2")
-      if(n_colors < 3) colors <- colors[1:n_colors]
-    } else if(n_colors <= 12) {
-      # For 9-12 colours, use a different qualitative palette
-      colors <- RColorBrewer::brewer.pal(min(12, n_colors), "Paired")
+    if(n_colors <= 12) {
+      # For 12 or fewer colours, use RColorBrewer qualitative palette
+      colors <- RColorBrewer::brewer.pal(min(12, n_colors), "Set3")
       if(n_colors < 12) colors <- colors[1:n_colors]
     } else {
       # For more colours, create a more differentiated palette
       # Combine palettes for more distinct colours
-      pal1 <- RColorBrewer::brewer.pal(min(9, n_colors), "Set1")
-      pal2 <- RColorBrewer::brewer.pal(min(8, max(0, n_colors-9)), "Set2")
-      pal3 <- RColorBrewer::brewer.pal(min(12, max(0, n_colors-17)), "Paired")
-      pal4 <- viridis::viridis(max(0, n_colors - 29), begin = 0.1, end = 0.9)
+      pal1 <- RColorBrewer::brewer.pal(min(12, n_colors), "Paired")
+      pal2 <- RColorBrewer::brewer.pal(min(12, max(3, n_colors-12)), "Set3")
+      pal3 <- RColorBrewer::brewer.pal(min(8, max(3, n_colors-24)), "Set2")
+      pal4 <- viridis::viridis(max(0, n_colors - 32), begin = 0.1, end = 0.9)
       
       colors <- c(pal1, pal2, pal3, pal4)
       colors <- colors[1:n_colors]
@@ -1632,9 +1697,11 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
   }
   
   # Ensure "Other" is grey if present
-  if("Other" %in% isoforms) {
-    other_idx <- which(isoforms == "Other")
-    colors[other_idx] <- "#7F7F7F" 
+  other_name <- paste0("Other (expression < ", min_prop*100, "%)")
+  
+  if (other_name %in% isoforms) {
+    other_idx <- which(isoforms == other_name)
+    colors[other_idx] <- "grey90"
   }
   
   # Create the stacked bar chart
@@ -1978,24 +2045,24 @@ plot_complexity_radar <- function(tc_metrics, genes, scale_type = "global") {
   
   # Define metrics to include in radar chart
   radar_metrics <- c(
-    "intra_cellular_diversity",
-    "inter_cellular_diversity", 
+    "intra_cellular_isoform_diversity",
+    "inter_cellular_isoform_diversity", 
     "intra_cell_type_heterogeneity",
     "inter_cell_type_specificity",
     "intra_cell_type_heterogeneity_variability",
     "inter_cell_type_difference_variability",
-    "cell_type_diversity_mechanism_variability"
+    "cell_type_coexpression_variability"
   )
   
   # Create user-friendly labels for metrics
   metric_labels <- c(
-    "Intra-cellular\nDiversity",
-    "Inter-cellular\nDiversity",
-    "Intra-cell type\nHeterogeneity",
-    "Inter-cell type\nSpecificity",
+    "Intra-cellular\nIsoform Diversity",
+    "Inter-cellular\nIsoform Diversity",
+    "Intra-cell-type\nHeterogeneity",
+    "Inter-cell-type\nSpecificity",
     "Heterogeneity\nVariability",
     "Difference\nVariability",
-    "Mechanism\nVariability"
+    "Co-expression\nVariability"
   )
   
   # Check if all required metrics are in the data
@@ -2126,7 +2193,7 @@ plot_single_gene_radar_cell_type <- function(tc_results, gene_name,
   
   # Set default metrics if not provided
   if(is.null(metrics)) {
-    metrics <- c("intra_cellular_diversity", "inter_cellular_diversity", 
+    metrics <- c("intra_cellular_isoform_diversity", "inter_cellular_isoform_diversity", 
                  "intra_cell_type_heterogeneity", "dominant_iso_prop", "n_expressed_isoforms")
   }
   
@@ -2139,9 +2206,9 @@ plot_single_gene_radar_cell_type <- function(tc_results, gene_name,
   gene_data <- tc_results$cell_type_metrics[[gene_name]]
   
   metric_labels <- c(
-    "intra_cellular_diversity" = "Intra-cellular\ndiversity",
-    "inter_cellular_diversity" = "Inter-cellular\ndiversity",
-    "intra_cell_type_heterogeneity" = "Intra cell type\nheterogeneity",
+    "intra_cellular_isoform_diversity" = "Intra-cellular\nisoform diversity",
+    "inter_cellular_isoform_diversity" = "Inter-cellular\nisoform diversity",
+    "intra_cell_type_heterogeneity" = "Intra-cell-type\nheterogeneity",
     "dominant_iso_prop" = "Dominant\nisoform prop",
     "n_expressed_isoforms" = "Isoform\ncount"
   )
@@ -2313,7 +2380,7 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
   
   # Set default metrics if not provided
   if(is.null(metrics)) {
-    metrics <- c("intra_cellular_diversity", "inter_cellular_diversity", 
+    metrics <- c("intra_cellular_isoform_diversity", "inter_cellular_isoform_diversity", 
                  "intra_cell_type_heterogeneity", "dominant_iso_prop", "n_expressed_isoforms")
   }
   
@@ -2338,9 +2405,9 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
   
   # Make short but descriptive metric names for radar plots
   metric_labels <- c(
-    "intra_cellular_diversity" = "Intra-cellular\ndiversity",
-    "inter_cellular_diversity" = "Inter-cellular\ndiversity",
-    "intra_cell_type_heterogeneity" = "Intra cell type\nheterogeneity",
+    "intra_cellular_isoform_diversity" = "Intra-cellular\nisoform diversity",
+    "inter_cellular_isoform_diversity" = "Inter-cellular\nisoform\ndiversity",
+    "intra_cell_type_heterogeneity" = "Intra-cell-type\nheterogeneity",
     "dominant_iso_prop" = "Dominant\nisoform prop",
     "n_expressed_isoforms" = "Isoform\ncount"
   )
@@ -2650,7 +2717,7 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
 #' @param tc_results_list List of transcriptomic complexity results objects
 #' @param group_names Vector of names for each group (if NULL, generic names are used)
 #' @param pair_indices List of integer pairs for which groups to compare (if NULL, consecutive pairs are used)
-#' @param x_metric Name of metric for x-axis (default: "inter_cellular_diversity")
+#' @param x_metric Name of metric for x-axis (default: "inter_cellular_isoform_diversity")
 #' @param y_metric Name of metric for y-axis (default: "inter_cell_type_specificity")
 #' @param grid_size Size of the density estimation grid (higher = more detailed but slower)
 #' @param show_threshold_lines Whether to show threshold lines on the plots
@@ -2680,7 +2747,7 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
 plot_compare_tc_density_difference <- function(tc_results_list,
                                           group_names = NULL,
                                           pair_indices = NULL,
-                                          x_metric = "inter_cellular_diversity",
+                                          x_metric = "inter_cellular_isoform_diversity",
                                           y_metric = "inter_cell_type_specificity",
                                           grid_size = 100,
                                           show_threshold_lines = FALSE,
@@ -2713,6 +2780,33 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     warning("Length of group_names doesn't match length of tc_results_list. Using generic names.")
     group_names <- paste0("Group_", seq_along(tc_results_list))
   }
+  
+  all_metrics <- c(
+    "intra_cellular_isoform_diversity",
+    "inter_cellular_isoform_diversity", 
+    "intra_cell_type_heterogeneity",
+    "inter_cell_type_specificity",
+    "intra_cell_type_heterogeneity_variability",
+    "inter_cell_type_difference_variability",
+    "cell_type_coexpression_variability"
+  )
+  
+  # Create readable metric names for labels
+  readable_metrics <- c(
+    "Intra-cellular Isoform Diversity",
+    "Inter-cellular Isoform Diversity",
+    "Intra-cell-type Heterogeneity",
+    "Inter-cell-type Specificity",
+    "Intra-cell-type Heterogeneity Variability",
+    "Inter-cell-type Difference Variability",
+    "Cell-Type-Specific Co-Expression Variability"
+  )
+  
+  x_label_idx <- match(x_metric, all_metrics)
+  x_label <- readable_metrics[x_label_idx]
+  
+  y_label_idx <- match(y_metric, all_metrics)
+  y_label <- readable_metrics[y_label_idx]
   
   # Define custom colour palette with fixed implementation
   color_palette <- colorRampPalette(c("#D93F49", "#E28187", "#EBBFC2", "#D5E1E3", "#AFC9CF", "#8FB4BE"))
@@ -2809,14 +2903,15 @@ plot_compare_tc_density_difference <- function(tc_results_list,
       ggplot2::geom_tile(ggplot2::aes(fill = diff)) +
       ggplot2::scale_fill_gradientn(
         colours = color_palette(100),
-        limits = c(-max_abs, max_abs)
+        limits = c(-max_abs, max_abs),
+        name = "Density\nDifference"
       ) +
       ggplot2::stat_contour(ggplot2::aes(z = diff), colour = "grey20", alpha = 0.7, breaks = 0, size = 0.5) +
       ggplot2::coord_fixed(ratio = 1) +
       ggplot2::labs(
         title = plot_title,
-        x = gsub("_", " ", x_metric),
-        y = gsub("_", " ", y_metric)
+        x = x_label,
+        y = y_label
       ) +
       ggplot2::theme_minimal(base_size = 16) +
       ggplot2::theme(
@@ -2843,7 +2938,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
   
   # Fixed plot arrangement implementation
   n_plots <- length(diff_plots)
-  if(n_plots <= 3) {
+  if(n_plots <= 2) {
     n_cols <- n_plots
   } else {
     n_cols <- ceiling(sqrt(n_plots))
@@ -2853,7 +2948,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
   combined_plot <- patchwork::wrap_plots(diff_plots, ncol = n_cols) +
     patchwork::plot_annotation(
       title = main_title,
-      subtitle = paste("Comparing", gsub("_", " ", x_metric), "and", gsub("_", " ", y_metric)),
+      subtitle = paste("Comparing", x_label, "and", y_label),
       theme = ggplot2::theme(
         plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 20),
         plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 14)
@@ -2863,7 +2958,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
   return(combined_plot)
 }
 
-#' Create heatmaps for transcriptome complexity metrics across groups
+#' Create heatmaps for transcriptome complexity metrics across groups using ComplexHeatmap
 #' 
 #' This function creates heatmaps for visualising multiple complexity metrics
 #' across different groups or conditions. It can also show changes in metrics
@@ -2880,8 +2975,8 @@ plot_compare_tc_density_difference <- function(tc_results_list,
 #' @param show_changes Whether to create separate heatmaps showing changes between groups
 #' 
 #' @return A list containing:
-#'   \item{heatmaps}{List of pheatmap objects for each metric}
-#'   \item{change_heatmaps}{List of pheatmap objects showing changes between groups}
+#'   \item{heatmaps}{List of ComplexHeatmap objects for each metric}
+#'   \item{change_heatmaps}{List of ComplexHeatmap objects showing changes between groups}
 #'   \item{metric_matrices}{List of matrices with metric values}
 #'   \item{change_matrices}{List of matrices with change values}
 #'   \item{top_genes}{Vector of selected gene names}
@@ -2895,46 +2990,45 @@ plot_compare_tc_density_difference <- function(tc_results_list,
 #'                         condition_C = tc_results_C)
 #'                         
 #' # Create heatmaps with default settings
-#' heatmap_results <- plot_compare_tc_difference_heatmap(tc_results_list, 
+#' heatmap_results <- plot_compare_tc_complexity_heatmap(tc_results_list, 
 #'                   groups = c("Condition A", "Condition B", "Condition C"))
 #'                   
 #' # Display the first heatmap
-#' print(heatmap_results$heatmaps$intra_cellular_diversity)
+#' heatmap_results$heatmaps$intra_cellular_isoform_diversity
 #' 
 #' # Use custom gene selection
-#' custom_heatmaps <- plot_compare_tc_difference_heatmap(tc_results_list,
+#' custom_heatmaps <- plot_compare_tc_complexity_heatmap(tc_results_list,
 #'                   groups = c("Condition A", "Condition B", "Condition C"),
 #'                   selection_method = "custom",
 #'                   custom_genes = c("GENE1", "GENE2", "GENE3"))
 #' }
 #' 
 #' @export
-plot_compare_tc_difference_heatmap <- function(tc_results_list, 
-                                     groups = NULL,
-                                     metrics = c(
-                                       "intra_cellular_diversity",
-                                       "inter_cellular_diversity", 
-                                       "intra_cell_type_heterogeneity",
-                                       "inter_cell_type_specificity",
-                                       "intra_cell_type_heterogeneity_variability",
-                                       "inter_cell_type_difference_variability",
-                                       "cell_type_diversity_mechanism_variability"
-                                     ),
-                                     n_top_genes = 50,
-                                     selection_method = "variance",
-                                     custom_genes = NULL, 
-                                     cluster_genes = FALSE,
-                                     show_changes = TRUE) {
+plot_compare_tc_complexity_heatmap <- function(tc_results_list, 
+                                               groups = NULL,
+                                               metrics = c(
+                                                 "intra_cellular_isoform_diversity",
+                                                 "inter_cellular_isoform_diversity", 
+                                                 "intra_cell_type_heterogeneity",
+                                                 "inter_cell_type_specificity",
+                                                 "intra_cell_type_heterogeneity_variability",
+                                                 "inter_cell_type_difference_variability",
+                                                 "cell_type_coexpression_variability"
+                                               ),
+                                               n_top_genes = 50,
+                                               selection_method = "variance",
+                                               custom_genes = NULL, 
+                                               cluster_genes = FALSE,
+                                               show_changes = TRUE) {
   
   # Required packages check with informative error messages
-  required_packages <- c("pheatmap", "viridis", "tidyr", "dplyr")
+  required_packages <- c("ComplexHeatmap", "circlize", "tidyr", "dplyr", "grid")
   
   missing_packages <- required_packages[!sapply(required_packages, requireNamespace, quietly = TRUE)]
   if(length(missing_packages) > 0) {
     stop(paste0("The following packages are required but not installed: ", 
                 paste(missing_packages, collapse = ", "), 
-                ". Please install them with: install.packages(c('", 
-                paste(missing_packages, collapse = "', '"), "'))"))
+                ". Please install the Bioconductor packages with BiocManager::install() and CRAN packages with install.packages()"))
   }
   
   # If groups not provided, use generic names
@@ -2947,7 +3041,7 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
     stop("Length of tc_results_list must match length of groups")
   }
   
-  # Find genes present in all groups
+  # Find genes present in all groups (this part stays the same)
   genes_by_group <- lapply(tc_results_list, function(tc) {
     if ("metrics" %in% names(tc) && "gene" %in% names(tc$metrics)) {
       return(tc$metrics$gene)
@@ -2970,9 +3064,10 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
     stop("No genes common to all groups found")
   }
   
-  # Create list to store matrices for each metric
+  # Create list to store matrices for each metric (this stays the same)
   metric_matrices <- list()
   
+  # This extraction function stays the same
   .extract_metric_value <- function(tc_results, gene, metric) {
     # Try different possible structures
     if ("metrics" %in% names(tc_results) && "gene" %in% names(tc_results$metrics)) {
@@ -3000,6 +3095,7 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
     return(NA)
   }
   
+  # Fill metric matrices (unchanged)
   for (metric in metrics) {
     # Create matrix for this metric - rows are genes, columns are groups
     metric_matrix <- matrix(NA, nrow = length(common_genes), ncol = length(groups))
@@ -3023,7 +3119,7 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
     metric_matrices[[metric]] <- metric_matrix
   }
   
-  # For change matrices, calculate changes between consecutive groups
+  # For change matrices, calculate changes between consecutive groups (unchanged)
   change_matrices <- list()
   if (show_changes && length(groups) > 1) {
     for (metric in metrics) {
@@ -3054,10 +3150,9 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
     }
   }
   
-  # Select top genes for visualisation
+  # Select top genes for visualisation (unchanged)
   if (selection_method == "custom" && !is.null(custom_genes)) {
     # Use user-provided gene list
-    # Make sure all custom genes exist in common_genes
     valid_custom_genes <- intersect(custom_genes, common_genes)
     
     if (length(valid_custom_genes) == 0) {
@@ -3130,76 +3225,87 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
     stop("Invalid selection_method. Use 'variance', 'magnitude', or 'custom'")
   }
   
-  # Set up colorblind-friendly palette function
-  .get_colour_palette <- function(is_diverging = FALSE) {
+  # Set up colorblind-friendly palette function for ComplexHeatmap
+  .get_colour_palette <- function(is_diverging = FALSE, matrix) {
     if (is_diverging) {
       # Colorblind-friendly diverging palette (blue-white-red)
-      return(colorRampPalette(c("#B2182BFF", "#D6604DFF", "#F4A582FF", "#FDDBC7FF", 
-                                "#D1E5F0FF", "#92C5DEFF", "#4393C3FF", "#2166ACFF"))(100))
+      colors <- c("#B2182BFF", "#D6604DFF", "#F4A582FF", "#FDDBC7FF", 
+                  "#D1E5F0FF", "#92C5DEFF", "#4393C3FF", "#2166ACFF")
+      
+      # Get max absolute value for symmetric color scale
+      max_abs <- max(abs(matrix), na.rm = TRUE)
+      
+      # Create a color mapping function with circlize
+      return(circlize::colorRamp2(
+        c(-max_abs, -max_abs/2, 0, max_abs/2, max_abs),
+        c(colors[1], colors[3], "white", colors[6], colors[8])
+      ))
     } else {
-      # Colorblind-friendly sequential palette (blues)
-      return(colorRampPalette(c("#F9DDDAFF", "#F3BEC7FF", "#E8A0BCFF", "#D785B5FF", "#BF6DB0FF", 
-                                "#A159A9FF", "#7C489CFF", "#573B88FF"))(100))
+      # Colorblind-friendly sequential palette (purples)
+      colors <- c("#F9DDDAFF", "#F3BEC7FF", "#E8A0BCFF", "#D785B5FF", "#BF6DB0FF", 
+                  "#A159A9FF", "#7C489CFF", "#573B88FF")
+      
+      # Get min and max values
+      min_val <- min(matrix, na.rm = TRUE)
+      max_val <- max(matrix, na.rm = TRUE)
+      
+      # Create color mapping function
+      return(circlize::colorRamp2(
+        seq(min_val, max_val, length.out = length(colors)),
+        colors
+      ))
     }
   }
   
-  # Create heatmaps for each metric
-  heatmaps <- list()
-  change_heatmaps <- list()
-  
   # Create readable metric names
-  readable_metrics <- sapply(metrics, function(m) {
-    m_readable <- gsub("_", " ", m)
-    paste0(toupper(substr(m_readable, 1, 1)), substr(m_readable, 2, nchar(m_readable)))
-  })
+  readable_metrics <- c(
+    "Intra-cellular Isoform Diversity",
+    "Inter-cellular Isoform Diversity",
+    "Intra-cell-type Heterogeneity",
+    "Inter-cell-type Specificity",
+    "Intra-cell-type Heterogeneity Variability",
+    "Inter-cell-type Difference Variability",
+    "Cell-Type-Specific Co-Expression Variability"
+  )
   names(readable_metrics) <- metrics
   
-  # Function to create a publication-quality heatmap
-  .create_pheatmap <- function(matrix, title, is_change = FALSE, cluster_rows = cluster_genes) {
+  # New function to create a ComplexHeatmap
+  .create_complex_heatmap <- function(matrix, title, is_change = FALSE, cluster_rows = cluster_genes) {
     # Select appropriate colour palette
     is_diverging <- is_change || any(matrix < 0, na.rm = TRUE)
-    colour_palette <- .get_colour_palette(is_diverging)
+    col_fun <- .get_colour_palette(is_diverging, matrix)
     
-    # Set limits for the colour scale
-    if (is_diverging) {
-      max_abs <- max(abs(matrix), na.rm = TRUE)
-      breaks <- seq(-max_abs, max_abs, length.out = 101)
-    } else {
-      min_val <- min(matrix, na.rm = TRUE)
-      max_val <- max(matrix, na.rm = TRUE)
-      breaks <- seq(min_val, max_val, length.out = 101)
-    }
+    # Handle NA values
+    na_col <- "grey90"
     
-    # Handle clustering with NA as meaningful pattern
+    # Set up clustering parameters
     if (cluster_rows) {
-      # Create a distance function that treats NA as a meaningful pattern
-      custom_dist <- function(x) {
-        n <- nrow(x)
+      # Define a custom distance function that considers NA patterns
+      cluster_rows_custom <- function(mat) {
+        # Create a distance matrix considering NA patterns
+        n <- nrow(mat)
         dist_mat <- matrix(0, n, n)
-        na_pattern <- is.na(x)
-        # NA distance weight 
+        na_pattern <- is.na(mat)
         na_distance_weight <- 0.5
         
         for (i in 1:(n-1)) {
           for (j in (i+1):n) {
             # Pattern distance: proportion of columns where NA pattern differs
-            pattern_diff <- sum(na_pattern[i,] != na_pattern[j,]) / ncol(x)
+            pattern_diff <- sum(na_pattern[i,] != na_pattern[j,]) / ncol(mat)
             
             # Value distance: only for columns where both have values
-            value_dist <- 0
             valid_idx <- which(!na_pattern[i,] & !na_pattern[j,])
+            value_dist <- 0
             if (length(valid_idx) > 0) {
               # Normalise by number of valid comparisons
-              value_dist <- sqrt(sum((x[i,valid_idx] - x[j,valid_idx])^2)) / sqrt(length(valid_idx))
+              value_dist <- sqrt(sum((mat[i,valid_idx] - mat[j,valid_idx])^2)) / sqrt(length(valid_idx))
             }
             
             # Combine distances with weighting
             if (length(valid_idx) > 0) {
-              # If there are valid comparisons, combine pattern and value distance
               combined_dist <- (1 - na_distance_weight) * value_dist + 
                 na_distance_weight * pattern_diff
             } else {
-              # If no valid comparisons, just use pattern distance
               combined_dist <- pattern_diff
             }
             
@@ -3207,48 +3313,83 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
           }
         }
         
-        # Convert to dist object
-        stats::as.dist(dist_mat)
+        # Convert to dist object and perform hierarchical clustering
+        hclust_result <- stats::hclust(stats::as.dist(dist_mat), method = "complete")
+        return(hclust_result)
       }
       
       # Use tryCatch for robust error handling
-      tryCatch({
+      ht <- tryCatch({
         # Try custom distance-based clustering
-        pheatmap::pheatmap(
+        ComplexHeatmap::Heatmap(
           matrix,
-          cluster_rows = TRUE,
-          clustering_distance_rows = custom_dist(matrix),
-          clustering_method = "complete",
-          cluster_cols = FALSE,
-          show_rownames = TRUE,
-          show_colnames = TRUE,
-          main = title,
-          color = colour_palette,
-          breaks = breaks,
-          border_color = NA,
-          na_col = "grey90",
-          angle_col = 45
+          name = if (is_diverging) "Change" else "Value",
+          col = col_fun,
+          
+          # Clustering parameters
+          cluster_rows = cluster_rows_custom(matrix),
+          cluster_columns = FALSE,
+          
+          # Cell appearance
+          rect_gp = grid::gpar(col = NA),  # No cell borders
+          na_col = na_col,
+          
+          # Row and column names
+          row_names_gp = grid::gpar(fontsize = 10),
+          column_names_gp = grid::gpar(fontsize = 12),
+          column_names_rot = 45,
+          
+          # Title
+          column_title = title,
+          column_title_gp = grid::gpar(fontsize = 14, fontface = "bold"),
+          
+          # Legend parameters
+          heatmap_legend_param = list(
+            title = if (is_diverging) "Change" else "Value",
+            title_position = "topcenter",
+            title_gp = grid::gpar(fontsize = 12, fontface = "bold"),
+            labels_gp = grid::gpar(fontsize = 10),
+            legend_width = grid::unit(2, "cm")
+          )
         )
       }, error = function(e) {
-        # If custom clustering fails, try standard pheatmap clustering
+        # If custom clustering fails, try standard ComplexHeatmap clustering
         message("Custom clustering with NA patterns failed: ", e$message, 
                 ". Trying standard method...")
         
         tryCatch({
-          pheatmap::pheatmap(
+          ComplexHeatmap::Heatmap(
             matrix,
+            name = if (is_diverging) "Change" else "Value",
+            col = col_fun,
+            
+            # Standard clustering
             cluster_rows = TRUE,
-            cluster_cols = FALSE,
-            clustering_method = "complete",
-            show_rownames = TRUE,
-            show_colnames = TRUE,
-            main = title,
-            color = colour_palette,
-            fontsize_col = 12,
-            breaks = breaks,
-            border_color = NA,
-            na_col = "grey90",
-            angle_col = 45
+            cluster_columns = FALSE,
+            clustering_distance_rows = "euclidean",
+            clustering_method_rows = "complete",
+            
+            # Cell appearance
+            rect_gp = grid::gpar(col = NA),
+            na_col = na_col,
+            
+            # Row and column names
+            row_names_gp = grid::gpar(fontsize = 10),
+            column_names_gp = grid::gpar(fontsize = 12),
+            column_names_rot = 45,
+            
+            # Title
+            column_title = title,
+            column_title_gp = grid::gpar(fontsize = 14, fontface = "bold"),
+            
+            # Legend parameters
+            heatmap_legend_param = list(
+              title = if (is_diverging) "Change" else "Value",
+              title_position = "topcenter",
+              title_gp = grid::gpar(fontsize = 12, fontface = "bold"),
+              labels_gp = grid::gpar(fontsize = 10),
+              legend_width = grid::unit(2, "cm")
+            )
           )
         }, error = function(e2) {
           # If all clustering methods fail, fall back to sorting rows
@@ -3262,49 +3403,90 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
           # Sort in descending order
           order_idx <- order(row_means, decreasing = TRUE)
           
-          pheatmap::pheatmap(
+          ComplexHeatmap::Heatmap(
             matrix[order_idx, , drop = FALSE],
+            name = if (is_diverging) "Change" else "Value",
+            col = col_fun,
+            
+            # No clustering
             cluster_rows = FALSE,
-            cluster_cols = FALSE,
-            show_rownames = TRUE,
-            show_colnames = TRUE,
-            fontsize_col = 12,
-            main = paste0(title, " (rows sorted)"),
-            color = colour_palette,
-            breaks = breaks,
-            border_color = NA,
-            na_col = "grey90",
-            angle_col = 45
+            cluster_columns = FALSE,
+            
+            # Cell appearance
+            rect_gp = grid::gpar(col = NA),
+            na_col = na_col,
+            
+            # Row and column names
+            row_names_gp = grid::gpar(fontsize = 10),
+            column_names_gp = grid::gpar(fontsize = 12),
+            column_names_rot = 45,
+            
+            # Title
+            column_title = paste0(title, " (rows sorted)"),
+            column_title_gp = grid::gpar(fontsize = 14, fontface = "bold"),
+            
+            # Legend parameters
+            heatmap_legend_param = list(
+              title = if (is_diverging) "Change" else "Value",
+              title_position = "topcenter",
+              title_gp = grid::gpar(fontsize = 12, fontface = "bold"),
+              labels_gp = grid::gpar(fontsize = 10),
+              legend_width = grid::unit(2, "cm")
+            )
           )
         })
       })
     } else {
       # Simple heatmap without clustering
-      pheatmap::pheatmap(
+      ht <- ComplexHeatmap::Heatmap(
         matrix,
+        name = if (is_diverging) "Change" else "Value",
+        col = col_fun,
+        
+        # No clustering
         cluster_rows = FALSE,
-        cluster_cols = FALSE,
-        show_rownames = TRUE,
-        show_colnames = TRUE,
-        fontsize_col = 12,
-        main = title,
-        color = colour_palette,
-        breaks = breaks,
-        border_color = NA,
-        na_col = "grey90",
-        angle_col = 45
+        cluster_columns = FALSE,
+        
+        # Cell appearance
+        rect_gp = grid::gpar(col = NA),
+        na_col = na_col,
+        
+        # Row and column names
+        row_names_gp = grid::gpar(fontsize = 10),
+        column_names_gp = grid::gpar(fontsize = 12),
+        column_names_rot = 45,
+        
+        # Title
+        column_title = title,
+        column_title_gp = grid::gpar(fontsize = 14, fontface = "bold"),
+        
+        # Legend parameters
+        heatmap_legend_param = list(
+          title = if (is_diverging) "Change" else "Value",
+          title_position = "topcenter",
+          title_gp = grid::gpar(fontsize = 12, fontface = "bold"),
+          labels_gp = grid::gpar(fontsize = 10),
+          legend_width = grid::unit(2, "cm")
+        )
       )
     }
+    
+    return(ht)
   }
   
-  # Create standard heatmaps
+  # Create standard heatmaps using ComplexHeatmap
+  heatmaps <- list()
+  change_heatmaps <- list()
+  
   for (metric in metrics) {
     # Get matrix for top genes only
     matrix_subset <- metric_matrices[[metric]][top_genes, , drop = FALSE]
     
     # Create heatmap
     heatmap_title <- paste0(readable_metrics[metric], " Across Groups")
-    heatmaps[[metric]] <- .create_pheatmap(matrix_subset, title = heatmap_title, is_change = FALSE)
+    heatmaps[[metric]] <- .create_complex_heatmap(matrix_subset, 
+                                                  title = heatmap_title, 
+                                                  is_change = FALSE)
   }
   
   # Create change heatmaps if requested
@@ -3315,9 +3497,9 @@ plot_compare_tc_difference_heatmap <- function(tc_results_list,
       
       # Create heatmap
       change_heatmap_title <- paste0("Changes in ", readable_metrics[metric], " Between Groups")
-      change_heatmaps[[metric]] <- .create_pheatmap(change_matrix_subset, 
-                                                   title = change_heatmap_title,
-                                                   is_change = TRUE)
+      change_heatmaps[[metric]] <- .create_complex_heatmap(change_matrix_subset, 
+                                                           title = change_heatmap_title,
+                                                           is_change = TRUE)
     }
   }
   
