@@ -540,14 +540,14 @@ These functions help you understand isoform usage dynamics:
 
 ### Comparing Complexity Across Conditions
 
-For experiments comparing different conditions or treatments:
+For experiments comparing different conditions:
 
 ```r
 # Assuming you have SCHT objects for different conditions
-scht_obj_A <- scht_obj  # Control
-scht_obj_B <- your_treatment1_scht_obj
-scht_obj_C <- your_treatment2_scht_obj
-scht_obj_D <- your_treatment3_scht_obj
+scht_obj_A <- scht_obj_condition_1  # Condition 1
+scht_obj_B <- scht_obj_condition_2  # Condition 2
+scht_obj_C <- scht_obj_condition_3  # Condition 3  
+scht_obj_D <- scht_obj_condition_4  # Condition 4
 
 # Calculate complexity metrics for each condition
 tc_results_A <- calculate_isoform_complexity_metrics(scht_obj_A)
@@ -557,17 +557,17 @@ tc_results_D <- calculate_isoform_complexity_metrics(scht_obj_D)
 
 # Create a list of results
 tc_results_list <- list(
-  Control = tc_results_A,
-  Treatment_1 = tc_results_B,
-  Treatment_2 = tc_results_C,
-  Treatment_3 = tc_results_D
+  Condition_1 = tc_results_A,
+  Condition_2 = tc_results_B,
+  Condition_3 = tc_results_C,
+  Condition_4 = tc_results_D
 )
 
 # Create a list of paired comparisons
 pair_indices <- list(
-  c(1,2),  # Control vs Treatment 1
-  c(1,3),  # Control vs Treatment 2
-  c(1,4)   # Control vs Treatment 3
+  c(1,2),  # Condition 1 vs Condition 2
+  c(1,3),  # Condition 1 vs Condition 3
+  c(1,4),  # Condition 1 vs Condition 4
 )
 
 # Compare complexity density differences
