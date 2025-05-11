@@ -4,12 +4,19 @@
 \alias{plot_isoform_coexpression}
 \title{Create a heatmap of isoform co-expression patterns using ComplexHeatmap}
 \usage{
-plot_isoform_coexpression(scht_obj, gene, display_numbers = FALSE)
+plot_isoform_coexpression(
+  scht_obj,
+  gene,
+  method = "pearson",
+  display_numbers = FALSE
+)
 }
 \arguments{
 \item{scht_obj}{Single-Cell Hierarchical Tensor object (integrated SCHT)}
 
 \item{gene}{Gene name to analyse}
+
+\item{method}{a character string indicating which correlation coefficient is to be computed. One of "pearson" (default), "kendall or "spearman"}
 
 \item{display_numbers}{Logical, whether to show correlation values in cells (default: FALSE)}
 }

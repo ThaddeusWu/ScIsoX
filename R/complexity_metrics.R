@@ -3912,7 +3912,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   metrics_df$inter_cell_type_specificity_class <- ifelse(
     is.na(metrics_df$inter_cell_type_specificity), "Single-Cell Type Expression",
     ifelse(metrics_df$inter_cell_type_specificity > thresholds$inter_cell_type_specificity,
-           "Cell-Type-Specific Expression", "Cell-Type-Consistent Expression")
+           "Cell-Type-Specific Isoform Expression", "Cell-Type-Independent Isoform Expression")
   )
   
   # 5. Intra-cell-type Heterogeneity Variability Classification
@@ -4763,7 +4763,7 @@ select_genes_of_interest <- function(metrics_df,
       column <- "inter_cellular_isoform_diversity_class"
     } else if(grepl("Cellular Heterogeneity", category) && !grepl("Variability", category)) {
       column <- "intra_cell_type_heterogeneity_class"
-    } else if(grepl("Cell Type-Specific", category) || grepl("Cell Type-Consistent", category)) {
+    } else if(grepl("Cell-Type-Specific", category) || grepl("Cell-Type-Independent", category)) {
       column <- "inter_cell_type_specificity_class"
     } else if(grepl("Variable Heterogeneity Across Cell Types", category) || grepl("Consistent Heterogeneity Across Cell Types", category)) {
       column <- "intra_cell_type_heterogeneity_variability_class"

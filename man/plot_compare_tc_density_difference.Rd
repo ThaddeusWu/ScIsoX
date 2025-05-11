@@ -11,8 +11,6 @@ plot_compare_tc_density_difference(
   x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   grid_size = 100,
-  show_threshold_lines = FALSE,
-  threshold_values = c(0.6, 0.6),
   main_title = "Density Differences Between Groups"
 )
 }
@@ -28,10 +26,6 @@ plot_compare_tc_density_difference(
 \item{y_metric}{Name of metric for y-axis (default: "inter_cell_type_specificity")}
 
 \item{grid_size}{Size of the density estimation grid (higher = more detailed but slower)}
-
-\item{show_threshold_lines}{Whether to show threshold lines on the plots}
-
-\item{threshold_values}{Vector of length 2 with x and y threshold values}
 
 \item{main_title}{Main title for the combined plot}
 }

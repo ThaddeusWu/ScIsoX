@@ -11,7 +11,7 @@ create_scht(
   cell_info = NULL,
   n_hvg = 3000,
   qc_params = list(min_genes_per_cell = 200, max_genes_per_cell = 10000,
-    min_cells_expressing = 0.02, min_expr = 1e-06),
+    min_cells_expressing = 0.02, min_expr = 1e-04),
   require_cell_type = FALSE,
   verbose = TRUE,
   sparsity_threshold = 0.4
@@ -55,7 +55,7 @@ with efficient operations for large-scale datasets.
 #     min_genes_per_cell = 200,
 #     max_genes_per_cell = 10000,
 #     min_cells_expressing = 0.02,
-#     min_expr = 1e-6
+#     min_expr = 1e-4
 #   ),
 #   require_cell_type = TRUE,
 #   verbose = TRUE,

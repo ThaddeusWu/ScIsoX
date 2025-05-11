@@ -162,7 +162,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
   } else if(metric == "intra_cell_type_heterogeneity") {
     return(c("High Cellular Heterogeneity", "Low Cellular Heterogeneity"))
   } else if(metric == "inter_cell_type_specificity") {
-    return(c("Cell-Type-Specific Expression", "Cell-Type-Consistent Expression"))
+    return(c("Cell-Type-Specific Isoform Expression", "Cell-Type-Independent Isoform Expression"))
   } else if(metric == "intra_cell_type_heterogeneity_variability") {
     return(c("Cell-Type-Dependent Heterogeneity", "Cell-Type-Independent Heterogeneity"))
   } else if(metric == "inter_cell_type_difference_variability") {
@@ -243,7 +243,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
     "Inter-cell-type Specificity",
     "Intra-cell-type Heterogeneity Variability",
     "Inter-cell-type Difference Variability",
-    "Cell-Type-Specific Co-Expression Variability"
+    "Cell-type-specific Co-Expression Variability"
   )
   
   x_label_idx <- match(x_metric, all_metrics)
@@ -507,6 +507,19 @@ plot_tc_landscape <- function(tc_results,
   q3 <- data_prep$q3
   q4 <- data_prep$q4
   
+  # Calculate correlation coefficients
+  valid_data <- vis_data[!is.na(vis_data[[x_metric]]) & !is.na(vis_data[[y_metric]]), ]
+  
+  # Calculate correlations
+  pearson_cor <- cor(valid_data[[x_metric]], valid_data[[y_metric]], method = "pearson")
+  spearman_cor <- cor(valid_data[[x_metric]], valid_data[[y_metric]], method = "spearman")
+  kendall_cor <- cor(valid_data[[x_metric]], valid_data[[y_metric]], method = "kendall")
+  
+  # Format correlation text
+  cor_text <- paste0("Pearson r = ", sprintf("%.3f", pearson_cor), 
+                     ", Spearman \u03C1 = ", sprintf("%.3f", spearman_cor),
+                     ", Kendall \u03C4 = ", sprintf("%.3f", kendall_cor))
+  
   # Create main plot
   p <- ggplot2::ggplot(vis_data, ggplot2::aes(x = .data[[x_metric]], y = .data[[y_metric]]))
   
@@ -637,11 +650,13 @@ plot_tc_landscape <- function(tc_results,
     title = "Transcriptome Complexity Landscape",
     subtitle = paste0("Comparing ", data_prep$x_label, " and ", data_prep$y_label),
     x = data_prep$x_label,
-    y = data_prep$y_label
+    y = data_prep$y_label,
+    caption = cor_text
   ) + 
     ggplot2::theme(
       axis.title = ggplot2::element_text(size = 18, face = "bold"), 
-      axis.text = ggplot2::element_text(size = 18)
+      axis.text = ggplot2::element_text(size = 18),
+      plot.caption = ggplot2::element_text(size = 12, face = "bold", hjust = 0.5)
     )
     
   
@@ -1128,7 +1143,7 @@ plot_complexity_ridges <- function(tc_results,
     "Inter-cell-type Specificity",
     "Intra-cell-type Heterogeneity Variability",
     "Inter-cell-type Difference Variability",
-    "Cell-Type-Specific Co-Expression Variability"
+    "Cell-type-specific Co-Expression Variability"
   )
   
   metric_map <- stats::setNames(readable_metrics, all_metrics)
@@ -1340,6 +1355,7 @@ plot_complexity_ridges <- function(tc_results,
 #' 
 #' @param scht_obj Single-Cell Hierarchical Tensor object (integrated SCHT)
 #' @param gene Gene name to analyse
+#' @param method a character string indicating which correlation coefficient is to be computed. One of "pearson" (default), "kendall or "spearman"
 #' @param display_numbers Logical, whether to show correlation values in cells (default: FALSE)
 #' 
 #' @return A ComplexHeatmap object that can be printed or saved
@@ -1358,7 +1374,7 @@ plot_complexity_ridges <- function(tc_results,
 #' }
 #' 
 #' @export
-plot_isoform_coexpression <- function(scht_obj, gene, display_numbers = FALSE) {
+plot_isoform_coexpression <- function(scht_obj, gene, method = "pearson", display_numbers = FALSE) {
   # Check if packages is available
   if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
     stop("Package 'ComplexHeatmap' is needed for this function. Please install it with: BiocManager::install('ComplexHeatmap')")
@@ -1381,7 +1397,7 @@ plot_isoform_coexpression <- function(scht_obj, gene, display_numbers = FALSE) {
   }
   
   # Calculate correlation matrix between isoforms
-  cor_mat <- cor(t(iso_mat))
+  cor_mat <- cor(t(iso_mat), method = method)
   
   # Create a diverging color mapping function from -1 to 1
   heatmap_colors <- circlize::colorRamp2(
@@ -1405,10 +1421,18 @@ plot_isoform_coexpression <- function(scht_obj, gene, display_numbers = FALSE) {
     cell_fun <- NULL
   }
   
+  if (method == "pearson") {
+    legend_name = "Pearson\nCorrelation"
+  } else if (method == "kendall") {
+    legend_name = "Kendall\nCorrelation"
+  } else if (method == "spearman") {
+    legend_name = "Spearman\nCorrelation"
+  }
+  
   # Create heatmap with ComplexHeatmap
   ht <- ComplexHeatmap::Heatmap(
     cor_mat,
-    name = "Correlation\nCoefficient", 
+    name = legend_name, 
     col = heatmap_colors,             
     row_title_gp = grid::gpar(fontsize = 16, fontface = "bold"),
     column_title = paste("Isoform Co-expression Pattern:", gene),
@@ -1434,7 +1458,7 @@ plot_isoform_coexpression <- function(scht_obj, gene, display_numbers = FALSE) {
     
     # Legend parameters
     heatmap_legend_param = list(
-      title = "Correlation\nCoefficient",
+      title = legend_name,
       at = seq(-1, 1, 0.5),
       labels = c("-1.0", "-0.5", "0.0", "0.5", "1.0"),
       legend_height = grid::unit(5, "cm"),
@@ -2720,8 +2744,6 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
 #' @param x_metric Name of metric for x-axis (default: "inter_cellular_isoform_diversity")
 #' @param y_metric Name of metric for y-axis (default: "inter_cell_type_specificity")
 #' @param grid_size Size of the density estimation grid (higher = more detailed but slower)
-#' @param show_threshold_lines Whether to show threshold lines on the plots
-#' @param threshold_values Vector of length 2 with x and y threshold values
 #' @param main_title Main title for the combined plot
 #' 
 #' @return A ggplot object (single comparison) or patchwork combined plot (multiple comparisons)
@@ -2745,14 +2767,12 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
 #' 
 #' @export
 plot_compare_tc_density_difference <- function(tc_results_list,
-                                          group_names = NULL,
-                                          pair_indices = NULL,
-                                          x_metric = "inter_cellular_isoform_diversity",
-                                          y_metric = "inter_cell_type_specificity",
-                                          grid_size = 100,
-                                          show_threshold_lines = FALSE,
-                                          threshold_values = c(0.6, 0.6),
-                                          main_title = "Density Differences Between Groups") {
+                                               group_names = NULL,
+                                               pair_indices = NULL,
+                                               x_metric = "inter_cellular_isoform_diversity",
+                                               y_metric = "inter_cell_type_specificity",
+                                               grid_size = 100,
+                                               main_title = "Density Differences Between Groups") {
   
   # Required packages check with informative error messages
   required_packages <- c("ggplot2", "patchwork", "MASS")
@@ -2775,7 +2795,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     group_names <- paste0("Group_", seq_along(tc_results_list))
   }
   
-  # Make sure group_names has the right length
+  # Ensure group_names has the correct length
   if(length(group_names) != length(tc_results_list)) {
     warning("Length of group_names doesn't match length of tc_results_list. Using generic names.")
     group_names <- paste0("Group_", seq_along(tc_results_list))
@@ -2799,7 +2819,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     "Inter-cell-type Specificity",
     "Intra-cell-type Heterogeneity Variability",
     "Inter-cell-type Difference Variability",
-    "Cell-Type-Specific Co-Expression Variability"
+    "Cell-type-specific Co-Expression Variability"
   )
   
   x_label_idx <- match(x_metric, all_metrics)
@@ -2808,10 +2828,11 @@ plot_compare_tc_density_difference <- function(tc_results_list,
   y_label_idx <- match(y_metric, all_metrics)
   y_label <- readable_metrics[y_label_idx]
   
-  # Define custom colour palette with fixed implementation
-  color_palette <- colorRampPalette(c("#D93F49", "#E28187", "#EBBFC2", "#D5E1E3", "#AFC9CF", "#8FB4BE"))
+  # Define custom colour palette
+  color_palette <- colorRampPalette(c("#780522", "#A81428", "#C6403D", "#F5AC8B", "#FAD4BF", "#FBE3D6","#F8EAE1",
+                                      "#EDF2F6", "#C1DDE9", "#84BDDA", "#74B0D2", "#3685BB", "#256CAE","#134B87"))
   
-  # Process each group's data
+  # Process each group's data and calculate densities
   densities <- list()
   for (i in seq_along(tc_results_list)) {
     # Check if .prepare_tc_data exists
@@ -2820,7 +2841,6 @@ plot_compare_tc_density_difference <- function(tc_results_list,
       data_i <- data_prep$vis_data
     } else {
       # Fallback if .prepare_tc_data doesn't exist
-      # Try to extract data directly 
       if(x_metric %in% names(tc_results_list[[i]]) && y_metric %in% names(tc_results_list[[i]])) {
         data_i <- data.frame(
           x_metric = tc_results_list[[i]][[x_metric]],
@@ -2869,6 +2889,30 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     pairs <- pair_indices
   }
   
+  # Calculate all density differences to find global maximum for unified scale
+  diff_data_list <- list()
+  
+  for (i in seq_along(pairs)) {
+    pair <- pairs[[i]]
+    idx1 <- pair[1]
+    idx2 <- pair[2]
+    
+    # Ensure indices are valid
+    if(idx1 > length(densities) || idx2 > length(densities)) {
+      warning(paste("Invalid pair indices:", idx1, idx2, "- skipping"))
+      next
+    }
+    
+    # Calculate density difference
+    diff_z <- densities[[idx2]]$z - densities[[idx1]]$z
+    diff_data_list[[i]] <- diff_z
+  }
+  
+  # Find global maximum absolute value for unified scale
+  global_max_abs <- max(sapply(diff_data_list, function(diff) {
+    if(!is.null(diff)) max(abs(diff), na.rm = TRUE) else 0
+  }))
+  
   # Create plots for each pair
   diff_plots <- list()
   
@@ -2877,33 +2921,23 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     idx1 <- pair[1]
     idx2 <- pair[2]
     
-    # Make sure indices are valid
-    if(idx1 > length(densities) || idx2 > length(densities)) {
-      warning(paste("Invalid pair indices:", idx1, idx2, "- skipping"))
-      next
-    }
-    
-    # Calculate density difference
-    diff_z <- densities[[idx2]]$z - densities[[idx1]]$z
+    if(is.null(diff_data_list[[i]])) next
     
     # Convert to data frame for plotting
     diff_df <- expand.grid(
       x = densities[[idx1]]$x,
       y = densities[[idx1]]$y
     )
-    diff_df$diff <- as.vector(diff_z)
+    diff_df$diff <- as.vector(diff_data_list[[i]])
     
     # Create plot
     plot_title <- paste(group_names[idx1], "\u2192", group_names[idx2])
-    
-    # Get max absolute value for symmetric colour scale
-    max_abs <- max(abs(diff_df$diff), na.rm = TRUE)
     
     p <- ggplot2::ggplot(diff_df, ggplot2::aes(x = x, y = y)) +
       ggplot2::geom_tile(ggplot2::aes(fill = diff)) +
       ggplot2::scale_fill_gradientn(
         colours = color_palette(100),
-        limits = c(-max_abs, max_abs),
+        limits = c(-global_max_abs, global_max_abs),  
         name = "Density\nDifference"
       ) +
       ggplot2::stat_contour(ggplot2::aes(z = diff), colour = "grey20", alpha = 0.7, breaks = 0, size = 0.5) +
@@ -2920,14 +2954,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
         axis.title = ggplot2::element_text(size = 16, face = "bold"), 
         axis.text = ggplot2::element_text(size = 14)
       )
-    
-    # Add threshold lines if requested
-    if (show_threshold_lines) {
-      p <- p + 
-        ggplot2::geom_vline(xintercept = threshold_values[1], linetype = "dashed", colour = "black", alpha = 0.5) +
-        ggplot2::geom_hline(yintercept = threshold_values[2], linetype = "dashed", colour = "black", alpha = 0.5)
-    }
-    
+
     diff_plots[[i]] <- p
   }
   
@@ -2936,7 +2963,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     return(diff_plots[[1]])
   }
   
-  # Fixed plot arrangement implementation
+  # Arrange multiple plots in a grid
   n_plots <- length(diff_plots)
   if(n_plots <= 2) {
     n_cols <- n_plots
@@ -3265,7 +3292,7 @@ plot_compare_tc_complexity_heatmap <- function(tc_results_list,
     "Inter-cell-type Specificity",
     "Intra-cell-type Heterogeneity Variability",
     "Inter-cell-type Difference Variability",
-    "Cell-Type-Specific Co-Expression Variability"
+    "Cell-type-specific Co-Expression Variability"
   )
   names(readable_metrics) <- metrics
   
