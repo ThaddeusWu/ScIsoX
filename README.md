@@ -701,7 +701,7 @@ Siyuan Wu (thaddeus.wu@jcu.edu.au)
 
 ### Reporting Issues
 
-Please report bugs and feature requests via the [GitHub issue tracker]([https://github.com/siyuanwu/ScIsoX/issues](https://github.com/ThaddeusWu/ScIsoX/issues)).
+Please report bugs and feature requests via the [GitHub issue tracker](https://github.com/ThaddeusWu/ScIsoX/issues).
 
 ### License
 
