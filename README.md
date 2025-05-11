@@ -545,23 +545,37 @@ For experiments comparing different conditions or treatments:
 ```r
 # Assuming you have SCHT objects for different conditions
 scht_obj_A <- scht_obj  # Control
-scht_obj_B <- your_treatment_scht_obj
+scht_obj_B <- your_treatment1_scht_obj
+scht_obj_C <- your_treatment2_scht_obj
+scht_obj_D <- your_treatment3_scht_obj
 
 # Calculate complexity metrics for each condition
 tc_results_A <- calculate_isoform_complexity_metrics(scht_obj_A)
 tc_results_B <- calculate_isoform_complexity_metrics(scht_obj_B)
+tc_results_C <- calculate_isoform_complexity_metrics(scht_obj_C)
+tc_results_D <- calculate_isoform_complexity_metrics(scht_obj_D)
 
 # Create a list of results
 tc_results_list <- list(
   Control = tc_results_A,
-  Treatment = tc_results_B
+  Treatment_1 = tc_results_B,
+  Treatment_2 = tc_results_C,
+  Treatment_3 = tc_results_D
+)
+
+# Create a list of paired comparisons
+pair_indices <- list(
+  c(1,2),  # Control vs Treatment 1
+  c(1,3),  # Control vs Treatment 2
+  c(1,4)   # Control vs Treatment 3
 )
 
 # Compare complexity density differences
 diff_plot <- plot_compare_tc_density_difference(
   tc_results_list = tc_results_list,
-  group_names = c("Control", "Treatment"),
-  x_metric = "inter_cellular_diversity",
+  group_names = c("Control", "Treatment 1", "Treatment 2", "Treatment 3"),
+  pair_indices = pair_indices,
+  x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
   grid_size = 100,  # Resolution of density estimation
   show_threshold_lines = TRUE
@@ -580,7 +594,7 @@ heatmap_results <- plot_compare_tc_complexity_heatmap(
 )
 
 # Display a heatmap
-print(heatmap_results$heatmaps$intra_cellular_diversity)
+print(heatmap_results$heatmaps$intra_cellular_isoform_diversity)
 ```
 
 These comparative functions are designed for experimental designs with multiple conditions:
