@@ -281,7 +281,7 @@ custom_params <- list(
   min_genes_per_cell = 300,  # Based on prior knowledge of your dataset
   max_genes_per_cell = 5000, # Based on prior knowledge of your dataset
   min_cells_expressing = 0.02,
-  min_expr = 1e-6
+  min_expr = 1e-4
 )
 ```
 
