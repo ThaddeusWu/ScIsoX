@@ -573,12 +573,11 @@ pair_indices <- list(
 # Compare complexity density differences
 diff_plot <- plot_compare_tc_density_difference(
   tc_results_list = tc_results_list,
-  group_names = c("Control", "Treatment 1", "Treatment 2", "Treatment 3"),
+  group_names = c("Condition 1", "Condition 2", "Condition 3", "Condition 4"),
   pair_indices = pair_indices,
   x_metric = "inter_cellular_isoform_diversity",
   y_metric = "inter_cell_type_specificity",
-  grid_size = 100,  # Resolution of density estimation
-  show_threshold_lines = TRUE
+  grid_size = 100  # Resolution of density estimation
 )
 
 # Create heatmaps for metrics across conditions
