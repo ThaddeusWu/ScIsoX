@@ -5,7 +5,7 @@
 *A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution*
 
 ```
-Wu S and Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Transcriptomic Complexity in Single-Cell Long-Read Sequencing Data.
+Wu S and Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells.
 ```
 
 ---
@@ -665,11 +665,11 @@ If you encounter problems not addressed here, please:
 If you use ScIsoX in your research, please cite:
 
 ```
-Scisox: a multidimensional framework for measuring transcriptomic complexity in single-cell long-read sequencing data
+ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells
 Wu, S and Schmitz, U
 bioRxiv, 2025
 DOI: 10.1101/2025.04.28.650897
-url: https://www.biorxiv.org/content/10.1101/2025.04.28.650897v1
+url: https://www.biorxiv.org/content/10.1101/2025.04.28.650897v2
 ```
 
 BibTeX entry:
@@ -681,7 +681,7 @@ BibTeX entry:
 	doi = {10.1101/2025.04.28.650897},
 	eprint = {https://www.biorxiv.org/content/early/2025/05/01/2025.04.28.650897.full.pdf},
 	journal = {bioRxiv},
-	title = {{ScIsoX}: A Multidimensional Framework for Measuring Transcriptomic Complexity in Single-Cell Long-Read Sequencing Data},
+	title = {{ScIsoX}: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells},
 	url = {https://www.biorxiv.org/content/early/2025/05/01/2025.04.28.650897},
 	year = {2025}
 }
