@@ -9,7 +9,7 @@ plot_isoform_profile(
   gene,
   cell_type_order = NULL,
   min_prop = 0.05,
-  color_palette = NULL
+  colour_palette = NULL
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ plot_isoform_profile(
 
 \item{min_prop}{Minimum proportion to display (minor isoforms grouped as "Other")}
 
-\item{color_palette}{Colour palette to use (default: distinct qualitative palette)}
+\item{colour_palette}{Colour palette to use (default: distinct qualitative palette)}
 }
 \value{
 A ggplot object that can be printed or saved

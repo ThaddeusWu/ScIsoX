@@ -7,7 +7,7 @@
 \method{summary}{CellTypeSCHTSCHT}(object, ...)
 }
 \arguments{
-\item{object}{CellTypeSCHT object to summarize}
+\item{object}{CellTypeSCHT object to summarise}
 
 \item{...}{Additional arguments (not used)}
 }

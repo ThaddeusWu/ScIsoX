@@ -1,9 +1,11 @@
-##############################################################
-#  Author: [Siyuan Wu & Ulf Schmitz]                         #
-#  Institution: [James Cook University]                      #
-#  Date: Apr 22, 2025                                        #
-#  Package: ScIsoX V1.0.0                                    #
-##############################################################
+#################################################################
+#  Create Transcript Information from Count Matrix              #
+#                                                               #
+#  Author: [Siyuan Wu & Ulf Schmitz]                            #
+#  Institution: [James Cook University]                         #
+#  Date: Jul 29, 2025                                           #
+#  Package: ScIsoX V1.1.0                                       #
+#################################################################
 
 #' Create transcript information data frame from GTF file
 #' 

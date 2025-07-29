@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_scht.R
 \name{create_scht}
 \alias{create_scht}
-\title{SCHT creation for large datasets}
+\title{SCHT creation for large datasets with enhanced features}
 \usage{
 create_scht(
   gene_counts,
@@ -12,13 +12,16 @@ create_scht(
   n_hvg = 3000,
   qc_params = list(min_genes_per_cell = 200, max_genes_per_cell = 10000,
     min_cells_expressing = 0.02, min_expr = 1e-04),
-  require_cell_type = FALSE,
+  require_cell_type = TRUE,
   verbose = TRUE,
-  sparsity_threshold = 0.4
+  sparsity_threshold = 0.4,
+  input_type = c("raw_counts", "normalised")
 )
 }
 \arguments{
-\item{gene_counts}{Gene-level counts as matrix, data frame, or sparse matrix}
+\item{gene_counts}{Gene-level counts as matrix, data frame, or sparse matrix.
+Row names can be either gene IDs (e.g., ENSG00000000001) or gene names (e.g., GAPDH).
+The function automatically detects which format is used and handles both appropriately.}
 
 \item{transcript_counts}{Transcript-level counts as matrix, data frame, or sparse matrix}
 
@@ -35,13 +38,26 @@ create_scht(
 \item{verbose}{Whether to show progress}
 
 \item{sparsity_threshold}{Minimum sparsity to use sparse representation (0-1)}
+
+\item{input_type}{Type of input data: "raw_counts" or "normalised" (e.g., TPM, FPKM)}
 }
 \value{
-An SCHT or IntegratedSCHT object
+An SCHT or IntegratedSCHT object with the following attributes:
+\itemize{
+\item \code{performance}: List containing performance metrics:
+\itemize{
+\item \code{total_time_sec}: Total processing time in seconds
+\item \code{memory_used_mb}: Memory utilised in megabytes
+}
+\item \code{preprocessing}: List containing QC statistics and enhanced QC report
+\item \code{creation_date}: Timestamp of object creation
+\item \code{package_version}: Version of ScIsoX used
+}
 }
 \description{
 Creates a Single-Cell Hierarchical Tensor from raw count data
-with efficient operations for large-scale datasets.
+with efficient operations for large-scale datasets. Supports
+pre-normalized data and comprehensive QC tracking.
 }
 \examples{
 # For large-scale single-cell data:
@@ -59,6 +75,7 @@ with efficient operations for large-scale datasets.
 #   ),
 #   require_cell_type = TRUE,
 #   verbose = TRUE,
-#   sparsity_threshold = 0.5  # Adjust based on data sparsity
+#   sparsity_threshold = 0.5,  # Adjust based on data sparsity
+#   input_type = "raw_counts"  # or "normalised" for TPM/FPKM data
 # )
 }

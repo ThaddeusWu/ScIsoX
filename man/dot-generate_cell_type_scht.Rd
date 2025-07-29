@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_scht.R
 \name{.generate_cell_type_scht}
 \alias{.generate_cell_type_scht}
-\title{Generate cell type-specific SCHT}
+\title{Generate cell type-specific SCHT (Optimized Version)}
 \usage{
 .generate_cell_type_scht(scht, cell_info, qc_params)
 }
@@ -18,6 +18,7 @@ A CellTypeSCHT object with cell type-specific data
 }
 \description{
 Creates cell type-specific data structures with optimised operations
-for efficient handling of large datasets.
+for efficient handling of large datasets. This version inverts the loop
+order to be more memory and stack efficient.
 }
 \keyword{internal}

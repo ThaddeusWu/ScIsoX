@@ -3,8 +3,8 @@
 #                                                               #
 #  Author: [Siyuan Wu & Ulf Schmitz]                            #
 #  Institution: [James Cook University]                         #
-#  Date: Apr 22, 2025                                           #
-#  Package: ScIsoX V1.0.0                                       #
+#  Date: Jul 29, 2025                                           #
+#  Package: ScIsoX V1.1.0                                       #
 #################################################################
 
 ########################
@@ -16,9 +16,10 @@
 #' @importFrom gridExtra grid.arrange arrangeGrob
 #' @importFrom grid textGrob gpar unit
 #' @importFrom scales rescale
-#' @importFrom stats setNames quantile density kmeans cor as.dist
+#' @importFrom stats setNames quantile density kmeans cor as.dist complete.cases reshape
 #' @importFrom utils head
-#' @importFrom grDevices colorRampPalette
+#' @importFrom grDevices colorRampPalette dev.list dev.off pdf
+#' @importFrom graphics barplot axis segments
 #' @importFrom magrittr %>%
 #' @importFrom MASS kde2d
 #' @importFrom dplyr case_when
@@ -28,7 +29,8 @@ NULL
 utils::globalVariables(c(
   "Metric", "CellType", "diversity_pattern", "idx", "isoform", "proportion", 
   "quadrant", "short_name", "count", "percentage", "z_norm", 
-  "stable_count", "unclassified_count", "Value", "cell_type", "gene"
+  "stable_count", "unclassified_count", "Value", "cell_type", "gene",
+  "gene_colors"
 ))
 
 #' Plot multiple threshold visualisations in a grid layout
@@ -95,10 +97,18 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' 
 #' @keywords internal
 .get_tc_palette <- function() {
+  # Check if viridis is available
+  if (requireNamespace("viridis", quietly = TRUE)) {
+    gradient <- viridis::viridis(10)
+  } else {
+    # Fallback gradient colors similar to viridis
+    gradient <- colorRampPalette(c("#440154", "#31688e", "#35b779", "#fde725"))(10)
+  }
+  
   list(
     main = c("#ec6e66", "#7392c6", "#81b095", "#867bb9"),
     highlight = "#f7ac53",  
-    gradient = viridis::viridis(10),
+    gradient = gradient,
     background = "white",
     grid = "#EEEEEE",
     text = "#333333"
@@ -129,7 +139,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
       # Panels and backgrounds
       panel.background = ggplot2::element_rect(fill = palette$background, color = NA),
       plot.background = ggplot2::element_rect(fill = palette$background, color = NA),
-      panel.grid.major = ggplot2::element_line(color = palette$grid, size = 0.3),
+      panel.grid.major = ggplot2::element_line(color = palette$grid, linewidth = 0.3),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_blank(),
       
@@ -144,6 +154,56 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
       strip.background = ggplot2::element_rect(fill = palette$background, color = NA),
       strip.text = ggplot2::element_text(size = 10, face = "bold")
     )
+}
+
+#' Get color palette with fallback options
+#' 
+#' Internal function to get color palettes with fallbacks when RColorBrewer is not available
+#' 
+#' @param n Number of colors needed
+#' @param palette_name Name of the RColorBrewer palette
+#' @return Vector of colors
+#' 
+#' @keywords internal
+.get_colour_palette <- function(n, palette_name = "Set3") {
+  if (requireNamespace("RColorBrewer", quietly = TRUE)) {
+    if (n <= 12 && palette_name %in% rownames(RColorBrewer::brewer.pal.info)) {
+      max_colors <- RColorBrewer::brewer.pal.info[palette_name, "maxcolors"]
+      return(RColorBrewer::brewer.pal(min(n, max_colors), palette_name)[1:n])
+    } else if (n > 12) {
+      # For more colors, use colorRampPalette
+      base_colours <- RColorBrewer::brewer.pal(min(12, RColorBrewer::brewer.pal.info[palette_name, "maxcolors"]), palette_name)
+      return(colorRampPalette(base_colours)(n))
+    }
+  }
+  
+  # Fallback palettes when RColorBrewer is not available
+  fallback_palettes <- list(
+    Set3 = c("#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", 
+             "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"),
+    Set1 = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", 
+             "#a65628", "#f781bf", "#999999"),
+    Set2 = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", 
+             "#e5c494", "#b3b3b3"),
+    Paired = c("#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", 
+               "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928"),
+    Pastel1 = c("#fbb4ae", "#b3cde3", "#ccebc5", "#decbe4", "#fed9a6", "#ffffcc", 
+                "#e5d8bd", "#fddaec"),
+    Pastel2 = c("#b3e2cd", "#fdcdac", "#cbd5e8", "#f4cae4", "#e6f5c9", "#fff2ae", 
+                "#f1e2cc", "#cccccc")
+  )
+  
+  base_colours <- if (palette_name %in% names(fallback_palettes)) {
+    fallback_palettes[[palette_name]]
+  } else {
+    fallback_palettes[["Set3"]]  # Default fallback
+  }
+  
+  if (n <= length(base_colours)) {
+    return(base_colours[1:n])
+  } else {
+    return(colorRampPalette(base_colours)(n))
+  }
 }
 
 #' Get metric-specific classification names
@@ -184,6 +244,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' @param highlight_genes Optional vector of gene names to highlight
 #' @param label_annotation Column name to use for highlighting/labelling genes
 #' @param label_top Number of top genes to label if highlight_genes not provided
+#' @param label_direction Direction for selecting genes: "top" (highest values) or "bottom" (lowest values)
 #' @param use_thresholds Whether to use thresholds from tc_results
 #' @param x_threshold Manual threshold value for x-axis
 #' @param y_threshold Manual threshold value for y-axis
@@ -197,6 +258,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
                              highlight_genes = NULL,
                              label_annotation = "intra_cell_type_heterogeneity",
                              label_top = 10,
+                             label_direction = "top",
                              use_thresholds = TRUE,
                              x_threshold = 0.6,
                              y_threshold = 0.6) {
@@ -284,11 +346,14 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
   
   # Determine which genes to highlight
   if(is.null(highlight_genes)) {
-    # Default: highlight top genes by label_annotation value
+    # Default: highlight top or bottom genes by label_annotation value
     if(label_annotation %in% colnames(plot_data)) {
-      top_genes <- plot_data$gene[
-        order(plot_data[[label_annotation]], decreasing = TRUE)
-      ][1:min(label_top, nrow(plot_data))]
+      # Determine ordering based on direction
+      decreasing_order <- (label_direction == "top")
+      ordered_genes <- plot_data$gene[
+        order(plot_data[[label_annotation]], decreasing = decreasing_order)
+      ]
+      top_genes <- ordered_genes[1:min(label_top, nrow(plot_data))]
     } else {
       warning(paste0("Label annotation column '", label_annotation, "' not found. Using gene name for ordering."))
       top_genes <- head(plot_data$gene, label_top)
@@ -334,8 +399,8 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
   
   # Create quadrant colours with consistent naming
   palette <- .get_tc_palette()
-  quadrant_colors <- palette$main
-  names(quadrant_colors) <- c(q1, q2, q3, q4)
+  quadrant_colours <- palette$main
+  names(quadrant_colours) <- c(q1, q2, q3, q4)
   
   # Transform variables with "variability" in name for visualisation only
   need_scaling <- FALSE
@@ -416,7 +481,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
     y_metric = y_metric,
     x_label = x_label,
     y_label = y_label,
-    quadrant_colors = quadrant_colors,
+    quadrant_colours = quadrant_colours,
     q1 = q1,
     q2 = q2,
     q3 = q3,
@@ -436,7 +501,8 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' @param y_metric Name of metric for y-axis (default: "inter_cell_type_specificity")
 #' @param highlight_genes Optional vector of gene names to highlight
 #' @param label_annotation Column name to use for highlighting/labelling genes
-#' @param label_top Number of top genes to label if highlight_genes not provided
+#' @param n_label Number of genes to label if highlight_genes not provided
+#' @param label_direction Direction for selecting genes: "top" (highest values) or "bottom" (lowest values)
 #' @param use_thresholds Whether to use thresholds from tc_results
 #' @param x_threshold Manual threshold value for x-axis
 #' @param y_threshold Manual threshold value for y-axis
@@ -457,6 +523,11 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #'                  x_metric = "intra_cellular_isoform_diversity", 
 #'                  y_metric = "inter_cellular_isoform_diversity",
 #'                  highlight_genes = c("GENE1", "GENE2", "GENE3"))
+#'                  
+#' # Highlight bottom 10 genes by heterogeneity
+#' plot_tc_landscape(tc_results,
+#'                  n_label = 10,
+#'                  label_direction = "bottom")
 #' }
 #' 
 #' @export
@@ -465,7 +536,8 @@ plot_tc_landscape <- function(tc_results,
                               y_metric = "inter_cell_type_specificity",
                               highlight_genes = NULL,
                               label_annotation = "intra_cell_type_heterogeneity",
-                              label_top = 10,
+                              n_label = 10,
+                              label_direction = "top",
                               use_thresholds = TRUE,
                               x_threshold = 0.6,
                               y_threshold = 0.6,
@@ -489,7 +561,8 @@ plot_tc_landscape <- function(tc_results,
     y_metric = y_metric,
     highlight_genes = highlight_genes,
     label_annotation = label_annotation,
-    label_top = label_top,
+    label_top = n_label,
+    label_direction = label_direction,
     use_thresholds = use_thresholds,
     x_threshold = x_threshold,
     y_threshold = y_threshold
@@ -499,7 +572,7 @@ plot_tc_landscape <- function(tc_results,
   vis_data <- data_prep$vis_data
   highlight_data_vis <- data_prep$highlight_data_vis
   label_data <- data_prep$label_data
-  quadrant_colors <- data_prep$quadrant_colors
+  quadrant_colours <- data_prep$quadrant_colours
   x_threshold_vis <- data_prep$x_threshold_vis
   y_threshold_vis <- data_prep$y_threshold_vis
   q1 <- data_prep$q1
@@ -525,13 +598,13 @@ plot_tc_landscape <- function(tc_results,
   
   # Add background shading for quadrants
   p <- p + ggplot2::annotate("rect", xmin = x_threshold_vis, xmax = 1, ymin = y_threshold_vis, ymax = 1, 
-                             fill = quadrant_colors[q1], alpha = 0.1)  # Q1: High X, High Y (top right)
+                             fill = quadrant_colours[q1], alpha = 0.1)  # Q1: High X, High Y (top right)
   p <- p + ggplot2::annotate("rect", xmin = 0, xmax = x_threshold_vis, ymin = y_threshold_vis, ymax = 1, 
-                             fill = quadrant_colors[q2], alpha = 0.1)  # Q2: Low X, High Y (top left)
+                             fill = quadrant_colours[q2], alpha = 0.1)  # Q2: Low X, High Y (top left)
   p <- p + ggplot2::annotate("rect", xmin = 0, xmax = x_threshold_vis, ymin = 0, ymax = y_threshold_vis, 
-                             fill = quadrant_colors[q3], alpha = 0.1)  # Q3: Low X, Low Y (bottom left)
+                             fill = quadrant_colours[q3], alpha = 0.1)  # Q3: Low X, Low Y (bottom left)
   p <- p + ggplot2::annotate("rect", xmin = x_threshold_vis, xmax = 1, ymin = 0, ymax = y_threshold_vis, 
-                             fill = quadrant_colors[q4], alpha = 0.1)  # Q4: High X, Low Y (bottom right)
+                             fill = quadrant_colours[q4], alpha = 0.1)  # Q4: High X, Low Y (bottom right)
   
   # Add threshold lines
   p <- p + ggplot2::geom_vline(xintercept = x_threshold_vis, linetype = "dashed", 
@@ -577,25 +650,37 @@ plot_tc_landscape <- function(tc_results,
       stroke = 1
     )
     
-    # Add gene labels with ggrepel
-    p <- p + ggrepel::geom_text_repel(
-      data = highlight_data_vis,
-      ggplot2::aes(label = gene),
-      size = 8,
-      fontface = "bold",
-      box.padding = 0.5,
-      point.padding = 0.4,
-      force = 10,
-      segment.colour = "grey50",
-      segment.size = 0.3,
-      min.segment.length = 0,
-      max.overlaps = 30
-    )
+    # Add gene labels
+    if (requireNamespace("ggrepel", quietly = TRUE)) {
+      p <- p + ggrepel::geom_text_repel(
+        data = highlight_data_vis,
+        ggplot2::aes(label = gene),
+        size = 8,
+        fontface = "bold",
+        box.padding = 0.5,
+        point.padding = 0.4,
+        force = 10,
+        segment.colour = "grey50",
+        segment.size = 0.3,
+        min.segment.length = 0,
+        max.overlaps = 30
+      )
+    } else {
+      warning("Package 'ggrepel' not installed. Using geom_text() instead. ",
+              "Install it with: install.packages('ggrepel')")
+      p <- p + ggplot2::geom_text(
+        data = highlight_data_vis,
+        ggplot2::aes(label = gene),
+        size = 3,
+        fontface = "bold",
+        check_overlap = TRUE
+      )
+    }
   }
   
   # Add styling
-  p <- p + ggplot2::scale_colour_manual(values = quadrant_colors, name = "Classification")
-  p <- p + ggplot2::scale_fill_manual(values = quadrant_colors, guide = "none")
+  p <- p + ggplot2::scale_colour_manual(values = quadrant_colours, name = "Classification")
+  p <- p + ggplot2::scale_fill_manual(values = quadrant_colours, guide = "none")
   
   # Set axis limits based on data
   if(data_prep$need_scaling) {
@@ -677,24 +762,30 @@ plot_tc_landscape <- function(tc_results,
     )
   
   
-  # Create enhanced marginal distributions 
-  marginal <- ggExtra::ggMarginal(
-    p, 
-    type = "densigram",  # Combined histogram and density
-    xparams = list(
-      fill = scales::alpha("#BBD4E9", 0.8),  
-      color = scales::alpha("#396CA0", 0.8),
-      size = 0.5
-    ),
-    yparams = list(
-      fill = scales::alpha("#BBD4E9", 0.8),  #
-      color = scales::alpha("#396CA0", 0.8),
-      size = 0.5
-    ),
-    margins = "both",
-    size = 12      
-  )
-  return(marginal)
+  # Create enhanced marginal distributions if ggExtra is available
+  if (requireNamespace("ggExtra", quietly = TRUE)) {
+    marginal <- ggExtra::ggMarginal(
+      p, 
+      type = "densigram",  # Combined histogram and density
+      xparams = list(
+        fill = scales::alpha("#BBD4E9", 0.8),  
+        color = scales::alpha("#396CA0", 0.8),
+        size = 0.5
+      ),
+      yparams = list(
+        fill = scales::alpha("#BBD4E9", 0.8),  #
+        color = scales::alpha("#396CA0", 0.8),
+        size = 0.5
+      ),
+      margins = "both",
+      size = 12      
+    )
+    return(marginal)
+  } else {
+    warning("Package 'ggExtra' not installed. Marginal distributions not shown. ",
+            "Install it with: install.packages('ggExtra')")
+    return(p)
+  }
 }
 
 #' Transcriptomic complexity density plot
@@ -757,7 +848,7 @@ plot_tc_density <- function(tc_results,
   
   # Extract the prepared data components
   vis_data <- data_prep$vis_data
-  quadrant_colors <- data_prep$quadrant_colors
+  quadrant_colours <- data_prep$quadrant_colours
   x_threshold_vis <- data_prep$x_threshold_vis
   y_threshold_vis <- data_prep$y_threshold_vis
   q1 <- data_prep$q1
@@ -822,7 +913,7 @@ plot_tc_density <- function(tc_results,
       x = c(0.9, 0.15, 0.15, 0.9),
       y = c(0.85, 0.85, 0.15, 0.15),
       label = c("Q1", "Q2", "Q3", "Q4"),
-      fill = c(quadrant_colors[q1], quadrant_colors[q2], quadrant_colors[q3], quadrant_colors[q4]),
+      fill = c(quadrant_colours[q1], quadrant_colours[q2], quadrant_colours[q3], quadrant_colours[q4]),
       color = "white",
       size = 4,
       fontface = "bold",
@@ -832,7 +923,11 @@ plot_tc_density <- function(tc_results,
     ggplot2::scale_x_continuous(limits = x_limits, breaks = seq(0, 1, by = 0.2)) +
     ggplot2::scale_y_continuous(limits = y_limits, breaks = seq(0, 1, by = 0.2)) +
     ggplot2::scale_fill_gradientn(
-      colors = viridis::plasma(10, begin = 0, end = 0.9),
+      colors = if (requireNamespace("viridis", quietly = TRUE)) {
+        viridis::plasma(10, begin = 0, end = 0.9)
+      } else {
+        colorRampPalette(c("#0d0887", "#6a00a8", "#b12a90", "#e16462", "#fca636", "#f0f921"))(10)
+      },
       name = "Density"
     ) +
     ggplot2::coord_fixed(ratio = 1) +
@@ -921,7 +1016,7 @@ plot_diversity_comparison <- function(tc_results,
   vis_data <- data_prep$vis_data
   highlight_data <- data_prep$highlight_data
   highlight_data_vis <- data_prep$highlight_data_vis
-  quadrant_colors <- data_prep$quadrant_colors
+  quadrant_colours <- data_prep$quadrant_colours
   q1 <- data_prep$q1
   q2 <- data_prep$q2
   q3 <- data_prep$q3
@@ -967,13 +1062,13 @@ plot_diversity_comparison <- function(tc_results,
   
   # Add background shading for quadrants
   p <- p + ggplot2::annotate("rect", xmin = data_prep$x_threshold, xmax = 1, ymin = data_prep$y_threshold, ymax = 1, 
-                             fill = quadrant_colors[q1], alpha = 0.1)  # Q1: High X, High Y (top right)
+                             fill = quadrant_colours[q1], alpha = 0.1)  # Q1: High X, High Y (top right)
   p <- p + ggplot2::annotate("rect", xmin = 0, xmax = data_prep$x_threshold, ymin = data_prep$y_threshold, ymax = 1, 
-                             fill = quadrant_colors[q2], alpha = 0.1)  # Q2: Low X, High Y (top left)
+                             fill = quadrant_colours[q2], alpha = 0.1)  # Q2: Low X, High Y (top left)
   p <- p + ggplot2::annotate("rect", xmin = 0, xmax = data_prep$x_threshold, ymin = 0, ymax = data_prep$y_threshold, 
-                             fill = quadrant_colors[q3], alpha = 0.1)  # Q3: Low X, Low Y (bottom left)
+                             fill = quadrant_colours[q3], alpha = 0.1)  # Q3: Low X, Low Y (bottom left)
   p <- p + ggplot2::annotate("rect", xmin = data_prep$x_threshold, xmax = 1, ymin = 0, ymax = data_prep$y_threshold, 
-                             fill = quadrant_colors[q4], alpha = 0.1)  # Q4: High X, Low Y (bottom right)
+                             fill = quadrant_colours[q4], alpha = 0.1)  # Q4: High X, Low Y (bottom right)
   
   
   
@@ -1023,20 +1118,30 @@ plot_diversity_comparison <- function(tc_results,
       stroke = 1.2
     )
     
-    # 5. Add gene labels with ggrepel
-    p <- p + ggrepel::geom_text_repel(
-      data = genes_to_label,
-      ggplot2::aes(label = gene),
-      size = 6,
-      fontface = "bold",
-      box.padding = 0.6,
-      point.padding = 0.5,
-      force = 12,
-      segment.colour = "black",
-      segment.size = 0.4,
-      min.segment.length = 0.1,
-      max.overlaps = 20
-    )
+    # 5. Add gene labels
+    if (requireNamespace("ggrepel", quietly = TRUE)) {
+      p <- p + ggrepel::geom_text_repel(
+        data = genes_to_label,
+        ggplot2::aes(label = gene),
+        size = 6,
+        fontface = "bold",
+        box.padding = 0.6,
+        point.padding = 0.5,
+        force = 12,
+        segment.colour = "black",
+        segment.size = 0.4,
+        min.segment.length = 0.1,
+        max.overlaps = 20
+      )
+    } else {
+      p <- p + ggplot2::geom_text(
+        data = genes_to_label,
+        ggplot2::aes(label = gene),
+        size = 3,
+        fontface = "bold",
+        check_overlap = TRUE
+      )
+    }
   }
   
   # Apply styling
@@ -1191,14 +1296,32 @@ plot_complexity_ridges <- function(tc_results,
     metrics_subset <- metrics_df[, metrics, drop = FALSE]
     
     # Gather data for plotting
-    plot_data <- metrics_subset %>%
-      tidyr::pivot_longer(cols = dplyr::everything(), names_to = "Metric", values_to = "Value") %>%
-      dplyr::filter(!is.na(Value))
+    if (requireNamespace("tidyr", quietly = TRUE)) {
+      plot_data <- metrics_subset %>%
+        tidyr::pivot_longer(cols = dplyr::everything(), names_to = "Metric", values_to = "Value") %>%
+        dplyr::filter(!is.na(Value))
+    } else {
+      # Use base R reshape as fallback
+      plot_data <- reshape(metrics_subset,
+                          direction = "long",
+                          varying = list(names(metrics_subset)),
+                          v.names = "Value",
+                          timevar = "Metric",
+                          times = names(metrics_subset))
+      plot_data <- plot_data[!is.na(plot_data$Value), ]
+      plot_data$Metric <- as.character(plot_data$Metric)
+    }
     
     # Create ordered factor with readable metric names
     plot_data$Metric <- factor(plot_data$Metric, 
                                levels = metrics, 
                                labels = metric_map[metrics])
+    
+    # Check if ggridges is available
+    if (!requireNamespace("ggridges", quietly = TRUE)) {
+      stop("Package 'ggridges' is required for ridge plots. ",
+           "Please install it with: install.packages('ggridges')", call. = FALSE)
+    }
     
     # Create the plot
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Value, y = Metric, fill = Metric)) +
@@ -1216,7 +1339,7 @@ plot_complexity_ridges <- function(tc_results,
         axis.title.x = ggplot2::element_text(size = 12),
         axis.text.x = ggplot2::element_text(size = 10, angle = 0),
         axis.text.y = ggplot2::element_text(face = "bold", size = 12),
-        panel.grid.major.x = ggplot2::element_line(size = 0.3, color = "grey85"),
+        panel.grid.major.x = ggplot2::element_line(linewidth = 0.3, color = "grey85"),
         panel.grid.minor.x = ggplot2::element_blank(),
         panel.grid.major.y = ggplot2::element_blank(),
         plot.margin = ggplot2::unit(c(0.5, 0.5, 0.5, 0.5), "cm")
@@ -1322,7 +1445,7 @@ plot_complexity_ridges <- function(tc_results,
         axis.title.x = ggplot2::element_text(size = 12),
         axis.text.x = ggplot2::element_text(size = 10, angle = 0),
         axis.text.y = ggplot2::element_text(face = "bold", size = 12),
-        panel.grid.major.x = ggplot2::element_line(size = 0.3, color = "grey85"),
+        panel.grid.major.x = ggplot2::element_line(linewidth = 0.3, color = "grey85"),
         panel.grid.minor.x = ggplot2::element_blank(),
         panel.grid.major.y = ggplot2::element_blank(),
         strip.text = ggplot2::element_text(face = "bold", size = 12),
@@ -1578,7 +1701,7 @@ compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
 #' @param gene Gene name to analyse
 #' @param cell_type_order Optional vector specifying the order of cell types
 #' @param min_prop Minimum proportion to display (minor isoforms grouped as "Other")
-#' @param color_palette Colour palette to use (default: distinct qualitative palette)
+#' @param colour_palette Colour palette to use (default: distinct qualitative palette)
 #' 
 #' @return A ggplot object that can be printed or saved
 #' 
@@ -1595,7 +1718,7 @@ compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
 #' 
 #' @export
 plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL, 
-                                 min_prop = 0.05, color_palette = NULL) {
+                                 min_prop = 0.05, colour_palette = NULL) {
   # Check if required packages are available
   required_packages <- c("ggplot2", "RColorBrewer")
   for (pkg in required_packages) {
@@ -1692,31 +1815,36 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
   
   # Prepare colours for better differentiation
   isoforms <- unique(plot_data$isoform)
-  n_colors <- length(isoforms)
+  n_colours <- length(isoforms)
   
-  if(is.null(color_palette)) {
+  if(is.null(colour_palette)) {
     # Generate a colour palette
-    if(n_colors <= 12) {
-      # For 12 or fewer colours, use RColorBrewer qualitative palette
-      colors <- RColorBrewer::brewer.pal(min(12, n_colors), "Set3")
-      if(n_colors < 12) colors <- colors[1:n_colors]
+    if(n_colours <= 12) {
+      # For 12 or fewer colours, use qualitative palette
+      colours <- .get_colour_palette(n_colours, "Set3")
     } else {
       # For more colours, create a more differentiated palette
       # Combine palettes for more distinct colours
-      pal1 <- RColorBrewer::brewer.pal(min(12, n_colors), "Paired")
-      pal2 <- RColorBrewer::brewer.pal(min(12, max(3, n_colors-12)), "Set3")
-      pal3 <- RColorBrewer::brewer.pal(min(8, max(3, n_colors-24)), "Set2")
-      pal4 <- viridis::viridis(max(0, n_colors - 32), begin = 0.1, end = 0.9)
+      pal1 <- .get_colour_palette(min(12, n_colours), "Paired")
+      pal2 <- .get_colour_palette(min(12, max(3, n_colours-12)), "Set3")
+      pal3 <- .get_colour_palette(min(8, max(3, n_colours-24)), "Set2")
       
-      colors <- c(pal1, pal2, pal3, pal4)
-      colors <- colors[1:n_colors]
+      # Add viridis colours if available
+      pal4 <- if (requireNamespace("viridis", quietly = TRUE)) {
+        viridis::viridis(max(0, n_colours - 32), begin = 0.1, end = 0.9)
+      } else {
+        colorRampPalette(c("#440154", "#31688e", "#35b779", "#fde725"))(max(0, n_colours - 32))
+      }
+      
+      colours <- c(pal1, pal2, pal3, pal4)
+      colours <- colours[1:n_colours]
     }
   } else {
     # Use provided palette
-    colors <- color_palette
-    if(length(colors) < n_colors) {
+    colours <- colour_palette
+    if(length(colours) < n_colours) {
       warning("Provided colour palette has fewer colours than isoforms. Recycling colours.")
-      colors <- rep(colors, length.out = n_colors)
+      colours <- rep(colours, length.out = n_colours)
     }
   }
   
@@ -1725,21 +1853,21 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
   
   if (other_name %in% isoforms) {
     other_idx <- which(isoforms == other_name)
-    colors[other_idx] <- "grey90"
+    colours[other_idx] <- "grey90"
   }
   
   # Create the stacked bar chart
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = cell_type, y = proportion, fill = isoform)) +
     ggplot2::geom_bar(stat = "identity", position = "stack", width = 0.7, color = "black", size = 0.2) +
-    ggplot2::scale_fill_manual(values = colors) +
+    ggplot2::scale_fill_manual(values = colours) +
     ggplot2::theme_minimal(base_size = 12) +
     ggplot2::theme(
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       panel.background = ggplot2::element_rect(fill = "white", color = NA),
       plot.background = ggplot2::element_rect(fill = "white", color = NA),
-      axis.line = ggplot2::element_line(colour = "black", size = 0.5),
-      axis.ticks = ggplot2::element_line(colour = "black", size = 0.5),
+      axis.line = ggplot2::element_line(colour = "black", linewidth = 0.5),
+      axis.ticks = ggplot2::element_line(colour = "black", linewidth = 0.5),
       axis.title = ggplot2::element_text(face = "bold", size = 14),
       plot.title = ggplot2::element_text(size = 16, face = "bold", hjust = 0.5),
       plot.subtitle = ggplot2::element_text(size = 14, hjust = 0.5),
@@ -1772,9 +1900,10 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
 #' @param scht_obj Single-Cell Hierarchical Tensor object
 #' @param gene Gene name to analyse
 #' @param cell_type_order Vector specifying the order of cell types (required for this plot)
-#' @param min_prop Minimum proportion to display (default: 0.05)
+#' @param selected_isoforms Optional vector of isoform names to plot. If provided, only these isoforms will be shown (ignoring min_prop)
+#' @param min_prop Minimum proportion to display (default: 0.05). Ignored if selected_isoforms is provided
 #' @param smooth Apply smoothing to lines (default: TRUE)
-#' @param color_palette Colour palette to use (default: viridis plasma)
+#' @param colour_palette Colour palette to use (default: viridis plasma)
 #' 
 #' @return A ggplot object that can be printed or saved
 #' 
@@ -1784,11 +1913,17 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
 #' # Create isoform transition plot for a gene along a developmental trajectory
 #' cell_types <- c("Progenitor", "Intermediate", "Mature")
 #' plot_isoform_transitions(scht_obj, "GENE1", cell_type_order = cell_types)
+#' 
+#' # Plot only specific isoforms
+#' plot_isoform_transitions(scht_obj, "GENE1", 
+#'                         cell_type_order = cell_types,
+#'                         selected_isoforms = c("ENSMUST00000001", "ENSMUST00000002"))
 #' }
 #' 
 #' @export
 plot_isoform_transitions <- function(scht_obj, gene, cell_type_order, 
-                                     min_prop = 0.05, smooth = TRUE, color_palette = NULL) {
+                                     selected_isoforms = NULL,
+                                     min_prop = 0.05, smooth = TRUE, colour_palette = NULL) {
   # Check if required packages are available
   required_packages <- c("ggplot2", "RColorBrewer")
   for (pkg in required_packages) {
@@ -1845,22 +1980,32 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
     stop(paste("Not enough cell type data found for gene", gene))
   }
   
-  # Get all isoforms and filter by min_prop
+  # Get all isoforms and determine which to plot
   all_isoforms <- unique(unlist(lapply(usage_data, names)))
-  major_isoforms <- c()
   
-  for(iso in all_isoforms) {
-    # Check if isoform exceeds min_prop in any cell type
-    for(cell_type in names(usage_data)) {
-      props <- usage_data[[cell_type]]
-      if(iso %in% names(props) && props[iso] >= min_prop) {
-        major_isoforms <- c(major_isoforms, iso)
-        break
+  if (!is.null(selected_isoforms)) {
+    # Use user-specified isoforms
+    major_isoforms <- selected_isoforms[selected_isoforms %in% all_isoforms]
+    if (length(major_isoforms) == 0) {
+      stop("None of the selected isoforms are found in the data")
+    }
+  } else {
+    # Filter by min_prop
+    major_isoforms <- c()
+    
+    for(iso in all_isoforms) {
+      # Check if isoform exceeds min_prop in any cell type
+      for(cell_type in names(usage_data)) {
+        props <- usage_data[[cell_type]]
+        if(iso %in% names(props) && props[iso] >= min_prop) {
+          major_isoforms <- c(major_isoforms, iso)
+          break
+        }
       }
     }
+    
+    major_isoforms <- unique(major_isoforms)
   }
-  
-  major_isoforms <- unique(major_isoforms)
   
   # Prepare data for plotting
   plot_data <- data.frame(
@@ -1885,16 +2030,18 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
                          ))
     }
     
-    # Add "Other" if needed
-    other_prop <- 1 - sum(props[names(props) %in% major_isoforms])
-    if(other_prop > 0.01) { 
-      plot_data <- rbind(plot_data, 
-                         data.frame(
-                           cell_type = cell_type,
-                           isoform = "Other",
-                           proportion = other_prop,
-                           stringsAsFactors = FALSE
-                         ))
+    # Add "Other" if needed (only when not using selected_isoforms)
+    if (is.null(selected_isoforms)) {
+      other_prop <- 1 - sum(props[names(props) %in% major_isoforms])
+      if(other_prop > 0.01) { 
+        plot_data <- rbind(plot_data, 
+                           data.frame(
+                             cell_type = cell_type,
+                             isoform = "Other",
+                             proportion = other_prop,
+                             stringsAsFactors = FALSE
+                           ))
+      }
     }
   }
   
@@ -1910,12 +2057,12 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
   plot_data <- merge(plot_data, cell_type_idx, by = "cell_type")
   
   isoforms <- unique(plot_data$isoform)
-  n_colors <- length(isoforms)
+  n_colours <- length(isoforms)
   
- if(is.null(color_palette)) {
-    if(n_colors <= 8) {
-      # Palette for up to 8 colors
-      colors <- c(
+ if(is.null(colour_palette)) {
+    if(n_colours <= 8) {
+      # Palette for up to 8 colours
+      colours <- c(
         "#4878D0",  # Soft blue
         "#EE854A",  # Soft orange
         "#6ACC64",  # Soft green
@@ -1924,11 +2071,10 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
         "#8C613C",  # Soft brown
         "#DC7EC0",  # Soft pink
         "#797979"   # Soft grey
-      )[1:min(8, n_colors)]
-      if(n_colors < 1) colors <- colors[1:n_colors]
-    } else if(n_colors <= 12) {
-      # Extended palette for up to 12 colors
-      colors <- c(
+      )[1:min(8, n_colours)]
+    } else if(n_colours <= 12) {
+      # Extended palette for up to 12 colours
+      colours <- c(
         "#4878D0",  # Soft blue
         "#EE854A",  # Soft orange
         "#6ACC64",  # Soft green
@@ -1941,58 +2087,70 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
         "#FFB481",  # Light orange
         "#ACCF91",  # Light green
         "#B5A5D5"   # Light purple
-      )[1:min(12, n_colors)]
+      )[1:min(12, n_colours)]
     } else {
-      # For more colors, use a combination of softer palettes
-      base_colors <- c(
+      # For more colours, use a combination of softer palettes
+      base_colours <- c(
         "#4878D0", "#EE854A", "#6ACC64", "#D65F5F", 
         "#956CB4", "#8C613C", "#DC7EC0", "#797979",
         "#82C6E2", "#FFB481", "#ACCF91", "#B5A5D5"
       )
       
-      # Add pastel colors from RColorBrewer
-      pastel_colors <- RColorBrewer::brewer.pal(8, "Pastel1")
+      # Add pastel colours
+      pastel_colours <- .get_colour_palette(8, "Pastel1")
       
-      # Add some colors from RColorBrewer Pastel2
-      pastel2_colors <- RColorBrewer::brewer.pal(8, "Pastel2")
+      # Add some colours from Pastel2
+      pastel2_colours <- .get_colour_palette(8, "Pastel2")
       
-      # For very many colors, add some muted viridis colors
-      viridis_muted <- viridis::viridis(max(0, n_colors - 28), begin = 0.1, end = 0.9, alpha = 0.7)
+      # For very many colours, add some muted viridis colours
+      viridis_muted <- if (requireNamespace("viridis", quietly = TRUE)) {
+        viridis::viridis(max(0, n_colours - 28), begin = 0.1, end = 0.9, alpha = 0.7)
+      } else {
+        colorRampPalette(c("#440154", "#31688e", "#35b779", "#fde725"))(max(0, n_colours - 28))
+      }
       
-      # Combine and make sure we have enough colors
-      colors <- c(base_colors, pastel_colors, pastel2_colors, viridis_muted)
-      # Ensure we have enough colors and take only what we need
-      colors <- colors[1:n_colors]
+      # Combine and make sure we have enough colours
+      colours <- c(base_colours, pastel_colours, pastel2_colours, viridis_muted)
+      # Ensure we have enough colours and take only what we need
+      colours <- colours[1:n_colours]
     }
   } else {
     # Use provided palette
-    colors <- color_palette
-    if(length(colors) < n_colors) {
+    colours <- colour_palette
+    if(length(colours) < n_colours) {
       warning("Provided colour palette has fewer colours than isoforms. Recycling colours.")
-      colors <- rep(colors, length.out = n_colors)
+      colours <- rep(colours, length.out = n_colours)
     }
   }
   
   # Ensure "Other" is grey if present
   if("Other" %in% isoforms) {
     other_idx <- which(isoforms == "Other")
-    colors[other_idx] <- "#7F7F7F" 
+    colours[other_idx] <- "#7F7F7F" 
   }
   
 
+  # Check if we have enough data points for smoothing
+  n_timepoints <- length(unique(plot_data$idx))
+  use_smooth <- smooth && n_timepoints >= 4  # Need at least 4 points for reliable smoothing
+  
+  if (smooth && !use_smooth) {
+    message("Note: Smoothing disabled due to insufficient data points (< 4 cell types)")
+  }
+  
   p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = idx, y = proportion, color = isoform, group = isoform)) +
     ggplot2::geom_point(size = 3, alpha = 0.9, stroke = 0.5) +
-    {if(smooth) ggplot2::geom_smooth(se = FALSE, span = 0.7, method = "loess", size = 1.2) else ggplot2::geom_line(size = 1.2)}
+    {if(use_smooth) ggplot2::geom_smooth(se = FALSE, span = 0.7, method = "loess", size = 1.2) else ggplot2::geom_line(size = 1.2)}
   
   # Add labels and styling
   p <- p +
     ggplot2::scale_x_continuous(breaks = cell_type_idx$idx, labels = cell_type_idx$cell_type) +
-    ggplot2::scale_color_manual(values = colors) +
+    ggplot2::scale_color_manual(values = colours) +
     ggplot2::theme_classic(base_size = 12) +
     ggplot2::theme(
-      axis.line = ggplot2::element_line(colour = "black", size = 0.5),
-      axis.ticks = ggplot2::element_line(colour = "black", size = 0.5),
-      panel.grid.major.y = ggplot2::element_line(colour = "grey90", linetype = "dashed", size = 0.3),
+      axis.line = ggplot2::element_line(colour = "black", linewidth = 0.5),
+      axis.ticks = ggplot2::element_line(colour = "black", linewidth = 0.5),
+      panel.grid.major.y = ggplot2::element_line(colour = "grey90", linetype = "dashed", linewidth = 0.3),
       panel.grid.minor = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_blank(),
       axis.title = ggplot2::element_text(face = "bold", size = 18),
@@ -2009,7 +2167,7 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
     ggplot2::labs(title = paste("Isoform Usage Transitions for", gene),
                   x = "Cell Type",
                   y = "Proportion",
-                  color = "Isoform")
+                  colour = "Isoform")
   
   return(p)
 }
@@ -2147,12 +2305,28 @@ plot_complexity_radar <- function(tc_metrics, genes, scale_type = "global") {
   plot_data <- radar_data
   colnames(plot_data) <- c("gene", metric_labels)
   
-  # Create custom colors for genes
-  n_genes <- length(valid_genes)
+  # Remove rows with any NA values to prevent ggradar errors
+  complete_rows <- complete.cases(plot_data[, -1])  # Exclude gene column
+  if(!all(complete_rows)) {
+    removed_genes <- plot_data$gene[!complete_rows]
+    warning(paste("Removing genes with NA values:", paste(removed_genes, collapse = ", ")))
+    plot_data <- plot_data[complete_rows, ]
+  }
+  
+  # Check if any data remains
+  if(nrow(plot_data) == 0) {
+    stop("No complete data available for plotting after removing NA values")
+  }
+  
+  # Create custom colours for genes
+  n_genes <- nrow(plot_data)
+  valid_genes <- plot_data$gene
   if(n_genes <= 8) {
-    gene_colors <- RColorBrewer::brewer.pal(max(3, n_genes), "Set1")[1:n_genes]
+    gene_colours <- .get_colour_palette(n_genes, "Set1")
   } else {
-    gene_colors <- colorRampPalette(RColorBrewer::brewer.pal(8, "Set1"))(n_genes)
+    # For more genes, use colorRampPalette
+    base_colours <- .get_colour_palette(8, "Set1")
+    gene_colours <- colorRampPalette(base_colours)(n_genes)
   }
   
   # Create the radar chart
@@ -2312,12 +2486,27 @@ plot_single_gene_radar_cell_type <- function(tc_results, gene_name,
     }
   }
   
+  # Remove rows with any NA values to prevent ggradar errors
+  complete_rows <- complete.cases(radar_data[, readable_metrics])
+  if(!all(complete_rows)) {
+    removed_cell_types <- radar_data$cell_type[!complete_rows]
+    warning(paste("Removing cell types with NA values:", paste(removed_cell_types, collapse = ", ")))
+    radar_data <- radar_data[complete_rows, ]
+  }
+  
+  # Check if any data remains
+  if(nrow(radar_data) == 0) {
+    stop("No complete data available for plotting after removing NA values")
+  }
+  
   # Determine colour palette based on number of cell types
   n_cell_types <- nrow(radar_data)
   if(n_cell_types <= 8) {
-    color_palette <- RColorBrewer::brewer.pal(max(3, n_cell_types), "Set2")[1:n_cell_types]
+    colour_palette <- .get_colour_palette(n_cell_types, "Set2")
   } else {
-    color_palette <- colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n_cell_types)
+    # For more cell types, use colorRampPalette
+    base_colours <- .get_colour_palette(8, "Set2")
+    colour_palette <- colorRampPalette(base_colours)(n_cell_types)
   }
   
   # Create the radar chart with improved visual elements
@@ -2335,7 +2524,7 @@ plot_single_gene_radar_cell_type <- function(tc_results, gene_name,
     grid.line.width = 0.8,
     group.line.width = 1.2,
     group.point.size = 3,
-    group.colours = color_palette,
+    group.colours = colour_palette,
     background.circle.colour = "white",
     legend.position = "right",
     legend.text.size = 11
@@ -2518,14 +2707,16 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
     }
   }
   
-  # Create color palette for genes (consistent across all plots)
+  # Create colour palette for genes (consistent across all plots)
   n_genes <- length(valid_genes)
   if(n_genes <= 8) {
-    gene_colors <- RColorBrewer::brewer.pal(max(3, n_genes), "Set1")[1:n_genes]
+    gene_colours <- .get_colour_palette(n_genes, "Set1")
   } else {
-    gene_colors <- colorRampPalette(RColorBrewer::brewer.pal(8, "Set1"))(n_genes)
+    # For more genes, use colorRampPalette
+    base_colours <- .get_colour_palette(8, "Set1")
+    gene_colours <- colorRampPalette(base_colours)(n_genes)
   }
-  names(gene_colors) <- valid_genes
+  names(gene_colours) <- valid_genes
   
   # Apply scaling based on scale_type
   if(scale_type == "global") {
@@ -2609,9 +2800,24 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
   for(cell_type in names(all_data)) {
     cell_data <- all_data[[cell_type]]
     
+    # Remove rows with any NA values to prevent ggradar errors
+    complete_rows <- complete.cases(cell_data[, readable_metrics])
+    if(!all(complete_rows)) {
+      removed_genes <- cell_data$gene[!complete_rows]
+      warning(paste("Removing genes with NA values in cell type", cell_type, ":", 
+                    paste(removed_genes, collapse = ", ")))
+      cell_data <- cell_data[complete_rows, ]
+    }
+    
+    # Skip if no data remains after NA removal
+    if(nrow(cell_data) == 0) {
+      warning(paste("No complete data for cell type:", cell_type, "- skipping"))
+      next
+    }
+    
     # Ensure gene colours match the valid genes in this cell type
     genes_in_cell_type <- cell_data$gene
-    cell_gene_colors <- gene_colors[names(gene_colors) %in% genes_in_cell_type]
+    cell_gene_colours <- gene_colours[names(gene_colours) %in% genes_in_cell_type]
     
     # Create radar plot without axis labels
     p <- ggradar::ggradar(
@@ -2628,7 +2834,7 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
       grid.line.width = 0.9,
       group.line.width = 1.2,
       group.point.size = 3,
-      group.colours = cell_gene_colors,
+      group.colours = cell_gene_colours,
       background.circle.colour = "white",
       legend.position = "none",
       legend.text.size = 10
@@ -2664,7 +2870,7 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
   legend_plot <- ggradar::ggradar(
     legend_data,
     base.size = 15,
-    group.colours = gene_colors[valid_genes],
+    group.colours = gene_colours[valid_genes],
     axis.label.offset = 1,
     legend.position = "right",
     legend.text.size = 12
@@ -2829,7 +3035,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
   y_label <- readable_metrics[y_label_idx]
   
   # Define custom colour palette
-  color_palette <- colorRampPalette(c("#780522", "#A81428", "#C6403D", "#F5AC8B", "#FAD4BF", "#FBE3D6","#F8EAE1",
+  colour_palette <- colorRampPalette(c("#780522", "#A81428", "#C6403D", "#F5AC8B", "#FAD4BF", "#FBE3D6","#F8EAE1",
                                       "#EDF2F6", "#C1DDE9", "#84BDDA", "#74B0D2", "#3685BB", "#256CAE","#134B87"))
   
   # Process each group's data and calculate densities
@@ -2936,7 +3142,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
     p <- ggplot2::ggplot(diff_df, ggplot2::aes(x = x, y = y)) +
       ggplot2::geom_tile(ggplot2::aes(fill = diff)) +
       ggplot2::scale_fill_gradientn(
-        colours = color_palette(100),
+        colours = colour_palette(100),
         limits = c(-global_max_abs, global_max_abs),  
         name = "Density\nDifference"
       ) +
@@ -3464,7 +3670,7 @@ plot_compare_tc_complexity_heatmap <- function(tc_results_list,
         })
       })
     } else {
-      # Simple heatmap without clustering
+      # Heatmap without clustering
       ht <- ComplexHeatmap::Heatmap(
         matrix,
         name = if (is_diverging) "Change" else "Value",

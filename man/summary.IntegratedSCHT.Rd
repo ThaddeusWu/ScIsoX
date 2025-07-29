@@ -7,7 +7,7 @@
 \method{summary}{IntegratedSCHT}(object, ...)
 }
 \arguments{
-\item{object}{IntegratedSCHT object to summarize}
+\item{object}{IntegratedSCHT object to summarise}
 
 \item{...}{Additional arguments (not used)}
 }

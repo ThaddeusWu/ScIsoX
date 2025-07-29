@@ -10,7 +10,8 @@ plot_tc_landscape(
   y_metric = "inter_cell_type_specificity",
   highlight_genes = NULL,
   label_annotation = "intra_cell_type_heterogeneity",
-  label_top = 10,
+  n_label = 10,
+  label_direction = "top",
   use_thresholds = TRUE,
   x_threshold = 0.6,
   y_threshold = 0.6,
@@ -28,7 +29,9 @@ plot_tc_landscape(
 
 \item{label_annotation}{Column name to use for highlighting/labelling genes}
 
-\item{label_top}{Number of top genes to label if highlight_genes not provided}
+\item{n_label}{Number of genes to label if highlight_genes not provided}
+
+\item{label_direction}{Direction for selecting genes: "top" (highest values) or "bottom" (lowest values)}
 
 \item{use_thresholds}{Whether to use thresholds from tc_results}
 
@@ -59,6 +62,11 @@ plot_tc_landscape(tc_results,
                  x_metric = "intra_cellular_isoform_diversity", 
                  y_metric = "inter_cellular_isoform_diversity",
                  highlight_genes = c("GENE1", "GENE2", "GENE3"))
+                 
+# Highlight bottom 10 genes by heterogeneity
+plot_tc_landscape(tc_results,
+                 n_label = 10,
+                 label_direction = "bottom")
 }
 
 }

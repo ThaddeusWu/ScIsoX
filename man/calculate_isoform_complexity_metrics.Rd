@@ -34,13 +34,18 @@ calculate_isoform_complexity_metrics(
 \item{verbose}{Whether to print detailed progress messages}
 }
 \value{
-List containing:
+A transcriptomic_complexity object (list) containing:
 \itemize{
 \item metrics: Data frame with complexity metrics and classifications for each gene
 \item single_cell_type_genes: List of genes expressed only in specific cell types
 \item thresholds: The thresholds used for classification
 \item threshold_plots: Visualisations of threshold fitting for each metric
 \item na_statistics: Statistics about NA value proportions for each metric
+}
+With performance attribute containing:
+\itemize{
+\item \code{total_time_sec}: Total processing time in seconds
+\item \code{memory_used_mb}: Memory utilised in megabytes
 }
 }
 \description{

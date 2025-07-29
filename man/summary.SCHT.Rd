@@ -7,7 +7,7 @@
 \method{summary}{SCHT}(object, ...)
 }
 \arguments{
-\item{object}{SCHT object to summarize}
+\item{object}{SCHT object to summarise}
 
 \item{...}{Additional arguments (not used)}
 }

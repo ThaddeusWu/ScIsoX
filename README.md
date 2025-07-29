@@ -1,5 +1,9 @@
 # ScIsoX
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/ThaddeusWu/ScIsoX)
+[![R](https://img.shields.io/badge/R-%3E%3D%204.0.0-blue.svg)](https://www.r-project.org/)
+
 ## Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R
 
 *A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution*
@@ -32,8 +36,10 @@ ScIsoX provides a robust computational framework for investigating transcriptomi
 
 - **Single-Cell Hierarchical Tensor**: Generate multi-dimensional representation of isoform expression
 - **Complexity Analysis**: Calculate seven core complexity metrics that capture different aspects of transcriptomic diversity
-- **Advanced Visualisations**: Create advanced figures for complexity analysis
+- **Advanced Visualisations**: Create advanced figures for complexity analysis with 13+ specialised plotting functions
 - **Cell Type Comparison**: Analyse cell type-specific isoform usage patterns
+- **Co-expression Analysis**: Interactive Shiny application for exploring isoform relationships
+- **Performance Tracking**: Built-in memory and runtime monitoring with sparsity analysis
 
 ### Theoretical Framework
 
@@ -42,9 +48,9 @@ ScIsoX implements a novel analytical framework based on hierarchical tensor deco
 1. **Intra-cellular isoform diversity**: Co-expression of multiple isoforms within individual cells
 2. **Inter-cellular isoform  diversity**: Distribution of different isoforms across the cellular population
 3. **Intra-cell-type heterogeneity**: Cell-to-cell variation in isoform usage within a cell type
-4. **Inter-cell-type dpecificity**: Cell-type-specific patterns of isoform usage
+4. **Inter-cell-type specificity**: Cell-type-specific patterns of isoform usage
 5. **Intra-cell-type heterogeneity variability**: Variation in cellular heterogeneity across cell types
-6. **Inter-cell-type hifference variability**: Identification of cell type pairs with distinctive isoform usage
+6. **Inter-cell-type difference variability**: Identification of cell type pairs with distinctive isoform usage
 7. **Cell-type-specific co-expression variability**: Variation in cellular co-expression mechanisms across cell types
 
 ---
@@ -67,6 +73,35 @@ if (!requireNamespace("devtools", quietly = TRUE)) {
 devtools::install_github("ThaddeusWu/ScIsoX")
 ```
 
+### First Time Setup
+
+When you first load ScIsoX, it will check for optional packages and provide helpful information:
+
+```r
+library(ScIsoX)
+
+# If some optional packages are missing, you'll see:
+# ===============================================
+# ScIsoX: Single-Cell Isoform Complexity Analysis
+# ===============================================
+# 
+# Some optional packages are not installed:
+#   - For visualisation: ggridges, ggrepel, ggExtra
+#   - For advanced_plots: ComplexHeatmap, ggradar, cowplot, patchwork
+#   - For data_manipulation: tidyr
+# 
+# Some visualisation features may not be available.
+# To install all optional packages, run:
+#   install_scisox_suggests()
+
+# Install all optional packages with one command:
+install_scisox_suggests()
+
+# Or install only specific types:
+install_scisox_suggests(include_bioc = FALSE)  # Skip Bioconductor packages
+install_scisox_suggests(include_github = FALSE)  # Skip GitHub packages
+```
+
 ### Dependencies
 
 ScIsoX requires several R packages to function properly. Below is a comprehensive list of all dependencies:
@@ -81,6 +116,7 @@ required_packages <- c(
   "progress",   # For progress bars
   "stats",      # For statistical functions
   "graphics",   # For base plotting
+  "grDevices",  # For graphics devices and colours
   "rtracklayer", # For handling GTF files
   "tools",      # For file utilities
   "data.table", # For efficient data manipulation
@@ -96,42 +132,44 @@ required_packages <- c(
   "diptest",    # For multimodality tests
   "scales",     # For scale transformations
   "gridExtra",  # For arranging multiple plots
-  "magrittr",    # For pipe operations
-  "MASS"             # For statistical functions
+  "magrittr",   # For pipe operations
+  "MASS",       # For statistical functions
+  "viridis",    # For colour palettes (frequently used)
+  "RColorBrewer", # For colour palettes (frequently used)
+  "shiny",      # For interactive applications
+  "shinydashboard", # For Shiny dashboard layouts
+  "plotly",     # For interactive plots
+  "DT"          # For interactive data tables
 )
 
-# Check and install missing required packages
-missing_required <- required_packages[!sapply(required_packages, requireNamespace, quietly = TRUE)]
-if (length(missing_required) > 0) {
-  install.packages(missing_required)
-}
+# These are automatically installed with ScIsoX
 ```
 
 #### Optional Dependencies (Suggests)
 
-These packages provide enhanced functionality:
+These packages provide enhanced functionality. **ScIsoX is designed to work without these packages**, but some visualisations and features will have reduced functionality:
 
 ```r
 # Optional packages for advanced visualisations
 suggested_packages <- c(
-  "ggridges",         # For ridge plots
-  "ggrepel",          # For repelling text labels
-  "ggExtra",          # For marginal plots
-  "viridis",          # For colour palettes
-  "ComplexHeatmap",   # For heatmaps
-  "cowplot",          # For plot composition
+  "ggridges",         # For ridge plots (required for plot_complexity_ridges)
+  "ggrepel",          # For repelling text labels (falls back to regular text)
+  "ggExtra",          # For marginal plots (skipped if not available)
+  "ComplexHeatmap",   # For heatmaps (required for plot_isoform_coexpression)
+  "cowplot",          # For plot composition (required for multi-panel layouts)
   "grid",             # For advanced graphics
-  "tidyr",            # For data reshaping
-  "RColorBrewer",     # For colour palettes
-  "circlize",   # For colour palettes
+  "tidyr",            # For data reshaping (falls back to base R reshape)
+  "circlize",         # For colour palettes in heatmaps
   "patchwork"         # For combining plots
 )
+```
 
-# Check and install missing suggested packages
-missing_suggested <- suggested_packages[!sapply(suggested_packages, requireNamespace, quietly = TRUE)]
-if (length(missing_suggested) > 0) {
-  install.packages(missing_suggested)
-}
+**Quick Installation:** ScIsoX provides a convenient function to install all optional packages:
+
+```r
+# After installing ScIsoX, run:
+library(ScIsoX)
+install_scisox_suggests()
 ```
 
 #### Other Packages
@@ -155,28 +193,32 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("ComplexHeatmap")
 ```
 
-To ensure maximum compatibility and functionality, you can install all dependencies with:
+#### Package Behaviour with Missing Dependencies
+
+ScIsoX is designed to be robust when optional packages are not installed:
+
+- **Core functionality always works**: All complexity calculations and basic analyses
+- **Graceful degradation**: When optional packages are missing:
+  - `ggrepel`: Labels use standard text positioning
+  - `ggExtra`: Marginal distributions are skipped
+  - `tidyr`: Base R reshape functions are used
+  - Colour palettes: Built-in alternatives are provided
+- **Clear error messages**: Functions requiring specific packages will provide installation instructions
+- **Startup messages**: When loading ScIsoX, you'll see which optional packages are missing
 
 ```r
-# Install all dependencies at once
-all_packages <- c(
-  required_packages, 
-  suggested_packages
-)
+# Example: Using ScIsoX without all optional packages
+library(ScIsoX)
+# You'll see a message about missing packages and how to install them
 
-# Check and install missing packages
-missing_all <- all_packages[!sapply(all_packages, requireNamespace, quietly = TRUE)]
-if (length(missing_all) > 0) {
-  install.packages(missing_all)
-}
+# The core analysis still works perfectly:
+tc_results <- calculate_isoform_complexity_metrics(scht_obj)
 
-# Install GitHub packages
-if (!requireNamespace("ggradar", quietly = TRUE)) {
-  devtools::install_github("ricardo-bion/ggradar")
-}
+# Some visualisations may have reduced features:
+plot_tc_landscape(tc_results)  # Works, but labels might overlap without ggrepel
 ```
 
-Note: Installing all suggested packages is recommended for full functionality of ScIsoX.
+Note: For the best experience, we recommend installing all suggested packages using `install_scisox_suggests()`.
 
 ---
 
@@ -191,7 +233,7 @@ ScIsoX is organised into several functional modules:
    - `recommend_qc_parameters()`: Generate data-driven QC parameter recommendations
 
 2. **SCHT Creation Pipeline**
-   - `create_scht()`: Process raw count data into Single-Cell Hierarchical Tensor objects
+   - `create_scht()`: Process raw count data into Single-Cell Hierarchical Tensor objects with automatic sparsity detection
      
 3. **Complexity Analysis**
    - `calculate_isoform_complexity_metrics()`: Calculate all seven core complexity metrics
@@ -199,7 +241,7 @@ ScIsoX is organised into several functional modules:
    - `find_complexity_pattern()`: Identify genes with specific complexity patterns
    - `compare_gene_metrics()`: Extract and compare metrics across multiple genes
 
-4. **Visualisation & Exploration (13 specialised functions)**
+4. **Visualisation & Exploration (13+ specialised functions)**
    - `plot_threshold_visualisations()`: Create bar charts for comparing distributions and threshold choices across different complexity metrics
    - `plot_tc_landscape()`: Create complexity landscape plots with marginal distributions
    - `plot_tc_density()`: Generate contour plots for complexity landscapes
@@ -213,6 +255,17 @@ ScIsoX is organised into several functional modules:
    - `plot_compare_multiple_genes_radar_cell_type()`: Compare multiple genes across cell types with radar charts
    - `plot_compare_tc_density_difference()`: Compare complexity density differences between groups
    - `plot_compare_tc_complexity_heatmap()`: Create comparative heatmaps of complexity differences
+
+5. **Co-expression Analysis Suite**
+   - `calculate_isoform_coexpression()`: Core correlation calculation for single genes
+   - `calculate_gene_coexpression_all_celltypes()`: Multi-cell type correlation analysis
+   - `analyse_coexpression_conservation()`: Identifies conserved vs cell-type-specific patterns
+   - `detect_isoform_switching()`: Identifies antagonistic isoform relationships
+   - `launch_coexpression_app()`: Interactive Shiny application for exploration
+
+6. **Performance & Quality Control**
+   - `calculate_scht_sparsity()`: Analyse memory efficiency of SCHT structures
+   - `generate_qc_report()`: Generate comprehensive QC reports
 
 ---
 
@@ -602,6 +655,86 @@ These comparative functions are designed for experimental designs with multiple 
 
 Each function offers different ways to select genes of interest, including variance-based selection (genes with highest variation across conditions), magnitude-based selection (genes with largest absolute changes), or custom selection (specific genes of interest).
 
+### Co-expression Analysis
+
+ScIsoX provides comprehensive tools for analysing isoform co-expression patterns:
+
+```r
+# Calculate co-expression for a single gene
+coexp_result <- calculate_isoform_coexpression(
+  scht_obj = scht_obj,
+  gene = "GENE_NAME",
+  method = "pearson",  # Options: "pearson", "spearman"
+  min_cells = 10
+)
+
+# Analyse co-expression across all cell types
+multi_coexp <- calculate_gene_coexpression_all_celltypes(
+  scht_obj = scht_obj,
+  gene = "GENE_NAME",
+  method = "pearson"
+)
+
+# Identify conservation patterns
+conservation_results <- analyse_coexpression_conservation(
+  multi_coexp,
+  correlation_threshold = 0.3,
+  fdr_method = "BH",
+  bootstrap_iterations = 100,
+  seed = 123
+)
+
+# Detect isoform switching (antagonistic relationships)
+switching_genes <- detect_isoform_switching(
+  scht_obj = scht_obj,
+  genes = NULL,  # NULL analyses all genes
+  correlation_threshold = -0.3,
+  min_pairs = 1
+)
+
+# Launch interactive Shiny application
+launch_coexpression_app(scht_obj)
+```
+
+The co-expression analysis suite provides:
+- **Correlation analysis**: Calculate pairwise correlations between isoforms
+- **Conservation patterns**: Identify conserved, variable, and mixed patterns across cell types
+- **Isoform switching**: Detect antagonistic isoform relationships
+- **Interactive exploration**: Shiny app with heatmaps, statistics, and export functionality
+
+### Performance Analysis & Quality Control
+
+Monitor performance and generate comprehensive QC reports:
+
+```r
+# Analyse SCHT sparsity and memory efficiency
+sparsity_stats <- calculate_scht_sparsity(scht_obj)
+print(sparsity_stats)
+
+# Compare with cell type-specific analysis
+ct_sparsity <- calculate_ct_scht_sparsity(scht_obj)
+
+# Generate comprehensive QC report
+generate_qc_report(
+  scht_obj = scht_obj,
+  output_dir = "qc_reports",
+  dataset_name = "my_dataset",
+  include_plots = TRUE,
+  include_summary_stats = TRUE
+)
+
+# Analyse sparsity across different data representations
+sparsity_comparison <- analyse_sparsity_for_table(
+  list(dataset1 = scht_obj1, dataset2 = scht_obj2)
+)
+```
+
+These functions help you:
+- **Understand memory usage**: See how SCHT's hierarchical structure saves memory
+- **Monitor performance**: Track processing time and memory utilisation
+- **Quality control**: Generate detailed reports on data quality and filtering results
+- **Compare efficiency**: Demonstrate advantages over naive tensor approaches
+
 ---
 
 ## Troubleshooting
@@ -701,6 +834,7 @@ Siyuan Wu (thaddeus.wu@jcu.edu.au)
 ### Reporting Issues
 
 Please report bugs and feature requests via the [GitHub issue tracker](https://github.com/ThaddeusWu/ScIsoX/issues).
+
 
 ### License
 

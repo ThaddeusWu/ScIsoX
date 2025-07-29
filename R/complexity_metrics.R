@@ -4,8 +4,8 @@
 #                                                                #
 #  Author: [Siyuan Wu & Ulf Schmitz]                             #
 #  Institution: [James Cook University]                          #
-#  Date: Apr 22, 2025                                            #
-#  Package: ScIsoX V1.0.0                                        #
+#  Date: Jul 29, 2025                                            #
+#  Package: ScIsoX V1.1.0                                        #
 ##################################################################
 
 ########################
@@ -568,7 +568,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   # Improved multimodality detection that's more sensitive
   is_multimodal <- .detect_multimodality(values)
   
-  # MODIFIED ORDER: Determine distribution type for method selection
+  # Determine distribution type for method selection
   # 1. Extreme skewness, 2. Zero-inflation, 3. Multimodality, 4. Skewness, 5. Unimodal
   if (is_extremely_skewed) {
     if (skewness > 0) {
@@ -1687,10 +1687,10 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
     if (!exists("verbose")) verbose <- FALSE
     
     if (requireNamespace("mclust", quietly = TRUE)) {
-      # Fit mixture models with 3:4 components 
+      # Fit mixture models with 3 components 
       model <- suppressWarnings(mclust::Mclust(
         analysis_values,
-        G = 3:4,  
+        G = 3,  
         verbose = FALSE
       ))
       
@@ -1826,7 +1826,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
                 valid_densities <- intersection_densities[intersection_densities >= min_density_threshold]
                 
                 if (length(valid_intersections) > 0) {
-                  # Among valid intersections, prioritize those between the means
+                  # Among valid intersections, prioritise those between the means
                   between_means <- valid_intersections >= min(m1, m2) & valid_intersections <= max(m1, m2)
                   
                   if (any(between_means)) {
@@ -1862,7 +1862,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
             # Evaluate threshold quality
             # Get density at threshold using KDE (from actual data)
             threshold_kde_idx <- which.min(abs(kde$x - threshold))
-            threshold_density <- kde$y[threshold_kde_idx] / kde_max  # Normalize to [0,1]
+            threshold_density <- kde$y[threshold_kde_idx] / kde_max  # Normalise to [0,1]
             
             # Calculate mode prominence for both components
             mode1_idx <- which.min(abs(kde$x - m1))
@@ -2164,7 +2164,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
                 valley_score <- 0.45 * depth_score + 0.25 * balance_score +
                   0.2 * position_score + 0.1 * peaks_importance_score
               } else {
-                # Center/right - balanced weights
+                # Centre/right - balanced weights
                 valley_score <- 0.55 * depth_score + 0.15 * balance_score +
                   0.2 * position_score + 0.1 * peaks_importance_score
               }
@@ -2173,7 +2173,6 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
               valley_scores <- c(valley_scores, valley_score)
               valley_thresholds <- c(valley_thresholds, potential_threshold)
               
-              # Debug output
               if (verbose) {
                 message(sprintf("Valley at %.3f (pos=%.2f): depth=%.2f, balance=%.2f (%.1f%%/%.1f%%), score=%.3f",
                                 potential_threshold, position, depth_score,
@@ -2267,15 +2266,15 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   # Existing k-means fallback logic
   kmeans_result <- try({
     km <- kmeans(analysis_values, centers = 2, nstart = 25)
-    centers <- km$centers
+    centres <- km$centers
     
-    # Ensure centers are ordered
-    if (centers[1] > centers[2]) {
+    # Ensure centres are ordered
+    if (centres[1] > centres[2]) {
       clusters <- km$cluster
       clusters[clusters == 1] <- 3
       clusters[clusters == 2] <- 1
       clusters[clusters == 3] <- 2
-      centers <- centers[c(2, 1)]
+      centres <- centres[c(2, 1)]
     } else {
       clusters <- km$cluster
     }
@@ -2296,13 +2295,13 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
     pooled_sd <- sqrt((var(c1_vals) + var(c2_vals)) / 2)
     separation <- abs(c2_mean - c1_mean) / pooled_sd
     
-    # Create simulated peaks for visualisation (at cluster centers)
+    # Create simulated peaks for visualisation (at cluster centres)
     kde <- density(analysis_values, adjust = 1.0)
     kmeans_peaks <- c()
     
-    # Find the closest points on density curve to the cluster centers
-    for (center in c(c1_mean, c2_mean)) {
-      closest_idx <- which.min(abs(kde$x - center))
+    # Find the closest points on density curve to the cluster centres
+    for (centre in c(c1_mean, c2_mean)) {
+      closest_idx <- which.min(abs(kde$x - centre))
       kmeans_peaks <- c(kmeans_peaks, closest_idx)
     }
     
@@ -2489,7 +2488,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
     return(unimodal_result)
   }
   
-  # Simple fallback - use percentile method
+  # Fallback method using percentiles when other methods fail
   # Higher percentile for zero-inflated data to focus on non-zero distribution
   threshold <- quantile(analysis_values, 0.75)
   
@@ -2536,7 +2535,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
     return(unimodal_result)
   }
   
-  # Simple fallback - use percentile method
+  # Fallback method using percentiles when other methods fail
   # Higher percentile for zero-inflated data to focus on non-zero distribution
   threshold <- quantile(analysis_values, 0.75)
   
@@ -2584,7 +2583,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
   }
   
 
-  # Simple fallback - use percentile method
+  # Fallback method using percentiles when other methods fail
   # Higher percentile for zero-inflated data to focus on non-zero distribution
   threshold <- quantile(analysis_values, 0.75)
   
@@ -2874,7 +2873,7 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
                 threshold <- ((m1 * w2) + (m2 * w1)) / (w1 + w2)
               } else {
                 # Different variances - solve quadratic equation with weight correction
-                # Modified equation that accounts for mixing weights
+                # Equation accounts for mixing weights
                 c_weight_term <- log((s2 * w1) / (s1 * w2))  # Weight correction term
                 a <- 1/(2*s1^2) - 1/(2*s2^2)
                 b <- m2/s2^2 - m1/s1^2
@@ -4276,13 +4275,18 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' @param batch_size Number of genes to process at once (default: 500)
 #' @param min_samples Minimum number of samples required for reliable threshold modelling
 #' @param verbose Whether to print detailed progress messages
-#' @return List containing:
+#' @return A transcriptomic_complexity object (list) containing:
 #'   \itemize{
 #'     \item metrics: Data frame with complexity metrics and classifications for each gene
 #'     \item single_cell_type_genes: List of genes expressed only in specific cell types
 #'     \item thresholds: The thresholds used for classification
 #'     \item threshold_plots: Visualisations of threshold fitting for each metric
 #'     \item na_statistics: Statistics about NA value proportions for each metric
+#'   }
+#'   With performance attribute containing:
+#'   \itemize{
+#'     \item \code{total_time_sec}: Total processing time in seconds
+#'     \item \code{memory_used_mb}: Memory utilised in megabytes
 #'   }
 #' @export
 calculate_isoform_complexity_metrics <- function(scht_obj,
@@ -4301,8 +4305,24 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
                                                  min_samples = 20,
                                                  verbose = TRUE) {
   
+  # Start timing and memory tracking
+  start_time <- Sys.time()
+  gc_start <- gc(full = TRUE)
+  mem_start <- sum(gc_start[, "used"])
+  
+  # Handle both SCHT and IntegratedSCHT objects
+  if (inherits(scht_obj, "IntegratedSCHT")) {
+    # For IntegratedSCHT objects, use original_results
+    gene_list <- scht_obj$original_results
+  } else if (inherits(scht_obj, "SCHT")) {
+    # For regular SCHT objects, use the object directly as the gene list
+    gene_list <- scht_obj
+  } else {
+    stop("Input must be a SCHT or IntegratedSCHT object")
+  }
+  
   # Count total genes to process
-  total_genes <- length(names(scht_obj$original_results))
+  total_genes <- length(names(gene_list))
   message(paste("Calculating complexity metrics for", total_genes, "genes..."))
   
   # Check if progress package is available
@@ -4321,8 +4341,8 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
   cell_type_metrics <- list()
   
   # Process genes in batches for better memory management
-  gene_batches <- split(names(scht_obj$original_results),
-                        ceiling(seq_along(names(scht_obj$original_results)) / batch_size))
+  gene_batches <- split(names(gene_list),
+                        ceiling(seq_along(names(gene_list)) / batch_size))
   
   # Create a progress bar
   if(has_progress) {
@@ -4472,6 +4492,18 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
   # Sort by inter_cell_type_specificity for easier analysis
   results <- results[order(results$inter_cell_type_specificity, decreasing = TRUE), ]
   
+  # Calculate performance metrics
+  total_time <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+  gc_end <- gc(full = TRUE)
+  mem_end <- sum(gc_end[, "used"])
+  memory_used <- (mem_end - mem_start) / 1024  # Convert to MB
+  
+  if (verbose) {
+    message(sprintf("\nComplexity metric calculation completed in %.2f seconds (%.2f minutes)", 
+                   total_time, total_time/60))
+    message(sprintf("Memory utilised: %.2f MB", memory_used))
+  }
+  
   # Return the metrics, single_cell_type_genes list, thresholds and visualisations
   TC_results <- list(
     metrics = results,
@@ -4480,6 +4512,12 @@ calculate_isoform_complexity_metrics <- function(scht_obj,
     thresholds = threshold_values,
     threshold_plots = threshold_plots,
     na_statistics = na_stats
+  )
+  
+  # Add performance as an attribute
+  attr(TC_results, "performance") <- list(
+    total_time_sec = total_time,
+    memory_used_mb = memory_used
   )
   
   class(TC_results) <- "transcriptomic_complexity"
@@ -4723,6 +4761,15 @@ summary.transcriptomic_complexity <- function(object, ...) {
     print(metric_df_formatted)
   }
   
+  # Display performance metrics if available
+  perf <- attr(object, "performance")
+  if (!is.null(perf)) {
+    cat("\nPerformance metrics:\n")
+    cat(sprintf("  Processing time: %.2f seconds (%.2f minutes)\n", 
+                perf$total_time_sec, perf$total_time_sec/60))
+    cat(sprintf("  Memory utilised: %.2f MB\n", perf$memory_used_mb))
+  }
+  
   # Instead of printing everything, return the results as a list
   summary_results <- list(
     gene_count = gene_count,
@@ -4730,7 +4777,8 @@ summary.transcriptomic_complexity <- function(object, ...) {
     complexity_counts = complexity_counts,
     single_cell_type_count = single_cell_type_count,
     thresholds = thresholds,
-    na_statistics = na_statistics
+    na_statistics = na_statistics,
+    performance = perf
   )
   
   invisible(summary_results)

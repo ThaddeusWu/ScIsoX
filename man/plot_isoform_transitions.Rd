@@ -8,9 +8,10 @@ plot_isoform_transitions(
   scht_obj,
   gene,
   cell_type_order,
+  selected_isoforms = NULL,
   min_prop = 0.05,
   smooth = TRUE,
-  color_palette = NULL
+  colour_palette = NULL
 )
 }
 \arguments{
@@ -20,11 +21,13 @@ plot_isoform_transitions(
 
 \item{cell_type_order}{Vector specifying the order of cell types (required for this plot)}
 
-\item{min_prop}{Minimum proportion to display (default: 0.05)}
+\item{selected_isoforms}{Optional vector of isoform names to plot. If provided, only these isoforms will be shown (ignoring min_prop)}
+
+\item{min_prop}{Minimum proportion to display (default: 0.05). Ignored if selected_isoforms is provided}
 
 \item{smooth}{Apply smoothing to lines (default: TRUE)}
 
-\item{color_palette}{Colour palette to use (default: viridis plasma)}
+\item{colour_palette}{Colour palette to use (default: viridis plasma)}
 }
 \value{
 A ggplot object that can be printed or saved
@@ -40,6 +43,11 @@ developmental trajectories or other ordered cell type progressions.
 # Create isoform transition plot for a gene along a developmental trajectory
 cell_types <- c("Progenitor", "Intermediate", "Mature")
 plot_isoform_transitions(scht_obj, "GENE1", cell_type_order = cell_types)
+
+# Plot only specific isoforms
+plot_isoform_transitions(scht_obj, "GENE1", 
+                        cell_type_order = cell_types,
+                        selected_isoforms = c("ENSMUST00000001", "ENSMUST00000002"))
 }
 
 }

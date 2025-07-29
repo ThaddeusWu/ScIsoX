@@ -1,14 +1,17 @@
 ##############################################################
-#  Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline  #                     
+#  Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline  #
+#  Enhanced version with normalization options and           #
+#  comprehensive QC tracking                                 #                     
 #                                                            #
 #  Author: [Siyuan Wu & Ulf Schmitz]                         #
 #  Institution: [James Cook University]                      #
-#  Date: Apr 22, 2025                                        #
-#  Package: ScIsoX V1.0.0                                    #
+#  Date: Jul 29, 2025                                        #
+#  Package: ScIsoX V1.1.0                                    #
 ##############################################################
 
 # This implementation supports efficient handling of large-scale
 # single-cell long-read data with reduced memory footprint.
+# Includes support for pre-normalized data and enhanced QC tracking.
 
 ########################
 # Required Libraries   #
@@ -18,6 +21,7 @@
 #' @importFrom progress progress_bar
 #' @importFrom methods is
 #' @importFrom Matrix Matrix Diagonal
+#' @importFrom utils packageVersion
 NULL
 
 ##########################
@@ -48,7 +52,7 @@ NULL
                                 cell_info = NULL,
                                 n_hvg,
                                 qc_params,
-                                require_cell_type = FALSE,
+                                require_cell_type = TRUE,
                                 sparsity_threshold = 0.4) {
   
   # Validate numeric parameters
@@ -536,9 +540,56 @@ NULL
   )
   gene_id_to_name <- gene_id_to_name[!duplicated(names(gene_id_to_name))]
   
+  # Also create reverse lookup for gene names to IDs
+  gene_name_to_id <- structure(
+    names(gene_id_to_name),
+    names = gene_id_to_name
+  )
+  
+  # Create gene name to transcript lookup as well
+  gene_name_to_trans <- split(
+    transcript_info_filtered$transcript_id,
+    transcript_info_filtered$gene_name
+  )
+  
   # Pre-allocate result list
   SCHT <- vector("list", length(var_genes))
   names_vec <- character(length(var_genes))
+  
+  # Track HVG isoform counts
+  hvg_single_iso <- character()
+  hvg_multi_iso <- character()
+  
+  # First pass: collect all gene names to identify conflicts
+  gene_name_mapping <- list()
+  for (i in seq_along(var_genes)) {
+    current_gene <- var_genes[i]
+    
+    # Determine gene name
+    gene_transcripts <- gene_to_trans[[current_gene]]
+    gene_name_selected <- gene_id_to_name[current_gene]
+    
+    if (is.null(gene_transcripts)) {
+      gene_transcripts <- gene_name_to_trans[[current_gene]]
+      gene_name_selected <- current_gene
+    }
+    
+    if (!is.null(gene_transcripts)) {
+      # Store mapping
+      if (gene_name_selected %in% names(gene_name_mapping)) {
+        gene_name_mapping[[gene_name_selected]] <- c(gene_name_mapping[[gene_name_selected]], current_gene)
+      } else {
+        gene_name_mapping[[gene_name_selected]] <- current_gene
+      }
+    }
+  }
+  
+  # Identify conflicts (gene names with multiple IDs)
+  conflicted_gene_names <- names(gene_name_mapping)[sapply(gene_name_mapping, length) > 1]
+  if (length(conflicted_gene_names) > 0 && verbose) {
+    message(sprintf("Found %d gene names with multiple IDs, will use gene IDs for these", 
+                   length(conflicted_gene_names)))
+  }
   
   # Progress tracking
   if (verbose) {
@@ -557,19 +608,40 @@ NULL
     transcript_rows <- rownames(transcript_mat_final)
   }
   
+  # Check if var_genes are gene IDs or gene names
+  n_as_ids <- sum(var_genes %in% names(gene_to_trans))
+  n_as_names <- sum(var_genes %in% names(gene_name_to_trans))
+  
+  if (verbose && n_as_names > n_as_ids) {
+    message("Note: Input appears to use gene names rather than gene IDs. ",
+            "Matching by gene names.")
+  }
+  
   # Process each gene
   for (i in seq_along(var_genes)) {
     current_gene <- var_genes[i]
     
-    # Get transcripts for current gene using lookup
+    # Determine if current_gene is a gene ID or gene name
+    # First try as gene ID
     gene_transcripts <- gene_to_trans[[current_gene]]
+    gene_name_selected <- gene_id_to_name[current_gene]
+    
+    # If not found as gene ID, try as gene name
+    if (is.null(gene_transcripts)) {
+      gene_transcripts <- gene_name_to_trans[[current_gene]]
+      gene_name_selected <- current_gene
+    }
+    
     if (!is.null(gene_transcripts)) {
       # Find transcripts present in data
       existing_transcripts <- intersect(gene_transcripts, transcript_rows)
       
-      # Get gene name efficiently
-      gene_name_selected <- gene_id_to_name[current_gene]
-      names_vec[i] <- gene_name_selected
+      # Set the name: use gene ID if there's a conflict, otherwise use gene name
+      if (gene_name_selected %in% conflicted_gene_names) {
+        names_vec[i] <- current_gene  # Use gene ID for conflicted names
+      } else {
+        names_vec[i] <- gene_name_selected  # Use gene name for unique names
+      }
       
       if (length(existing_transcripts) > 0) {
         # Extract transcript data
@@ -597,9 +669,12 @@ NULL
           non_zero_transcripts <- result_data[row_sums > 0, , drop = FALSE]
         }
         
-        # Only keep genes with multiple isoforms
-        if (nrow(non_zero_transcripts) > 1) {
+        # Track single vs multiple isoforms
+        if (nrow(non_zero_transcripts) == 1) {
+          hvg_single_iso <- c(hvg_single_iso, gene_name_selected)
+        } else if (nrow(non_zero_transcripts) > 1) {
           SCHT[[i]] <- non_zero_transcripts
+          hvg_multi_iso <- c(hvg_multi_iso, gene_name_selected)
         }
       }
     }
@@ -642,9 +717,15 @@ NULL
   # Final status
   if (verbose) {
     message(sprintf("Created isoform matrices for %d genes", length(SCHT)))
+    message(sprintf("HVGs with single isoform: %d (removed)", length(hvg_single_iso)))
+    message(sprintf("HVGs with multiple isoforms: %d (kept)", length(hvg_multi_iso)))
   }
   
-  return(list(SCHT = SCHT))
+  return(list(
+    SCHT = SCHT,
+    hvg_single_iso = hvg_single_iso,
+    hvg_multi_iso = hvg_multi_iso
+  ))
 }
 
 #' Build SCHT structure
@@ -704,11 +785,12 @@ NULL
       
       for (j in chunk_range) {
         gene_matrix <- scht[[j]]
-        matrix_size <- nrow(gene_matrix) * ncol(gene_matrix)
+        # Use as.numeric to prevent integer overflow
+        matrix_size <- as.numeric(nrow(gene_matrix)) * as.numeric(ncol(gene_matrix))
         
         if (is(gene_matrix, "sparseMatrix")) {
-          # For sparse matrices, we can directly get the number of non-zeros
-          zeros_count <- matrix_size - length(gene_matrix@x)
+          # For sparse matrices, use nnzero for accurate non-zero count
+          zeros_count <- matrix_size - Matrix::nnzero(gene_matrix)
         } else {
           # For dense matrices
           zeros_count <- sum(gene_matrix == 0)
@@ -742,11 +824,12 @@ NULL
   return(scht)
 }
 
-#' Generate cell type-specific SCHT
+#' Generate cell type-specific SCHT (Optimized Version)
 #'
 #' @description
 #' Creates cell type-specific data structures with optimised operations
-#' for efficient handling of large datasets.
+#' for efficient handling of large datasets. This version inverts the loop
+#' order to be more memory and stack efficient.
 #'
 #' @param scht Original SCHT object
 #' @param cell_info Cell metadata with cell type information
@@ -761,83 +844,72 @@ NULL
     stop("cell_info must contain 'cell_type' column")
   }
   
-  # Get unique cell type efficiently
-  if (is.factor(cell_info$cell_type)) {
-    cell_types <- levels(cell_info$cell_type)
-  } else {
-    cell_types <- unique(cell_info$cell_type)
+  # Get unique cell types and create a lookup for which cells belong to which type
+  cell_types <- unique(as.character(cell_info$cell_type))
+  
+  # Ensure the first column of cell_info contains the cell IDs that match matrix colnames
+  cell_ids <- as.character(cell_info[, 1])
+  cells_by_cell_type <- split(cell_ids, cell_info$cell_type)
+  
+  # Pre-allocate a list structure for the results.
+  cell_type_scht <- stats::setNames(vector("list", length(cell_types)), cell_types)
+  for (ct in cell_types) {
+    # Initialize each cell type with an empty list to hold gene matrices
+    cell_type_scht[[ct]] <- list()
   }
   
-  # Pre-allocate result structures
-  cell_type_scht <- vector("list", length(cell_types))
-  names(cell_type_scht) <- cell_types
-  data_log <- vector("list", length(cell_types))
-  names(data_log) <- cell_types
-  
-  # Create cell type-to-cells lookup
-  cells_by_cell_type <- split(cell_info[, 1], cell_info$cell_type)
-  
-  # Process each cell type efficiently
-  for (i in seq_along(cell_types)) {
-    current_cell_type <- cell_types[i]
-    cell_type_cells <- cells_by_cell_type[[current_cell_type]]
-    initial_cells <- length(cell_type_cells)
+  # --- OPTIMIZED LOOP: Iterate through GENES first, then assign to cell types ---
+  for (gene_name in names(scht)) {
+    original_mat <- scht[[gene_name]]
     
-    # Pre-allocate for gene matrices
-    cell_type_matrices <- vector("list", length(scht))
-    names(cell_type_matrices) <- names(scht)
-    genes_found <- 0
+    # Get the column names (cell IDs) for the current gene's matrix once
+    matrix_cells <- colnames(original_mat)
     
-    # Process each gene
-    for (j in seq_along(scht)) {
-      gene_name <- names(scht)[j]
-      original_mat <- scht[[gene_name]]
+    # Now, for this single gene, iterate through the cell types
+    for (current_cell_type in cell_types) {
+      # Find which cells in this matrix belong to the current cell type
+      cell_type_cells_for_this_gene <- intersect(matrix_cells, cells_by_cell_type[[current_cell_type]])
       
-      # Find matching cells
-      matching_cols <- which(colnames(original_mat) %in% cell_type_cells)
-      
-      if (length(matching_cols) > 0) {
-        # Extract cell type-specific matrix
-        cell_type_mat <- original_mat[, matching_cols, drop = FALSE]
+      if (length(cell_type_cells_for_this_gene) > 0) {
+        # Extract the subset of the matrix for this cell type
+        cell_type_mat <- original_mat[, cell_type_cells_for_this_gene, drop = FALSE]
         
-        # Filter by expression
+        # Filter by expression (optional, but good practice)
         col_sums <- colSums(cell_type_mat)
         non_zero_cols <- which(col_sums > qc_params$min_expr)
         
         if (length(non_zero_cols) > 0) {
-          cell_type_mat <- cell_type_mat[, non_zero_cols, drop = FALSE]
-          cell_type_matrices[[j]] <- cell_type_mat
-          genes_found <- genes_found + 1
+          # If there are cells left after filtering, add the matrix to our results
+          cell_type_scht[[current_cell_type]][[gene_name]] <- cell_type_mat[, non_zero_cols, drop = FALSE]
         }
       }
     }
-    
-    # Clean up empty entries
-    cell_type_matrices <- cell_type_matrices[!sapply(cell_type_matrices, is.null)]
-    
-    # Store results
-    cell_type_scht[[i]] <- cell_type_matrices
-    data_log[[i]] <- list(
-      initial_cells = initial_cells,
-      n_genes = genes_found
-    )
   }
   
-  # Remove cell types with zero genes
-  non_empty_cell_types <- !sapply(cell_type_scht, function(x) length(x) == 0)
-  cell_type_scht <- cell_type_scht[non_empty_cell_types]
-  data_log <- data_log[non_empty_cell_types]
+  # --- Clean up the final structure ---
   
+  # Remove cell types that ended up with zero genes
+  non_empty_cell_types_mask <- sapply(cell_type_scht, function(x) length(x) > 0)
+  cell_type_scht <- cell_type_scht[non_empty_cell_types_mask]
   
   # Create summary statistics
   summary_stats <- data.frame(
     cell_type = names(cell_type_scht),
-    n_genes = vapply(cell_type_scht, length, FUN.VALUE = integer(1)),
-    n_cells = vapply(data_log, function(x) x$initial_cells, FUN.VALUE = integer(1)),
+    n_genes = sapply(cell_type_scht, length),
+    n_cells = sapply(names(cell_type_scht), function(ct) length(cells_by_cell_type[[ct]])),
     row.names = NULL
   )
   
-  # Return result
+  # Create a simple data log
+  data_log <- list()
+  for(ct in names(cell_type_scht)){
+    data_log[[ct]] <- list(
+      initial_cells = summary_stats$n_cells[summary_stats$cell_type == ct],
+      n_genes = summary_stats$n_genes[summary_stats$cell_type == ct]
+    )
+  }
+  
+  # Return the final result object
   result <- list(
     cell_type_matrices = cell_type_scht,
     summary = summary_stats,
@@ -880,13 +952,135 @@ NULL
       creation_date = creation_date,
       stats = list(
         original = attr(scht_obj, "stats"),
-        cell_type_specific = cell_type_result$summary
+        cell_type_matrices = cell_type_result$summary
       ),
       data_log = cell_type_result$data_log
     )
   )
   
   return(final_result)
+}
+
+# Helper functions for enhanced QC tracking
+.store_input_stats <- function(gene_counts, transcript_counts) {
+  list(
+    n_genes_original = nrow(gene_counts),
+    n_transcripts_original = nrow(transcript_counts),
+    n_cells_original = ncol(gene_counts),
+    
+    # Sparsity of original matrices
+    gene_matrix_sparsity = if (inherits(gene_counts, "sparseMatrix")) {
+      (1 - Matrix::nnzero(gene_counts) / length(gene_counts)) * 100
+    } else {
+      (sum(gene_counts == 0) / length(gene_counts)) * 100
+    },
+    
+    transcript_matrix_sparsity = if (inherits(transcript_counts, "sparseMatrix")) {
+      (1 - Matrix::nnzero(transcript_counts) / length(transcript_counts)) * 100
+    } else {
+      (sum(transcript_counts == 0) / length(transcript_counts)) * 100
+    },
+    
+    # Basic statistics
+    genes_per_cell = colSums(gene_counts > 0),
+    median_genes_per_cell = median(colSums(gene_counts > 0)),
+    median_transcripts_per_cell = median(colSums(transcript_counts > 0)),
+    median_counts_per_cell = median(colSums(gene_counts))
+  )
+}
+
+.store_qc_parameters <- function(auto_params, used_params) {
+  list(
+    recommended = auto_params,
+    applied = used_params
+  )
+}
+
+.store_filtering_stats <- function(pre_qc_stats, existing_qc, input_stats, qc_params) {
+  list(
+    initial_qc = list(
+      genes = list(
+        original = pre_qc_stats$n_genes,
+        removed = existing_qc$n_filtered_genes,
+        remaining = pre_qc_stats$n_genes - existing_qc$n_filtered_genes,
+        removal_rate = existing_qc$n_filtered_genes / pre_qc_stats$n_genes * 100
+      ),
+      transcripts = list(
+        original = pre_qc_stats$n_transcripts,
+        removed = existing_qc$n_filtered_transcripts,
+        remaining = pre_qc_stats$n_transcripts - existing_qc$n_filtered_transcripts,
+        removal_rate = existing_qc$n_filtered_transcripts / pre_qc_stats$n_transcripts * 100
+      )
+    ),
+    cell_qc = list(
+      cells = list(
+        original = pre_qc_stats$n_cells,
+        removed = existing_qc$n_filtered_cells,
+        remaining = pre_qc_stats$n_cells - existing_qc$n_filtered_cells,
+        removal_rate = existing_qc$n_filtered_cells / pre_qc_stats$n_cells * 100
+      ),
+      removal_reasons = list(
+        too_few_genes = sum(input_stats$genes_per_cell < qc_params$min_genes_per_cell),
+        too_many_genes = sum(input_stats$genes_per_cell > qc_params$max_genes_per_cell),
+        percent_too_few = sum(input_stats$genes_per_cell < qc_params$min_genes_per_cell) / 
+                         pre_qc_stats$n_cells * 100,
+        percent_too_many = sum(input_stats$genes_per_cell > qc_params$max_genes_per_cell) / 
+                          pre_qc_stats$n_cells * 100
+      )
+    )
+  )
+}
+
+.store_hvg_stats <- function(pre_qc_stats, existing_qc, hvg_genes, scht_genes, 
+                            single_iso_genes = NULL, multi_iso_genes = NULL) {
+  list(
+    total_genes_available = pre_qc_stats$n_genes - existing_qc$n_filtered_genes,
+    hvg_requested = length(hvg_genes),
+    hvg_selected = length(hvg_genes),
+    hvg_in_scht = length(scht_genes),
+    hvg_removed_single_isoform = length(hvg_genes) - length(scht_genes),
+    selection_rate = length(hvg_genes) / (pre_qc_stats$n_genes - existing_qc$n_filtered_genes) * 100,
+    # New detailed tracking
+    hvg_with_single_isoform = if (!is.null(single_iso_genes)) length(single_iso_genes) else NA,
+    hvg_with_multiple_isoforms = if (!is.null(multi_iso_genes)) length(multi_iso_genes) else NA,
+    percent_multi_isoform = if (!is.null(multi_iso_genes) && length(hvg_genes) > 0) {
+      length(multi_iso_genes) / length(hvg_genes) * 100
+    } else NA
+  )
+}
+
+.store_scht_structure_stats <- function(scht_list, n_cells_after_qc) {
+  # Count isoforms per gene
+  isoform_counts <- numeric()
+  total_isoforms <- 0
+  gene_names <- names(scht_list)
+  
+  for (gene in gene_names) {
+    gene_mat <- scht_list[[gene]]
+    if (!is.null(gene_mat) && length(gene_mat) > 0) {
+      n_iso <- nrow(gene_mat)
+      isoform_counts <- c(isoform_counts, n_iso)
+      total_isoforms <- total_isoforms + n_iso
+    }
+  }
+  
+  # Calculate structure statistics
+  list(
+    n_genes_in_scht = length(isoform_counts),
+    n_cells_after_qc = n_cells_after_qc,
+    
+    isoform_stats = list(
+      total_isoforms = total_isoforms,
+      max_isoforms_per_gene = max(isoform_counts),
+      mean_isoforms_per_gene = mean(isoform_counts),
+      median_isoforms_per_gene = median(isoform_counts),
+      genes_with_single_isoform = sum(isoform_counts == 1),
+      genes_with_multiple_isoforms = sum(isoform_counts > 1),
+      percent_multi_isoform = sum(isoform_counts > 1) / length(isoform_counts) * 100
+    ),
+    
+    isoform_distribution = table(isoform_counts)
+  )
 }
 
 ###################
@@ -918,9 +1112,14 @@ print.SCHT <- function(x, ...) {
   ))
   
   # Show matrix types if available
-  if (length(x$original_results) > 0) {
-    sample_matrix <- x$original_results[[1]]
-    cat(sprintf("Matrix storage type: %s\n", class(sample_matrix)[1]))
+  # Note: SCHT objects are lists of gene matrices
+  if (length(x) > 0 && !is.null(names(x))) {
+    # Get first gene matrix
+    first_gene <- names(x)[1]
+    if (first_gene %in% names(x)) {
+      sample_matrix <- x[[first_gene]]
+      cat(sprintf("Matrix storage type: %s\n", class(sample_matrix)[1]))
+    }
   }
 }
 
@@ -930,7 +1129,7 @@ print.SCHT <- function(x, ...) {
 #' Generates a detailed summary of an SCHT object, including preprocessing
 #' information and data characteristics.
 #'
-#' @param object SCHT object to summarize
+#' @param object SCHT object to summarise
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
@@ -963,22 +1162,22 @@ summary.SCHT <- function(object, ...) {
   
   # Data characteristics
   cat("Data characteristics:\n")
-  cat(sprintf(
-    "  Sparsity: %.1f%%\n  Created: %s\n",
-    stats$sparsity * 100,
-    attr(object, "creation_date")
-  ))
+  cat(sprintf("  Sparsity: %.1f%%\n", stats$sparsity * 100))
+  
+  cat(sprintf("  Created: %s\n", attr(object, "creation_date")))
   
   # Performance metrics if available
   perf <- attr(object, "performance")
   if (!is.null(perf)) {
     cat("\nPerformance metrics:\n")
     cat(sprintf(
-      "  Processing time: %.2f seconds (%.2f minutes)\n  Peak memory usage: %.2f MB\n",
-      perf$total_time_sec, perf$total_time_sec/60, perf$peak_memory_mb
+      "  Processing time: %.2f seconds (%.2f minutes)\n  Memory utilised: %.2f MB\n",
+      perf$total_time_sec, perf$total_time_sec/60, 
+      ifelse(!is.null(perf$memory_used_mb), perf$memory_used_mb, perf$peak_memory_mb)
     ))
   }
 }
+
 
 ############################
 # CellTypeSCHT S3 Methods  #
@@ -1009,7 +1208,7 @@ print.CellTypeSCHT <- function(x, ...) {
 #' @description
 #' Generates a detailed summary of cell type-specific SCHT analysis.
 #'
-#' @param object CellTypeSCHT object to summarize
+#' @param object CellTypeSCHT object to summarise
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
@@ -1082,7 +1281,7 @@ print.IntegratedSCHT <- function(x, ...) {
 #' Provides a comprehensive summary of an integrated SCHT object, including
 #' original SCHT summary and cell type-specific analysis results.
 #'
-#' @param object IntegratedSCHT object to summarize
+#' @param object IntegratedSCHT object to summarise
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
@@ -1099,8 +1298,9 @@ summary.IntegratedSCHT <- function(object, ...) {
   # Cell type-specific summary
   cat("\nCell type-specific Summary:\n")
   cat("----------------------\n")
-  stats <- attr(object, "stats")$cell_type_specific
+  stats <- attr(object, "stats")$cell_type_matrices
   print(stats)
+  
   
   # Performance metrics if available
   perf <- attr(object, "performance")
@@ -1108,7 +1308,8 @@ summary.IntegratedSCHT <- function(object, ...) {
     cat("\nPerformance metrics:\n")
     cat(sprintf("  Total processing time: %.2f seconds (%.2f minutes)\n", 
                 perf$total_time_sec, perf$total_time_sec/60))
-    cat(sprintf("  Peak memory usage: %.2f MB\n", perf$peak_memory_mb))
+    cat(sprintf("  Memory utilised: %.2f MB\n", 
+                ifelse(!is.null(perf$memory_used_mb), perf$memory_used_mb, perf$peak_memory_mb)))
   }
   
   # Explanatory note
@@ -1118,13 +1319,16 @@ summary.IntegratedSCHT <- function(object, ...) {
   cat("and avoid spurious zero expressions in the cell type-specific analyses.\n")
 }
 
-#' SCHT creation for large datasets
+#' SCHT creation for large datasets with enhanced features
 #'
 #' @description
 #' Creates a Single-Cell Hierarchical Tensor from raw count data
-#' with efficient operations for large-scale datasets.
+#' with efficient operations for large-scale datasets. Supports
+#' pre-normalized data and comprehensive QC tracking.
 #'
-#' @param gene_counts Gene-level counts as matrix, data frame, or sparse matrix
+#' @param gene_counts Gene-level counts as matrix, data frame, or sparse matrix.
+#'   Row names can be either gene IDs (e.g., ENSG00000000001) or gene names (e.g., GAPDH).
+#'   The function automatically detects which format is used and handles both appropriately.
 #' @param transcript_counts Transcript-level counts as matrix, data frame, or sparse matrix
 #' @param transcript_info Data frame with transcript annotations
 #' @param cell_info Optional data frame with cell metadata
@@ -1133,8 +1337,19 @@ summary.IntegratedSCHT <- function(object, ...) {
 #' @param require_cell_type Whether cell type information is required
 #' @param verbose Whether to show progress
 #' @param sparsity_threshold Minimum sparsity to use sparse representation (0-1)
+#' @param input_type Type of input data: "raw_counts" or "normalised" (e.g., TPM, FPKM)
 #'
-#' @return An SCHT or IntegratedSCHT object
+#' @return An SCHT or IntegratedSCHT object with the following attributes:
+#'   \itemize{
+#'     \item \code{performance}: List containing performance metrics:
+#'       \itemize{
+#'         \item \code{total_time_sec}: Total processing time in seconds
+#'         \item \code{memory_used_mb}: Memory utilised in megabytes
+#'       }
+#'     \item \code{preprocessing}: List containing QC statistics and enhanced QC report
+#'     \item \code{creation_date}: Timestamp of object creation
+#'     \item \code{package_version}: Version of ScIsoX used
+#'   }
 #' @export
 #'
 #' @examples
@@ -1153,7 +1368,8 @@ summary.IntegratedSCHT <- function(object, ...) {
 #' #   ),
 #' #   require_cell_type = TRUE,
 #' #   verbose = TRUE,
-#' #   sparsity_threshold = 0.5  # Adjust based on data sparsity
+#' #   sparsity_threshold = 0.5,  # Adjust based on data sparsity
+#' #   input_type = "raw_counts"  # or "normalised" for TPM/FPKM data
 #' # )
 create_scht <- function(gene_counts,
                         transcript_counts,
@@ -1165,9 +1381,13 @@ create_scht <- function(gene_counts,
                           max_genes_per_cell = 10000,      
                           min_cells_expressing = 0.02,   
                           min_expr = 1e-4),
-                        require_cell_type = FALSE,
+                        require_cell_type = TRUE,
                         verbose = TRUE,
-                        sparsity_threshold = 0.4) {
+                        sparsity_threshold = 0.4,
+                        input_type = c("raw_counts", "normalised")) {
+  
+  # Match input type
+  input_type <- match.arg(input_type)
   
   # Start timing
   total_start_time <- Sys.time()
@@ -1175,6 +1395,7 @@ create_scht <- function(gene_counts,
   
   if (verbose) {
     message("Starting SCHT creation with matrix support...")
+    message(sprintf("Input type: %s", input_type))
     message("Checking package dependencies...")
     if (!requireNamespace("Matrix", quietly = TRUE)) {
       warning("Package 'Matrix' is required for optimal performance with large datasets")
@@ -1201,6 +1422,19 @@ create_scht <- function(gene_counts,
   transcript_info <- input_result$transcript_info
   cell_info <- input_result$cell_info
   
+  # Store input statistics for enhanced QC
+  input_stats <- .store_input_stats(gene_counts, transcript_counts)
+  
+  # Add cell type distribution if available
+  if (!is.null(cell_info) && "cell_type" %in% colnames(cell_info)) {
+    cell_type_dist <- table(cell_info$cell_type)
+    input_stats$cell_type_distribution <- list(
+      counts = as.list(cell_type_dist),
+      percentages = as.list(prop.table(cell_type_dist) * 100),
+      n_cell_types = length(unique(cell_info$cell_type))
+    )
+  }
+  
   if (verbose) {
     mem_usage <- gc(reset = TRUE)
     is_sparse_gene <- is(gene_counts, "sparseMatrix")
@@ -1220,6 +1454,117 @@ create_scht <- function(gene_counts,
                     ncol(transcript_counts),
                     ifelse(is_sparse_transcript, "sparse", "dense")))
   }
+  
+  # Always calculate QC recommendations for reporting purposes
+  # This will provide the three strategies regardless of user input
+  auto_qc_params <- NULL
+  
+  # Try to use recommend_qc_parameters if available
+  if (exists("recommend_qc_parameters", where = asNamespace("ScIsoX")) || 
+      exists("recommend_qc_parameters")) {
+    tryCatch({
+      # Try package namespace first
+      if (exists("recommend_qc_parameters", where = asNamespace("ScIsoX"))) {
+        auto_qc_params <- ScIsoX::recommend_qc_parameters(gene_counts)
+      } else {
+        auto_qc_params <- recommend_qc_parameters(gene_counts)
+      }
+        
+        if (verbose) {
+          message("Auto-detected QC parameters using three strategies:")
+          message(sprintf("  MAD Strategy: min=%d, max=%d genes per cell",
+                         auto_qc_params$MAD_strategy$min_genes_per_cell,
+                         auto_qc_params$MAD_strategy$max_genes_per_cell))
+          message(sprintf("  Interval 90: min=%d, max=%d genes per cell",
+                         auto_qc_params$Interval_90$min_genes_per_cell,
+                         auto_qc_params$Interval_90$max_genes_per_cell))
+          message(sprintf("  Interval 80: min=%d, max=%d genes per cell",
+                         auto_qc_params$Interval_80$min_genes_per_cell,
+                         auto_qc_params$Interval_80$max_genes_per_cell))
+        }
+        
+        # Use Interval_90 as default if not specified
+        if (is.null(qc_params$min_genes_per_cell)) {
+          qc_params$min_genes_per_cell <- auto_qc_params$Interval_90$min_genes_per_cell
+        }
+        if (is.null(qc_params$max_genes_per_cell)) {
+          qc_params$max_genes_per_cell <- auto_qc_params$Interval_90$max_genes_per_cell
+        }
+      }, error = function(e) {
+        # Fallback to manual calculation of all three strategies
+        if (verbose) {
+          message("Using fallback method for QC recommendations")
+        }
+        auto_qc_params <- list(
+          MAD_strategy = list(
+            min_genes_per_cell = as.integer(max(0, median(input_stats$genes_per_cell) - 3 * mad(input_stats$genes_per_cell))),
+            max_genes_per_cell = as.integer(median(input_stats$genes_per_cell) + 3 * mad(input_stats$genes_per_cell))
+          ),
+          Interval_90 = list(
+            min_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.05)),
+            max_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.95))
+          ),
+          Interval_80 = list(
+            min_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.10)),
+            max_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.90))
+          )
+        )
+        
+        if (verbose) {
+          message(sprintf("Auto-detected QC parameters (simple method): min=%d, max=%d genes per cell",
+                         auto_qc_params$Interval_90$min_genes_per_cell,
+                         auto_qc_params$Interval_90$max_genes_per_cell))
+        }
+        
+        # Use auto-detected values if not provided
+        if (is.null(qc_params$min_genes_per_cell)) {
+          qc_params$min_genes_per_cell <- auto_qc_params$Interval_90$min_genes_per_cell
+        }
+        if (is.null(qc_params$max_genes_per_cell)) {
+          qc_params$max_genes_per_cell <- auto_qc_params$Interval_90$max_genes_per_cell
+        }
+      })
+  } else {
+    # If function doesn't exist, calculate all three strategies manually
+    auto_qc_params <- list(
+      MAD_strategy = list(
+        min_genes_per_cell = as.integer(max(0, median(input_stats$genes_per_cell) - 3 * mad(input_stats$genes_per_cell))),
+        max_genes_per_cell = as.integer(median(input_stats$genes_per_cell) + 3 * mad(input_stats$genes_per_cell))
+      ),
+      Interval_90 = list(
+        min_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.05)),
+        max_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.95))
+      ),
+      Interval_80 = list(
+        min_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.10)),
+        max_genes_per_cell = as.integer(quantile(input_stats$genes_per_cell, 0.90))
+      )
+    )
+      
+      if (verbose) {
+        message(sprintf("Auto-detected QC parameters: min=%d, max=%d genes per cell",
+                       auto_qc_params$Interval_90$min_genes_per_cell,
+                       auto_qc_params$Interval_90$max_genes_per_cell))
+      }
+      
+    # Use auto-detected values if not provided
+    if (is.null(qc_params$min_genes_per_cell)) {
+      qc_params$min_genes_per_cell <- auto_qc_params$Interval_90$min_genes_per_cell
+    }
+    if (is.null(qc_params$max_genes_per_cell)) {
+      qc_params$max_genes_per_cell <- auto_qc_params$Interval_90$max_genes_per_cell
+    }
+  }
+  
+  # Store QC parameter info
+  qc_params_info <- .store_qc_parameters(auto_qc_params, qc_params)
+  
+  # Track pre-QC statistics
+  pre_qc_stats <- list(
+    n_genes = nrow(gene_counts),
+    n_transcripts = nrow(transcript_counts),
+    n_cells = ncol(gene_counts)
+  )
   
   # Step 1: Initial QC
   if (verbose) message("Step 1: Performing initial quality control...")
@@ -1264,20 +1609,29 @@ create_scht <- function(gene_counts,
                     cell_qc_result$n_cells))
   }
   
-  # Step 3: CPM normalisation
-  if (verbose) message("Step 3: Performing CPM normalisation...")
-  step3_time <- Sys.time()
-  
-  norm_result <- .perform_normalisation(
-    cell_qc_result$gene_counts_filtered,
-    cell_qc_result$transcript_counts_filtered
-  )
-  
-  if (verbose) {
-    mem_usage <- gc(reset = TRUE)
-    message(sprintf("CPM normalisation complete (%.2f sec). Memory usage: %.2f MB", 
-                    as.numeric(difftime(Sys.time(), step3_time, units = "secs")),
-                    sum(mem_usage[, 2] - mem_usage_start[, 2])))
+  # Step 3: CPM normalisation (conditional based on input_type)
+  if (input_type == "raw_counts") {
+    if (verbose) message("Step 3: Performing CPM normalisation...")
+    step3_time <- Sys.time()
+    
+    norm_result <- .perform_normalisation(
+      cell_qc_result$gene_counts_filtered,
+      cell_qc_result$transcript_counts_filtered
+    )
+    
+    gene_counts_norm <- norm_result$gene_counts_norm
+    transcript_counts_norm <- norm_result$transcript_counts_norm
+    
+    if (verbose) {
+      mem_usage <- gc(reset = TRUE)
+      message(sprintf("CPM normalisation complete (%.2f sec). Memory usage: %.2f MB", 
+                      as.numeric(difftime(Sys.time(), step3_time, units = "secs")),
+                      sum(mem_usage[, 2] - mem_usage_start[, 2])))
+    }
+  } else {
+    if (verbose) message("Step 3: Skipping CPM normalisation (data already normalised)...")
+    gene_counts_norm <- cell_qc_result$gene_counts_filtered
+    transcript_counts_norm <- cell_qc_result$transcript_counts_filtered
   }
   
   # Step 4: Log transformation
@@ -1285,8 +1639,8 @@ create_scht <- function(gene_counts,
   step4_time <- Sys.time()
   
   log_result <- .perform_log_transform(
-    norm_result$gene_counts_norm,
-    norm_result$transcript_counts_norm,
+    gene_counts_norm,
+    transcript_counts_norm,
     verbose
   )
   
@@ -1362,8 +1716,70 @@ create_scht <- function(gene_counts,
                     sum(mem_usage[, 2] - mem_usage_start[, 2])))
   }
   
-  # Attach preprocessing metadata
+  # Store comprehensive filtering statistics
+  filtering_stats <- .store_filtering_stats(
+    pre_qc_stats, 
+    list(
+      n_filtered_genes = qc_result$n_filtered_genes,
+      n_filtered_transcripts = qc_result$n_filtered_transcripts,
+      n_filtered_cells = cell_qc_result$n_filtered_cells
+    ),
+    input_stats,
+    qc_params
+  )
+  
+  # Store HVG statistics with single/multi isoform tracking
+  hvg_stats <- .store_hvg_stats(
+    pre_qc_stats,
+    list(
+      n_filtered_genes = qc_result$n_filtered_genes,
+      n_filtered_transcripts = qc_result$n_filtered_transcripts,
+      n_filtered_cells = cell_qc_result$n_filtered_cells
+    ),
+    hvg_result$var_genes,
+    names(isoform_result$SCHT),
+    single_iso_genes = isoform_result$hvg_single_iso,
+    multi_iso_genes = isoform_result$hvg_multi_iso
+  )
+  
+  # Store SCHT structure statistics
+  scht_structure_stats <- .store_scht_structure_stats(
+    isoform_result$SCHT,
+    cell_qc_result$n_cells
+  )
+  
+  # Calculate sparsity if function is available
+  if (exists("calculate_scht_sparsity")) {
+    scht_sparsity <- tryCatch({
+      calculate_scht_sparsity(scht_obj)
+    }, error = function(e) {
+      # If error, return NA values
+      list(sparsity = NA, n_total = NA, n_nonzero = NA)
+    })
+    scht_structure_stats$sparsity <- scht_sparsity
+  }
+  
+  # Perform comprehensive sparsity analysis if function is available
+  comprehensive_sparsity <- NULL
+  if (exists("analyse_sparsity_for_table")) {
+    comprehensive_sparsity <- tryCatch({
+      analyse_sparsity_for_table(
+        gene_counts = gene_counts,  # Original
+        transcript_counts = transcript_counts,  # Original
+        transcript_info = transcript_info,
+        scht_obj = scht_obj,
+        filtered_gene_counts = cell_qc_result$gene_counts_filtered,
+        filtered_transcript_counts = cell_qc_result$transcript_counts_filtered,
+        dataset_name = "Current Dataset"
+      )
+    }, error = function(e) {
+      NULL
+    })
+  }
+  
+  # Attach preprocessing metadata with enhanced QC report
   attr(scht_obj, "preprocessing") <- list(
+    # Original QC stats (backward compatibility)
     qc_stats = list(
       n_filtered_genes = qc_result$n_filtered_genes,
       n_filtered_transcripts = qc_result$n_filtered_transcripts,
@@ -1378,11 +1794,38 @@ create_scht <- function(gene_counts,
     params = list(
       n_hvg = n_hvg,
       min_genes_per_cell = qc_params$min_genes_per_cell,
+      max_genes_per_cell = qc_params$max_genes_per_cell,
       min_cells_expressing = qc_params$min_cells_expressing,
       min_expr = qc_params$min_expr,
       require_cell_type = require_cell_type,
       verbose = verbose,
-      sparsity_threshold = sparsity_threshold
+      sparsity_threshold = sparsity_threshold,
+      input_type = input_type
+    ),
+    # NEW: Comprehensive QC report
+    qc_report = list(
+      # Input data characteristics
+      input_data = input_stats,
+      
+      # QC parameters
+      qc_parameters = qc_params_info,
+      
+      # Step-by-step filtering
+      filtering = filtering_stats,
+      
+      # HVG selection
+      hvg_selection = hvg_stats,
+      
+      # SCHT structure
+      scht_structure = scht_structure_stats,
+      
+      # Metadata
+      analysis_date = Sys.Date(),
+      scisox_version = packageVersion("ScIsoX"),
+      input_type = input_type,
+      
+      # Comprehensive sparsity analysis
+      sparsity_analysis = comprehensive_sparsity
     )
   )
   
@@ -1420,24 +1863,41 @@ create_scht <- function(gene_counts,
                       as.numeric(difftime(Sys.time(), step9_time, units = "secs")),
                       sum(mem_usage[, 2] - mem_usage_start[, 2])))
     }
+    
+    # Add cell type-specific stats to QC report
+    if (exists("calculate_ct_scht_sparsity")) {
+      ct_sparsity <- tryCatch({
+        calculate_ct_scht_sparsity(scht_obj, verbose = FALSE)
+      }, error = function(e) {
+        NULL
+      })
+      
+      if (!is.null(ct_sparsity)) {
+        attr(scht_obj, "preprocessing")$qc_report$cell_type_sparsity <- ct_sparsity
+      }
+    }
   }
   
   # Final summary
   total_time <- as.numeric(difftime(Sys.time(), total_start_time, units = "secs"))
   final_mem <- gc(reset = TRUE)
-  peak_mem_usage <- sum(final_mem[, 2] - mem_usage_start[, 2])
+  memory_increment <- sum(final_mem[, 2] - mem_usage_start[, 2])
   
   if (verbose) {
     message(sprintf("SCHT creation completed successfully in %.2f seconds (%.2f minutes)", 
                     total_time, total_time/60))
-    message(sprintf("Peak memory usage: %.2f MB", peak_mem_usage))
+    message(sprintf("Memory utilised: %.2f MB", memory_increment))
   }
   
   # Add performance metrics to object
   attr(scht_obj, "performance") <- list(
     total_time_sec = total_time,
-    peak_memory_mb = peak_mem_usage
+    memory_used_mb = memory_increment
   )
+  
+  # Update QC report with total time
+  attr(scht_obj, "preprocessing")$qc_report$total_time <- total_time
   
   return(scht_obj)
 }
+

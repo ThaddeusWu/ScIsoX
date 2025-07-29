@@ -1,7 +1,7 @@
 Package: ScIsoX
 Title: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R
-Version: 1.0.0
-Date: 2025-04-22
+Version: 1.1.0
+Date: 2025-07-29
 Authors@R: c(
     person("Siyuan", "Wu", email = "thaddeus.wu@jcu.edu.au", role = c("aut", "cre")),
     person("Ulf", "Schmitz", role = "aut"))
@@ -10,12 +10,17 @@ Description: This package enables comprehensive analysis of transcriptomic compl
     and creation of Single-Cell Hierarchical Tensor (SCHT) structures, which facilitate 
     detailed investigation of transcriptomic complexity across different cell types. 
     The package includes functions for calculating seven core complexity metrics, visualising 
-    those metrics, and exploring cell type-specific isoform expression pattern. 
+    those metrics, exploring cell type-specific isoform expression patterns, comprehensive
+    co-expression analysis with conservation testing, and interactive Shiny applications. 
 License: MIT + file LICENSE
+URL: https://github.com/ThaddeusWu/ScIsoX
+BugReports: https://github.com/ThaddeusWu/ScIsoX/issues
+LazyData: true
 Imports:
     progress,
     stats,
     graphics,
+    grDevices,
     rtracklayer,
     tools,
     data.table,
@@ -32,26 +37,40 @@ Imports:
     scales,
     gridExtra,
     magrittr,
-    MASS
+    MASS,
+    viridis,
+    RColorBrewer,
+    shiny,
+    shinydashboard,
+    plotly,
+    DT,
+    ComplexHeatmap,
+    circlize,
+    plyr
 Suggests:
     ggridges,
     ggrepel,
     ggExtra,
-    viridis,
-    ComplexHeatmap,
-    circlize,
     cowplot,
     grid,
     tidyr,
-    RColorBrewer,
     ggradar,
-    patchwork
-Collate: create_scht.R
+    patchwork,
+    BiocManager,
+    devtools,
+    openxlsx
+Collate: package_utils.R
+	zzz.R
+	create_scht.R
 	qc_utils.R
 	create_transcript_info.R
 	generate_gene_counts.R
 	complexity_metrics.R
 	visualisation_analysis.R
+	scht_sparsity.R
+	generate_qc_report.R
+	coexpression_analysis.R
+	coexpression_shiny_app.R
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

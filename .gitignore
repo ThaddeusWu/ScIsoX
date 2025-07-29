@@ -1,0 +1,57 @@
+# R and RStudio files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# QC report outputs
+my_qc_report/
+**/qc_report*.html
+**/qc_report*.pdf
+**/qc_report*.md
+
+# Test results and outputs
+inst/scripts/
+robustness_results/
+*_robustness_results/
+
+# Temporary files and cache
+*.log
+*.out
+*.err
+*~
+.cache/
+*.tmp
+
+# Large data files
+*.rds
+*.RData
+*.rda
+*.csv.gz
+*.tsv.gz
+inst/extdata/*.rds
+inst/extdata/*.RData
+
+# Development notes and personal files
+notes/
+TODO.txt
+TODO.md
+personal_notes/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+src/*.o
+src/*.so
+src/*.dll
+
+# Documentation build files
+inst/doc
+Meta/
+doc/
+
+# Backup directories
+*_backup_*/

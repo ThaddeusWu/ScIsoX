@@ -11,7 +11,7 @@
   cell_info = NULL,
   n_hvg,
   qc_params,
-  require_cell_type = FALSE,
+  require_cell_type = TRUE,
   sparsity_threshold = 0.4
 )
 }

@@ -1,8 +1,8 @@
 ##############################################################
 #  Author: [Siyuan Wu & Ulf Schmitz]                         #
 #  Institution: [James Cook University]                      #
-#  Date: Apr 22, 2025                                        #
-#  Package: ScIsoX V1.0.0                                    #
+#  Date: Jul 29, 2025                                        #
+#  Package: ScIsoX V1.1.0                                    #
 ##############################################################
 
 #' Plot and analyse genes per cell distribution
