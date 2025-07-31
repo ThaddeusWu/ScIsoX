@@ -30,7 +30,7 @@ home:
   - text: Ask a question
     href: https://github.com/ThaddeusWu/ScIsoX/discussions
   - text: View on Zenodo
-    href: https://doi.org/10.5281/zenodo.16569860
+    href: https://doi.org/10.5281/zenodo.16569859
   
   sidebar:
     structure: [links, license, community, citation, authors, dev]
@@ -45,8 +45,8 @@ home:
         title: "Citation"
         text: |
           <strong>Software DOI:</strong><br>
-          <a href="https://doi.org/10.5281/zenodo.16569860">
-            <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16569860.svg" alt="DOI">
+          <a href="https://doi.org/10.5281/zenodo.16569859">
+            <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16569859.svg" alt="DOI">
           </a><br><br>
           <strong>Manuscript:</strong><br>
           Wu & Schmitz (2025)<br>
