@@ -1,0 +1,547 @@
+/* Modern, clean design for ScIsoX - No logos */
+
+/* General improvements */
+body {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #333333;
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-weight: 400;
+}
+
+/* Remove logo-related styles */
+.navbar-brand img,
+.page-header img.logo,
+.template-reference img.logo,
+.template-article img.logo,
+img.logo {
+  display: none !important;
+}
+
+/* Navigation bar styling */
+.navbar {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 0.75rem 0;
+  background-color: #1a5490 !important;
+  border-bottom: none;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: -0.5px;
+  color: #ffffff !important;
+}
+
+/* Navbar links */
+.navbar-nav .nav-link {
+  color: #ffffff !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  transition: opacity 0.2s ease;
+  opacity: 0.9;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  opacity: 1;
+}
+
+/* Page header - minimalist design */
+.page-header {
+  background: #1a5490;
+  border-bottom: none;
+  padding: 4rem 0;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.page-header .container,
+.page-header .container-fluid {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.page-header h1 {
+  font-size: 2.8rem;
+  font-weight: 300;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  text-shadow: none;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+
+.page-header p {
+  font-size: 1.15rem;
+  color: #ffffff;
+  opacity: 0.9;
+  max-width: 800px;
+  line-height: 1.7;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/* Improved headings */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: 400;
+  color: #333333;
+}
+
+h1 {
+  font-size: 2.4rem;
+  font-weight: 300;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+h2 {
+  font-size: 1.9rem;
+  font-weight: 300;
+  color: #333333;
+  margin-top: 2.5rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #333333;
+}
+
+/* Clean code blocks */
+pre {
+  background-color: #f6f8fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+code {
+  background-color: #f3f4f6;
+  padding: 0.15rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.875em;
+  color: #e74c3c;
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Links - subtle style */
+a {
+  color: #1a5490;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #134069;
+  text-decoration: underline;
+}
+
+/* Sidebar - clean design */
+.contents-list,
+.sidebar {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.sidebar h2 {
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Dark text for sidebar navigation on non-home pages */
+.template-reference .sidebar a,
+.template-article .sidebar a,
+.template-authors .sidebar a,
+.template-news .sidebar a {
+  color: #2c3e50 !important;
+}
+
+.template-reference .sidebar a:hover,
+.template-article .sidebar a:hover,
+.template-authors .sidebar a:hover,
+.template-news .sidebar a:hover {
+  color: #1a5490 !important;
+  text-decoration: underline;
+}
+
+/* Dark text for "On this page" navigation (TOC) */
+.col-md-3 a,
+.toc-active a,
+nav[id="toc"] a,
+#toc a,
+.page-nav a {
+  color: #2c3e50 !important;
+}
+
+.col-md-3 a:hover,
+.toc-active a:hover,
+nav[id="toc"] a:hover,
+#toc a:hover,
+.page-nav a:hover {
+  color: #1a5490 !important;
+}
+
+/* Active TOC link */
+.col-md-3 a.active,
+.toc-active a.active,
+nav[id="toc"] a.active,
+#toc a.active {
+  color: #1a5490 !important;
+  font-weight: 600;
+  border-left: 3px solid #1a5490;
+}
+
+/* "On this page" heading - try multiple selectors */
+#toc h2,
+nav[id="toc"] h2,
+.col-md-3 h2,
+.page-nav h2,
+.toc-active h2 {
+  color: #2c3e50 !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Table styling - minimal */
+table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+table thead {
+  background-color: #f8f9fa;
+}
+
+table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #dee2e6;
+}
+
+table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Function reference - clean cards */
+.ref-index {
+  margin-top: 2rem;
+}
+
+.ref-index h2 {
+  color: #2c3e50;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.ref-index dt {
+  font-weight: 600;
+  color: #1a5490;
+  font-size: 1.05rem;
+  margin-top: 1rem;
+}
+
+.ref-index dd {
+  margin-left: 0;
+  margin-bottom: 0.5rem;
+  color: #5a6c7d;
+  padding-left: 1rem;
+}
+
+/* Home page sections */
+.home section {
+  margin: 3rem 0;
+}
+
+.home h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+/* Example code blocks */
+.examples {
+  background-color: #f8f9fa;
+  border-left: 3px solid #1a5490;
+  padding: 1rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 4px 4px 0;
+}
+
+.examples h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+/* Output styling */
+.r-out {
+  background-color: #f1f3f5;
+  padding: 0.5rem 1rem;
+  border-left: 3px solid #27ae60;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+/* Search box - minimal */
+.search-input,
+.form-control {
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+}
+
+.search-input:focus,
+.form-control:focus {
+  border-color: #1a5490;
+  box-shadow: 0 0 0 0.2rem rgba(26, 84, 144, 0.15);
+  outline: none;
+}
+
+/* Footer - minimal */
+footer {
+  margin-top: 5rem;
+  padding: 2rem 0;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+footer a {
+  color: #6c757d;
+}
+
+footer a:hover {
+  color: #1a5490;
+}
+
+/* Prevent line breaks in footer text */
+footer .pkgdown {
+  white-space: nowrap;
+}
+
+/* Footer columns styling */
+footer .col-md-6 {
+  white-space: nowrap;
+}
+
+/* Ensure footer text doesn't break */
+footer p {
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  footer .col-md-6 {
+    white-space: normal;
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Buttons - clean style */
+.btn {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #1a5490;
+  border-color: #1a5490;
+}
+
+.btn-primary:hover {
+  background-color: #134069;
+  border-color: #134069;
+}
+
+/* Alert boxes - subtle */
+.alert {
+  border-radius: 4px;
+  border: 1px solid transparent;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.alert-info {
+  background-color: #e3f7ff;
+  border-color: #b8e3ff;
+  color: #0c5460;
+}
+
+/* Improve content width */
+.container,
+.container-fluid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.contents {
+  max-width: 900px;
+}
+
+/* Homepage specific adjustments */
+.home .container {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Ensure main content has proper spacing */
+main {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+}
+
+/* Remove decorative elements for cleaner look */
+.page-header::before,
+.page-header::after {
+  display: none;
+}
+
+/* Version badge - minimal */
+.version-label {
+  background-color: #27ae60;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Make dropdown menus cleaner */
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  background-color: #ffffff;
+  margin-top: 0.5rem;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  color: #2c3e50;
+}
+
+.dropdown-item:hover {
+  background-color: #1a5490;
+  color: #ffffff;
+}
+
+/* Ensure navbar dropdowns work well with dark navbar */
+.navbar-dark .dropdown-menu {
+  background-color: #ffffff;
+}
+
+.navbar-dark .dropdown-divider {
+  border-color: #e9ecef;
+}
+
+/* Center titles on all pages */
+.template-reference .page-header h1,
+.template-article .page-header h1,
+.template-authors .page-header h1,
+.template-news .page-header h1 {
+  text-align: center;
+}
+
+/* Also center the tagline/description */
+.template-reference .page-header p,
+.template-article .page-header p {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* White subtitle for vignettes */
+.template-article .page-header .subtitle,
+.template-article .page-header h4 {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+/* Ensure all page headers have consistent styling */
+.page-header {
+  text-align: center;
+}
+
+/* Hide any residual logo images */
+.logo,
+[src*="logo"],
+[src*="Logo"] {
+  display: none !important;
+}
+
+/* Right sidebar TOC styling */
+#toc .nav-link {
+  color: #2c3e50 !important;
+}
+
+#toc .nav-link:hover {
+  color: #1a5490 !important;
+  text-decoration: none;
+}
+
+#toc .nav-link.active {
+  color: #1a5490 !important;
+  font-weight: 600;
+}
+
+/* "On this page" heading */
+#toc h2 {
+  color: #2c3e50 !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+}

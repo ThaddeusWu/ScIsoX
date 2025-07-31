@@ -1,0 +1,13 @@
+pandoc: '3.4'
+pkgdown: 2.1.3
+pkgdown_sha: ~
+articles:
+  vignette-01-getting-started: vignette-01-getting-started.html
+  vignette-02-data-import-qc: vignette-02-data-import-qc.html
+  vignette-03-complexity-metrics: vignette-03-complexity-metrics.html
+  vignette-04-visualisation: vignette-04-visualisation.html
+  vignette-05-coexpression: vignette-05-coexpression.html
+last_built: 2025-07-31T17:09Z
+urls:
+  reference: https://ThaddeusWu.github.io/ScIsoX/reference
+  article: https://ThaddeusWu.github.io/ScIsoX/articles
