@@ -35,10 +35,37 @@ utils::globalVariables(c("correlation", "pair"))
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' # Calculate correlation for a single gene
-#' cor_result <- calculate_isoform_coexpression(scht_obj, "GAPDH")
-#' print(cor_result$cor_matrix)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Find a gene with multiple isoforms
+#' multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
+#' if(length(multi_iso_genes) > 0) {
+#'   # Calculate correlation for first multi-isoform gene
+#'   cor_result <- calculate_isoform_coexpression(scht_obj, multi_iso_genes[1])
+#'   print(cor_result$cor_matrix)
+#'   
+#'   # Check switching patterns
+#'   switching <- detect_isoform_switching(cor_result)
+#'   print(switching$switching_pairs)
 #' }
 calculate_isoform_coexpression <- function(scht_obj, 
                                          gene, 
@@ -107,6 +134,99 @@ calculate_isoform_coexpression <- function(scht_obj,
 #'
 #' @return A list containing overall and cell type-specific correlations
 #'
+#' @examples
+#' # Load example data
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' # Create IntegratedSCHT object with cell type information
+#' integrated_scht <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,
+#'     max_genes_per_cell = 10000,
+#'     min_cells_expressing = 0.02,
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   require_cell_type = TRUE,  # Creates IntegratedSCHT
+#'   verbose = FALSE
+#' )
+#' 
+#' # Find genes with multiple isoforms
+#' multi_iso_genes <- names(which(sapply(integrated_scht$original_results, nrow) > 2))
+#' 
+#' if (length(multi_iso_genes) > 0) {
+#'   # Calculate coexpression across all cell types
+#'   ct_cor_results <- calculate_gene_coexpression_all_celltypes(
+#'     integrated_scht,
+#'     gene = multi_iso_genes[1],
+#'     method = "pearson",
+#'     min_cells = 10
+#'   )
+#'   
+#'   # Examine overall correlation
+#'   print("Overall correlation matrix:")
+#'   print(round(ct_cor_results$overall$cor_matrix, 2))
+#'   
+#'   # Examine cell type-specific patterns
+#'   print(paste("\nFound correlations for", 
+#'               length(ct_cor_results$cell_types), "cell types"))
+#'   
+#'   # Compare correlations across cell types
+#'   for (ct in names(ct_cor_results$cell_types)) {
+#'     ct_data <- ct_cor_results$cell_types[[ct]]
+#'     print(paste("\nCell type:", ct))
+#'     print(paste("Number of cells:", ct_data$n_cells))
+#'     print(paste("Number of isoforms:", ct_data$n_isoforms))
+#'     
+#'     # Show correlation matrix
+#'     if (!is.null(ct_data$cor_matrix)) {
+#'       print("Correlation matrix:")
+#'       print(round(ct_data$cor_matrix, 2))
+#'     }
+#'   }
+#'   
+#'   # Identify cell type-specific switching
+#'   switching_summary <- lapply(names(ct_cor_results$cell_types), function(ct) {
+#'     ct_data <- ct_cor_results$cell_types[[ct]]
+#'     if (!is.null(ct_data$cor_matrix)) {
+#'       switching <- detect_isoform_switching(ct_data)
+#'       return(data.frame(
+#'         cell_type = ct,
+#'         n_switching_pairs = switching$n_switching_pairs,
+#'         n_strong_switching = switching$n_strong_switching
+#'       ))
+#'     }
+#'     return(NULL)
+#'   })
+#'   
+#'   switching_df <- do.call(rbind, switching_summary[!sapply(switching_summary, is.null)])
+#'   if (nrow(switching_df) > 0) {
+#'     print("\nSwitching summary by cell type:")
+#'     print(switching_df)
+#'   }
+#'   
+#'   # Use different correlation methods
+#'   ct_cor_spearman <- calculate_gene_coexpression_all_celltypes(
+#'     integrated_scht,
+#'     gene = multi_iso_genes[1],
+#'     method = "spearman"
+#'   )
+#'   
+#'   # Compare methods
+#'   print("\nComparing Pearson vs Spearman correlations (overall):")
+#'   pearson_vals <- ct_cor_results$overall$cor_matrix[upper.tri(ct_cor_results$overall$cor_matrix)]
+#'   spearman_vals <- ct_cor_spearman$overall$cor_matrix[upper.tri(ct_cor_spearman$overall$cor_matrix)]
+#'   print(paste("Mean absolute difference:", 
+#'               round(mean(abs(pearson_vals - spearman_vals)), 3)))
+#' }
+#' 
 #' @export
 calculate_gene_coexpression_all_celltypes <- function(scht_obj,
                                                     gene,
@@ -190,6 +310,85 @@ calculate_gene_coexpression_all_celltypes <- function(scht_obj,
 #'
 #' @return A list containing switching pairs and statistics
 #'
+#' @examples
+#' # Load example data
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' # Create SCHT object
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,
+#'     max_genes_per_cell = 10000,
+#'     min_cells_expressing = 0.02,
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Find genes with multiple isoforms
+#' multi_iso_genes <- names(which(sapply(scht_obj, nrow) > 2))
+#' 
+#' if (length(multi_iso_genes) > 0) {
+#'   # Calculate coexpression for a gene
+#'   cor_result <- calculate_isoform_coexpression(
+#'     scht_obj, 
+#'     gene = multi_iso_genes[1],
+#'     method = "pearson"
+#'   )
+#'   
+#'   # Detect switching with default threshold (-0.3)
+#'   switching_default <- detect_isoform_switching(cor_result)
+#'   print(paste("Found", switching_default$n_switching_pairs, "switching pairs"))
+#'   
+#'   # Detect switching with more stringent threshold
+#'   switching_strict <- detect_isoform_switching(
+#'     cor_result, 
+#'     threshold = -0.4,
+#'     strong_threshold = -0.6
+#'   )
+#'   
+#'   # Examine switching pairs
+#'   if (switching_default$n_switching_pairs > 0) {
+#'     print("Switching pairs detected:")
+#'     print(switching_default$switching_pairs)
+#'     
+#'     # Check specific pair types
+#'     strong_pairs <- switching_default$switching_pairs[
+#'       switching_default$switching_pairs$is_strong, 
+#'     ]
+#'     if (nrow(strong_pairs) > 0) {
+#'       print(paste("Strong switching pairs (r <", 
+#'                   switching_default$strong_threshold, "):"))
+#'       print(strong_pairs)
+#'     }
+#'   }
+#'   
+#'   # For cell type-specific analysis
+#'   if (inherits(scht_obj, "IntegratedSCHT")) {
+#'     ct_cor <- calculate_gene_coexpression_all_celltypes(
+#'       scht_obj, 
+#'       gene = multi_iso_genes[1]
+#'     )
+#'     
+#'     # Check switching in specific cell types
+#'     for (ct in names(ct_cor$cell_types)) {
+#'       ct_switching <- detect_isoform_switching(ct_cor$cell_types[[ct]])
+#'       if (ct_switching$n_switching_pairs > 0) {
+#'         print(paste("Cell type", ct, "has", 
+#'                     ct_switching$n_switching_pairs, "switching pairs"))
+#'       }
+#'     }
+#'   }
+#' }
+#' 
 #' @export
 detect_isoform_switching <- function(cor_result, 
                                    threshold = -0.3,

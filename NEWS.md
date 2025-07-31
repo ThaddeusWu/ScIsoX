@@ -1,3 +1,40 @@
+# ScIsoX 1.1.1 (2025-08-01)
+
+## Major Improvements
+
+* **Runnable Examples**: Replaced all `\dontrun{}` blocks with fully executable examples using built-in datasets
+* **Example Datasets**: Added four example datasets from Wang et al. (2022) Science Advances 8(1):eabg5369 (CC BY 4.0)
+  - `gene_counts_blood`: Gene expression matrix
+  - `transcript_counts_blood`: Transcript expression matrix
+  - `transcript_info`: Transcript-to-gene mapping
+  - `sample2stage`: Cell type annotations
+* **Comprehensive Vignettes**: Created 5 detailed vignettes covering all aspects of the package
+  - Getting Started with ScIsoX
+  - Data Import and Quality Control
+  - Understanding Transcriptomic Complexity Metrics
+  - Visualisation Gallery and Interpretation
+  - Co-expression Analysis and Isoform Switching
+* **pkgdown Website**: Built comprehensive documentation website with improved design and navigation
+
+## Bug Fixes
+
+* Fixed `plot_isoform_profile()` error when no multi-isoform genes exist in IntegratedSCHT
+* Fixed duplicate `plot_isoform_coexpression()` function definition
+* Fixed `plot_complexity_radar()` parameter name mismatch (`gene_colors` vs `gene_colours`)
+* Fixed incorrect classification names in complexity metrics (e.g., "high"/"low" → proper category names)
+* Fixed NAMESPACE typo: `CellTypeSCHTSCHT` → `CellTypeSCHT`
+* Replaced deprecated `class()` usage with `inherits()` for S3 class checking
+* Fixed vignette errors with incorrect function parameters
+
+## Documentation
+
+* Added comprehensive Input Data Recommendations section to README
+* Added Visualisation Gallery showcasing all plot types
+* Added 5-Minute Quick Start guide
+* All functions now have runnable examples
+* Improved function documentation with clearer parameter descriptions
+* Added proper attribution for example data throughout documentation
+
 # ScIsoX 1.1.0 (2025-07-29)
 
 ## Bug Fixes

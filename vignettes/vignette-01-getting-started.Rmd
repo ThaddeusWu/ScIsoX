@@ -1,0 +1,201 @@
+---
+title: "Getting Started with ScIsoX"
+author: "Siyuan Wu & Ulf Schmitz"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with ScIsoX}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+ScIsoX is a comprehensive R package for analysing transcriptomic complexity at single-cell resolution using isoform-level expression data. This vignette will guide you through the basic workflow of ScIsoX, from data import to initial complexity analysis.
+
+## Installation
+
+```{r install, eval=FALSE}
+# Install from GitHub
+devtools::install_github("ThaddeusWu/ScIsoX")
+
+# Load the package
+library(ScIsoX)
+```
+
+```{r load-package}
+library(ScIsoX)
+```
+
+## Understanding the Data Structure
+
+ScIsoX works with four main data inputs:
+
+1. **Gene counts matrix**: Gene-level expression (genes × cells)
+2. **Transcript counts matrix**: Isoform-level expression (transcripts × cells)
+3. **Transcript information**: Mapping between transcripts and genes
+4. **Cell type annotation**: Cell type information
+
+### Loading Example Data
+
+ScIsoX comes with example data from blood cells:
+
+```{r load-data}
+# Load example datasets
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Examine data dimensions
+cat("Gene counts:", dim(gene_counts_blood), "\n")
+cat("Transcript counts:", dim(transcript_counts_blood), "\n")
+cat("Transcript info:", dim(transcript_info), "\n")
+cat("Cell info:", dim(sample2stage), "\n")
+```
+
+### Data Format Requirements
+
+```{r show-format}
+# Gene counts format
+gene_counts_blood[1:5, 1:3]
+
+# Transcript counts format
+transcript_counts_blood[1:5, 1:3]
+
+# Transcript info format
+head(transcript_info, 3)
+
+# Cell info format (optional but recommended)
+head(sample2stage, 3)
+```
+
+## Quality Control
+
+Before creating the SCHT structure, it's important to perform quality control:
+
+```{r qc-analysis, fig.alt = "Histogram showing distribution of genes per cell with quality control thresholds"}
+# Visualise genes per cell distribution
+qc_plot <- plot_genes_per_cell_distribution(
+  gene_counts_blood,
+  plot_type = "hist",
+  return_suggestions = TRUE
+)
+
+# Get automated QC recommendations
+qc_recommendations <- recommend_qc_parameters(gene_counts_blood)
+
+# View different QC strategies
+print("Conservative (MAD) strategy:")
+print(qc_recommendations$MAD_strategy)
+
+print("\nModerate (90% interval) strategy:")
+print(qc_recommendations$Interval_90)
+```
+
+## Creating the SCHT Object
+
+The Single-Cell Hierarchical Tensor (SCHT) is the core data structure in ScIsoX:
+
+```{r create-scht}
+# Create SCHT with recommended parameters
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = TRUE
+)
+
+# View SCHT structure
+print(scht_obj)
+summary(scht_obj)
+```
+
+## Calculating Complexity Metrics
+
+ScIsoX calculates seven core metrics to quantify transcriptomic complexity:
+
+```{r complexity-metrics}
+# Calculate all complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(
+  scht_obj, 
+  verbose = TRUE
+)
+
+# View results structure
+print(tc_results)
+
+# Summary statistics
+summary(tc_results)
+```
+
+## Basic Visualisation
+
+Visualise the complexity landscape:
+
+```{r basic-vis, fig.width = 15, fig.height = 15, fig.alt = "Complexity landscape plot showing relationship between intra-cellular and inter-cellular isoform diversity"}
+# Create complexity landscape plot
+plot_tc_landscape(
+  tc_results,
+  n_label = 10
+)
+```
+
+## Finding Genes of Interest
+
+Identify genes with specific complexity patterns:
+
+```{r find-genes}
+# Find highly complex genes
+complex_genes <- tc_results$metrics[
+  tc_results$metrics$intra_cellular_isoform_diversity_class == "Strong Isoform Co-expression" &
+  tc_results$metrics$inter_cellular_isoform_diversity_class == "High Isoform Diversity",
+]
+
+print(paste("Found", nrow(complex_genes), "highly complex genes"))
+head(complex_genes[, c("gene", "n_isoforms", 
+                       "intra_cellular_isoform_diversity",
+                       "inter_cellular_isoform_diversity")])
+
+# Find genes with cell type-specific patterns
+ct_specific <- select_genes_of_interest(
+    tc_results$metrics,
+    category = "Cell-Type-Specific Isoform Expression",
+    top_n = 10
+)
+print(ct_specific)
+```
+
+## Next Steps
+
+This vignette covered the basic workflow of ScIsoX. For more advanced analyses, see:
+
+- **Data Import and QC**: Detailed quality control strategies
+- **Complexity Metrics**: In-depth explanation of all seven metrics
+- **Visualisation Gallery**: All 13+ visualisation functions
+- **Co-expression Analysis**: Isoform relationships and switching
+
+## Session Information
+
+```{r session-info}
+sessionInfo()
+```

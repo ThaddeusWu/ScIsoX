@@ -42,6 +42,35 @@ utils::globalVariables(c(".scht_obj_temp"))
 #' @param port Port number for the app (default: NULL, uses random port)
 #' @param launch.browser Whether to launch browser automatically (default: TRUE)
 #' @return Launches Shiny application
+#' @examples
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Launch the Shiny app
+#' launch_coexpression_app(scht_obj)
+#' 
+#' # Launch on specific port without opening browser
+#' \dontrun{
+#' launch_coexpression_app(scht_obj, port = 8080, launch.browser = FALSE)
+#' }
 #' @export
 launch_coexpression_app <- function(scht_obj, port = NULL, launch.browser = TRUE) {
   

@@ -1,0 +1,373 @@
+---
+title: "Understanding Transcriptomic Complexity Metrics"
+author: "Siyuan Wu & Ulf Schmitz"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Understanding Transcriptomic Complexity Metrics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+ScIsoX quantifies transcriptomic complexity through seven complementary metrics that capture different aspects of isoform diversity and heterogeneity. This vignette provides detailed explanations of each metric and how to interpret them.
+
+```{r load-package}
+library(ScIsoX)
+library(ggplot2)
+library(ComplexHeatmap)
+```
+
+## The Seven Core Metrics
+
+```{r prepare-data}
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+```
+
+### 1. Intra-cellular Isoform Diversity
+
+**What it measures**: The tendency of multiple isoforms from the same gene to be co-expressed within individual cells.
+
+**Interpretation**:
+- **High values**: Multiple isoforms are frequently co-expressed in the same cells
+- **Low values**: Cells typically express only one isoform at a time
+
+```{r metric-1, fig.height = 5, fig.alt = "Histogram showing distribution of intra-cellular isoform diversity scores"}
+# Visualise distribution
+hist(tc_results$metrics$intra_cellular_isoform_diversity,
+     main = "Intra-cellular Isoform Diversity Distribution",
+     xlab = "Diversity Score",
+     col = "lightblue",
+     breaks = 30)
+
+# Find genes with highest intra-cellular diversity
+top_intra <- head(tc_results$metrics[
+  order(tc_results$metrics$intra_cellular_isoform_diversity, decreasing = TRUE),
+  c("gene", "intra_cellular_isoform_diversity", "n_isoforms")
+], 10)
+
+print(top_intra)
+```
+
+### 2. Inter-cellular Isoform Diversity
+
+**What it measures**: How different isoforms are distributed across the cell population.
+
+**Interpretation**:
+- **High values**: Different cells express different isoforms
+- **Low values**: All cells express similar isoform patterns
+
+```{r metric-2, fig.alt = "Scatter plot comparing intra-cellular versus inter-cellular isoform diversity"}
+# Compare intra vs inter diversity
+plot(tc_results$metrics$intra_cellular_isoform_diversity,
+     tc_results$metrics$inter_cellular_isoform_diversity,
+     xlab = "Intra-cellular Diversity",
+     ylab = "Inter-cellular Diversity",
+     main = "Intra vs Inter-cellular Diversity",
+     pch = 16, col = rgb(0, 0, 1, 0.3))
+
+# Add correlation
+cor_value <- cor(tc_results$metrics$intra_cellular_isoform_diversity,
+                 tc_results$metrics$inter_cellular_isoform_diversity,
+                 use = "complete.obs")
+text(0.8, 0.1, paste("r =", round(cor_value, 3)), col = "red")
+```
+
+### 3. Intra-cell-type Heterogeneity
+
+**What it measures**: Cell-to-cell variation in isoform usage within the same cell type.
+
+**Interpretation**:
+- **High values**: Cells of the same type show diverse isoform patterns
+- **Low values**: Cells of the same type have consistent isoform usage
+
+```{r metric-3, fig.alt = "Bar chart showing distribution of intra-cell-type heterogeneity classes"}
+# This metric requires cell type information
+if (inherits(scht_obj, "IntegratedSCHT")) {
+  # Visualise by classification
+  ggplot(tc_results$metrics, 
+         aes(x = intra_cell_type_heterogeneity_class, 
+             fill = intra_cell_type_heterogeneity_class)) +
+    geom_bar() +
+    labs(title = "Distribution of Intra-cell-type Heterogeneity Classes",
+         x = "Heterogeneity Class", y = "Number of Genes") +
+    theme_minimal()
+}
+```
+
+### 4. Inter-cell-type Specificity
+
+**What it measures**: How specific isoform usage patterns are to particular cell types.
+
+**Interpretation**:
+- **High values**: Strong cell type-specific isoform usage
+- **Low values**: Similar isoform patterns across cell types
+
+```{r metric-4}
+# Find cell type-specific genes
+if ("inter_cell_type_specificity" %in% colnames(tc_results$metrics)) {
+  ct_specific <- tc_results$metrics[
+    tc_results$metrics$inter_cell_type_specificity_class == "Cell-Type-Specific Isoform Expression",
+    c("gene", "inter_cell_type_specificity")
+  ]
+  
+  print(paste("Found", nrow(ct_specific), "genes with high cell type specificity"))
+  head(ct_specific)
+}
+```
+
+### 5. Intra-cell-type Heterogeneity Variability
+
+**What it measures**: How much the cell-to-cell heterogeneity varies across different cell types.
+
+**Interpretation**:
+- **High values**: Some cell types are more heterogeneous than others
+- **Low values**: All cell types show similar levels of heterogeneity
+
+### 6. Inter-cell-type Difference Variability
+
+**What it measures**: Identifies pairs of cell types with the most distinctive isoform usage patterns.
+
+**Interpretation**:
+- **High values**: Large differences between some cell type pairs
+- **Low values**: Uniform differences across all cell type pairs
+
+### 7. Cell-type-specific Co-expression Variability
+
+**What it measures**: How isoform co-expression patterns vary across cell types.
+
+**Interpretation**:
+- **High values**: Co-expression relationships change between cell types
+- **Low values**: Consistent co-expression across cell types
+
+## Interpreting Metric Classifications
+
+```{r classifications}
+# Summary of classifications
+classification_summary <- lapply(
+  grep("_class$", names(tc_results$metrics), value = TRUE),
+  function(col) {
+    table(tc_results$metrics[[col]])
+  }
+)
+names(classification_summary) <- gsub("_class$", "", 
+                                     grep("_class$", names(tc_results$metrics), value = TRUE))
+
+print(classification_summary)
+```
+
+## Finding Genes with Specific Patterns
+
+### Example 1: Highly Complex Genes
+
+```{r pattern-1}
+# Genes with high complexity in multiple dimensions
+complex_genes <- find_complexity_pattern(
+  tc_results$metrics,
+  pattern = list(
+    intra_cellular_isoform_diversity_class = "Strong Isoform Co-expression",
+    inter_cellular_isoform_diversity_class = "High Isoform Diversity"
+  )
+)
+
+print(paste("Found", length(complex_genes), "highly complex genes"))
+print(head(complex_genes))
+```
+
+### Example 2: Simple but Cell Type-Specific
+
+```{r pattern-2}
+# Genes with low diversity but high cell type specificity
+specific_simple <- find_complexity_pattern(
+  tc_results$metrics,
+  pattern = list(
+    intra_cellular_isoform_diversity_class = "Weak Isoform Co-expression",
+    inter_cell_type_specificity_class = "Cell-Type-Specific Isoform Expression"
+  )
+)
+
+if (length(specific_simple) > 0) {
+  print(paste("Found", length(specific_simple), "simple but specific genes"))
+}
+```
+
+## Visualising Metric Relationships
+
+```{r relationships, fig.width = 10, fig.height = 8, fig.alt = "PCA biplot showing relationships between complexity metrics"}
+# Define all seven core metrics
+metric_cols <- c(
+  "intra_cellular_isoform_diversity",
+  "inter_cellular_isoform_diversity",
+  "inter_cell_type_specificity",
+  "intra_cell_type_heterogeneity",
+  "intra_cell_type_heterogeneity_variability",
+  "inter_cell_type_difference_variability",
+  "cell_type_coexpression_variability"
+)
+
+# Filter to available metrics in the dataset
+available_metrics <- metric_cols[metric_cols %in% names(tc_results$metrics)]
+metric_data <- tc_results$metrics[, available_metrics]
+metric_data <- metric_data[complete.cases(metric_data), ]
+
+# Standardise the data for PCA
+metric_scaled <- scale(metric_data)
+
+# Perform PCA analysis
+pca_result <- prcomp(metric_scaled)
+
+# Create data for biplot
+pca_scores <- as.data.frame(pca_result$x[, 1:2])
+pca_scores$gene <- tc_results$metrics$gene[complete.cases(tc_results$metrics[, available_metrics])]
+
+# Extract loadings (metric contributions)
+pca_loadings <- as.data.frame(pca_result$rotation[, 1:2])
+pca_loadings$metric <- rownames(pca_loadings)
+
+# Scale loadings for better visualisation
+scale_factor <- 3
+pca_loadings$PC1 <- pca_loadings$PC1 * scale_factor
+pca_loadings$PC2 <- pca_loadings$PC2 * scale_factor
+
+# Create PCA biplot
+library(ggrepel)
+ggplot() +
+  # Gene points (in grey)
+  geom_point(data = pca_scores, 
+             aes(x = PC1, y = PC2), 
+             alpha = 0.5, colour = "grey50", size = 1) +
+  # Metric vectors (red arrows)
+  geom_segment(data = pca_loadings,
+               aes(x = 0, y = 0, xend = PC1, yend = PC2),
+               arrow = arrow(length = unit(0.3, "cm")),
+               colour = "red", size = 1) +
+  # Metric labels
+  geom_text_repel(data = pca_loadings,
+                  aes(x = PC1, y = PC2, label = metric),
+                  colour = "red", fontface = "bold", size = 3.5) +
+  labs(title = "PCA Biplot of Complexity Metrics",
+       subtitle = "Red arrows show metric relationships; genes shown as grey points",
+       x = paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)"),
+       y = paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)")) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  coord_equal()
+
+# Print variance explained
+cat("Variance explained by principal components:\n")
+print(summary(pca_result)$importance[, 1:3])
+```
+
+### Interpretation:
+
+1. **Arrows pointing in similar directions**: Metrics that tend to increase together
+2. **Arrows pointing in opposite directions**: Metrics that are inversely related
+3. **Arrow length**: Indicates how well the metric is represented in the first two PCs
+4. **Gene distribution**: Shows how genes cluster based on their complexity profiles
+
+*Note: The specific relationships between metrics will vary depending on your dataset and biological context.*
+
+## Case Studies
+
+### Case Study 1: Constitutive vs Alternative Splicing
+
+```{r case-study-1, fig.alt = "Boxplot comparing complexity across different numbers of isoforms"}
+# Compare genes with different numbers of isoforms
+tc_results$metrics$isoform_category <- cut(
+  tc_results$metrics$n_isoforms,
+  breaks = c(2, 3, 5, 10, Inf),
+  labels = c("2-3", "4-5", "6-10", ">10"),
+  include.lowest = TRUE
+)
+
+# How does complexity relate to number of isoforms?
+ggplot(tc_results$metrics, 
+       aes(x = isoform_category, y = intra_cellular_isoform_diversity)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(title = "Complexity vs Number of Isoforms",
+       x = "Number of Isoforms",
+       y = "Intra-cellular Diversity") +
+  theme_minimal()
+```
+
+### Case Study 2: Identifying Regulatory Genes
+
+```{r case-study-2}
+# Genes with variable complexity patterns might be regulatory
+# High inter-cellular diversity but low intra-cellular diversity
+# suggests cell-state dependent isoform switching
+
+potential_regulatory <- tc_results$metrics[
+  tc_results$metrics$inter_cellular_isoform_diversity > 
+    quantile(tc_results$metrics$inter_cellular_isoform_diversity, 0.75, na.rm = TRUE) &
+  tc_results$metrics$intra_cellular_isoform_diversity < 
+    quantile(tc_results$metrics$intra_cellular_isoform_diversity, 0.25, na.rm = TRUE),
+]
+
+print(paste("Identified", nrow(potential_regulatory), "potential regulatory genes"))
+if (nrow(potential_regulatory) > 0) {
+  head(potential_regulatory[, c("gene", "n_isoforms",
+                                "intra_cellular_isoform_diversity",
+                                "inter_cellular_isoform_diversity")])
+}
+```
+
+## Exporting Results
+
+```{r export}
+# Export metrics for further analysis
+write.csv(tc_results$metrics, 
+          file = file.path(tempdir(), "complexity_metrics.csv"),
+          row.names = FALSE)
+
+# Create summary report
+summary_stats <- summary(tc_results)
+```
+
+## Advanced Interpretation Tips
+
+1. **Look for outliers**: Genes with extreme values often have interesting biology
+2. **Consider metric combinations**: Single metrics tell only part of the story
+3. **Relate to gene function**: Different gene categories show characteristic patterns
+4. **Account for technical factors**: Low expression can affect metric reliability
+
+## Session Information
+
+```{r session-info}
+sessionInfo()
+```

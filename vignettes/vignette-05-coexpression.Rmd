@@ -1,0 +1,298 @@
+---
+title: "Co-expression Analysis and Isoform Switching"
+author: "Siyuan Wu & Ulf Schmitz"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Co-expression Analysis and Isoform Switching}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+This vignette demonstrates ScIsoX's comprehensive co-expression analysis capabilities through the interactive Shiny application, which provides an intuitive interface for exploring isoform relationships, switching patterns, and cell type-specific co-expression.
+
+```{r load-package}
+library(ScIsoX)
+library(ggplot2)
+
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create IntegratedSCHT for cell type-specific analysis
+integrated_scht <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  require_cell_type = TRUE,
+  verbose = FALSE
+)
+
+```
+
+## Interactive Co-expression Explorer
+
+### Launching the Shiny App
+
+The most comprehensive way to explore co-expression patterns is through ScIsoX's interactive Shiny application:
+
+```{r shiny-app, eval=FALSE}
+# Launch interactive co-expression explorer
+launch_coexpression_app(integrated_scht)
+```
+
+### Features of the Co-expression App
+
+The Shiny app provides:
+
+1. **Gene Selection Panel**
+   - Search for any gene by name
+   - Filter genes by number of isoforms
+   - Select from pre-defined gene sets
+
+2. **Correlation Analysis**
+   - Choose between Pearson, Spearman, or Kendall correlation
+   - Adjust minimum cell and expression thresholds
+   - Interactive heatmap with customisable colours
+
+3. **Switching Detection**
+   - Set correlation thresholds for switching
+   - Visualise switching pairs
+   - Export switching results
+
+4. **Cell Type-Specific Analysis**
+   - Compare patterns across cell types
+   - Identify cell type-specific switching
+   - Interactive plots for each cell type
+
+5. **Export Options**
+   - Download correlation matrices
+   - Save publication-ready figures
+   - Export switching pair tables
+
+## Programmatic Co-expression Analysis
+
+### Basic Analysis Example
+
+While the Shiny app provides comprehensive interactive analysis, you can also perform co-expression analysis programmatically:
+
+```{r basic-coexp}
+# Example: Analyse Mapk13 gene
+target_gene <- "Mapk13"
+
+# Calculate isoform correlations
+cor_result <- calculate_isoform_coexpression(
+  integrated_scht,
+  gene = target_gene,
+  method = "pearson",
+  min_cells = 10
+)
+
+# View correlation summary
+print(paste("Gene:", cor_result$gene))
+print(paste("Number of isoforms:", cor_result$n_isoforms))
+print(paste("Number of cells:", cor_result$n_cells))
+print("\nCorrelation matrix:")
+print(round(cor_result$cor_matrix, 2))
+
+# Detect switching patterns
+switching_result <- detect_isoform_switching(
+  cor_result,
+  threshold = -0.3,
+  strong_threshold = -0.5
+)
+
+print(paste("\nNumber of switching pairs:", switching_result$n_switching_pairs))
+print(paste("Number of strong switching pairs:", switching_result$n_strong_switching))
+```
+
+### Systematic Analysis
+
+```{r systematic-analysis}
+# Analyse multiple genes
+selected_genes <- c("Atl1", "Irf8", "Mx1", "Mapk13", "Crb3")
+
+# Summary of switching patterns
+switching_summary <- data.frame()
+
+for (gene in selected_genes) {
+  tryCatch({
+    cor_res <- calculate_isoform_coexpression(scht_obj, gene, min_cells = 10)
+    switch_res <- detect_isoform_switching(cor_res)
+    
+    switching_summary <- rbind(switching_summary, data.frame(
+      gene = gene,
+      n_isoforms = cor_res$n_isoforms,
+      n_switching_pairs = switch_res$n_switching_pairs,
+      n_strong_switching = switch_res$n_strong_switching,
+      stringsAsFactors = FALSE
+    ))
+  }, error = function(e) NULL)
+}
+
+print(switching_summary)
+```
+
+## Cell Type-Specific Analysis
+
+### Understanding Cell Type Patterns
+
+For cell type-specific co-expression analysis, the Shiny app provides:
+
+- **Side-by-side comparisons** of correlation matrices across cell types
+- **Interactive selection** of cell types to compare
+- **Highlighting** of cell type-specific switching pairs
+- **Export** of cell type-specific results
+
+## Advanced Features in the Shiny App
+
+### Conservation Analysis Tab
+
+The Shiny app includes a dedicated tab for conservation analysis:
+
+- **Multi-gene selection**: Analyse conservation patterns across multiple genes
+- **Threshold adjustment**: Interactively set conservation thresholds
+- **Visualisation options**: Heatmaps, dendrograms, and network views
+- **Export conservation scores**: Download results for further analysis
+
+### Network Analysis Tab
+
+Explore co-expression networks:
+
+- **Network construction**: Build networks based on correlation thresholds
+- **Interactive visualisation**: Drag and zoom network plots
+- **Module detection**: Identify co-expressed isoform modules
+- **Cell type overlays**: Colour networks by cell type specificity
+
+## Tips for Using the Shiny App
+
+### Getting Started
+
+1. **Launch the app** with your IntegratedSCHT object
+2. **Start with Overview tab** to see summary statistics
+3. **Select a gene** from the dropdown or search box
+4. **Explore correlations** in the Analysis tab
+5. **Check cell types** in the Cell Type Specific tab
+6. **Export results** using the download buttons
+
+### Performance Tips
+
+- For large datasets, pre-filter to genes of interest
+- Use the "cache results" option for frequently analysed genes
+- Export intermediate results to avoid re-computation
+
+## Common Use Cases
+
+### Use Case 1: Identifying Isoform Switches During Differentiation
+
+The Shiny app is particularly useful for:
+- Tracking isoform usage changes across developmental stages
+- Identifying key switching events
+- Comparing patterns between lineages
+
+### Use Case 2: Disease-Associated Isoform Changes
+
+- Compare normal vs disease samples
+- Identify disease-specific switching patterns
+- Explore therapeutic targets
+
+### Use Case 3: Cell Type Marker Discovery
+
+- Find isoforms specific to cell types
+- Validate cell type annotations
+- Discover novel cell type markers
+
+## Troubleshooting the Shiny App
+
+### Common Issues
+
+1. **App won't launch**
+   - Ensure all required packages are installed
+   - Check that your object is an IntegratedSCHT
+   - Verify sufficient memory for your dataset
+
+2. **Slow performance**
+   - Reduce number of genes in analysis
+   - Increase min_cells threshold
+   - Use sampling for large datasets
+
+3. **No results displayed**
+   - Check gene names match your data
+   - Verify minimum expression thresholds
+   - Ensure sufficient cells per cell type
+
+## Exporting Results from the Shiny App
+
+The app provides multiple export options:
+
+### Available Export Formats
+
+1. **Correlation Matrices**
+   - CSV format for further analysis
+   - RDS format to preserve R object structure
+   
+2. **Switching Results**
+   - Table of switching pairs
+   - Summary statistics
+   
+3. **Visualisations**
+   - High-resolution PNG/PDF
+   - Customisable dimensions
+   - Publication-ready figures
+
+4. **Complete Analysis Reports**
+   - HTML reports with all results
+   - Includes methods and parameters
+   - Reproducible analysis record
+
+### Programmatic Export
+
+```{r export-example}
+# After running analysis in the app, you can also export programmatically
+if (exists("ct_coexp")) {
+  # Export to temporary directory
+  export_result <- export_coexpression_results(
+    ct_coexp,
+    output_dir = tempdir(),
+    gene_name = "Atl1",
+    format = "csv"
+  )
+  
+  print(paste("Results exported to:", export_result$output_dir))
+}
+```
+
+## Summary
+
+The ScIsoX Shiny application provides a comprehensive, user-friendly interface for co-expression analysis. Whether you're exploring a single gene or conducting systematic analyses across cell types, the app streamlines the workflow and provides publication-ready outputs.
+
+For more advanced programmatic analysis, the underlying functions (`calculate_isoform_coexpression`, `detect_isoform_switching`, etc.) remain available for custom workflows and batch processing.
+
+## Session Information
+
+```{r session-info}
+sessionInfo()
+```

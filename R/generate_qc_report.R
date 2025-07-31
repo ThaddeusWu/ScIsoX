@@ -20,6 +20,43 @@
 #' @param dataset_name Optional dataset name to include in the output filename (e.g., "blood_data")
 #'
 #' @return Path to generated report
+#' @examples
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Generate report in temporary directory
+#' temp_dir <- tempdir()
+#' report_path <- generate_qc_report(
+#'   scht_obj = scht_obj,
+#'   output_dir = temp_dir,
+#'   format = "html",
+#'   dataset_name = "blood_cells_example"
+#' )
+#' 
+#' # Check if report was created
+#' print(paste("Report created at:", report_path))
+#' print(file.exists(report_path))
+#' 
+#' # List files created
+#' list.files(temp_dir, pattern = "blood_cells_example")
 #' @export
 generate_qc_report <- function(scht_obj, 
                               output_dir = "qc_report",

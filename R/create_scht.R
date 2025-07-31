@@ -238,7 +238,7 @@ NULL
   if (is(gene_counts, "sparseMatrix")) {
     n_genes_per_cell <- Matrix::colSums(gene_counts > 0)
   } else {
-    n_genes_per_cell <- colSums(gene_counts > 0)
+    n_genes_per_cell <- base::colSums(gene_counts > 0)
   }
   
   # Filter cells using vectorised operations
@@ -279,8 +279,8 @@ NULL
     gene_col_sums <- Matrix::colSums(gene_counts_filtered)
     transcript_col_sums <- Matrix::colSums(transcript_counts_filtered)
   } else {
-    gene_col_sums <- colSums(gene_counts_filtered)
-    transcript_col_sums <- colSums(transcript_counts_filtered)
+    gene_col_sums <- base::colSums(gene_counts_filtered)
+    transcript_col_sums <- base::colSums(transcript_counts_filtered)
   }
   
   gene_scaling_factors <- 1e6 / gene_col_sums
@@ -695,7 +695,7 @@ NULL
     if (is(gene_matrix, "sparseMatrix")) {
       non_zero_cols <- Matrix::colSums(gene_matrix) > 0
     } else {
-      non_zero_cols <- colSums(gene_matrix) > 0
+      non_zero_cols <- base::colSums(gene_matrix) > 0
     }
     
     if (any(non_zero_cols)) {
@@ -875,7 +875,7 @@ NULL
         cell_type_mat <- original_mat[, cell_type_cells_for_this_gene, drop = FALSE]
         
         # Filter by expression (optional, but good practice)
-        col_sums <- colSums(cell_type_mat)
+        col_sums <- base::colSums(cell_type_mat)
         non_zero_cols <- which(col_sums > qc_params$min_expr)
         
         if (length(non_zero_cols) > 0) {
@@ -982,10 +982,10 @@ NULL
     },
     
     # Basic statistics
-    genes_per_cell = colSums(gene_counts > 0),
-    median_genes_per_cell = median(colSums(gene_counts > 0)),
-    median_transcripts_per_cell = median(colSums(transcript_counts > 0)),
-    median_counts_per_cell = median(colSums(gene_counts))
+    genes_per_cell = if(is(gene_counts, "sparseMatrix")) Matrix::colSums(gene_counts > 0) else base::colSums(gene_counts > 0),
+    median_genes_per_cell = median(if(is(gene_counts, "sparseMatrix")) Matrix::colSums(gene_counts > 0) else base::colSums(gene_counts > 0)),
+    median_transcripts_per_cell = median(if(is(transcript_counts, "sparseMatrix")) Matrix::colSums(transcript_counts > 0) else base::colSums(transcript_counts > 0)),
+    median_counts_per_cell = median(if(is(gene_counts, "sparseMatrix")) Matrix::colSums(gene_counts) else base::colSums(gene_counts))
   )
 }
 
@@ -1097,6 +1097,31 @@ NULL
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
+#' @examples
+#' # Create example SCHT object
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,
+#'     max_genes_per_cell = 10000,
+#'     min_cells_expressing = 0.02,
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   require_cell_type = FALSE,  # Create basic SCHT
+#'   verbose = FALSE
+#' )
+#' 
+#' # Print the SCHT object
+#' print(scht_obj)
 #' @export
 print.SCHT <- function(x, ...) {
   stats <- attr(x, "stats")
@@ -1133,6 +1158,31 @@ print.SCHT <- function(x, ...) {
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
+#' @examples
+#' # Using the same SCHT object from print example
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,
+#'     max_genes_per_cell = 10000,
+#'     min_cells_expressing = 0.02,
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   require_cell_type = FALSE,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Get summary of SCHT object
+#' summary(scht_obj)
 #' @export
 summary.SCHT <- function(object, ...) {
   stats <- attr(object, "stats")
@@ -1213,7 +1263,7 @@ print.CellTypeSCHT <- function(x, ...) {
 #'
 #' @return None (prints to console)
 #' @export
-summary.CellTypeSCHTSCHT <- function(object, ...) {
+summary.CellTypeSCHT <- function(object, ...) {
   cat("Cell Type-Specific SCHT Analysis Summary\n")
   cat("===================================\n")
   
@@ -1253,6 +1303,31 @@ summary.CellTypeSCHTSCHT <- function(object, ...) {
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
+#' @examples
+#' # Create IntegratedSCHT object (with cell types)
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' integrated_scht <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,
+#'     max_genes_per_cell = 10000,
+#'     min_cells_expressing = 0.02,
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   require_cell_type = TRUE,  # This creates IntegratedSCHT
+#'   verbose = FALSE
+#' )
+#' 
+#' # Print the IntegratedSCHT object
+#' print(integrated_scht)
 #' @export
 print.IntegratedSCHT <- function(x, ...) {
   cat("Integrated SCHT Object\n")
@@ -1285,6 +1360,31 @@ print.IntegratedSCHT <- function(x, ...) {
 #' @param ... Additional arguments (not used)
 #'
 #' @return None (prints to console)
+#' @examples
+#' # Using the same IntegratedSCHT object
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' integrated_scht <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,
+#'     max_genes_per_cell = 10000,
+#'     min_cells_expressing = 0.02,
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   require_cell_type = TRUE,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Get summary of IntegratedSCHT object
+#' summary(integrated_scht)
 #' @export
 summary.IntegratedSCHT <- function(object, ...) {
   cat("Integrated SCHT Summary\n")
@@ -1353,24 +1453,97 @@ summary.IntegratedSCHT <- function(object, ...) {
 #' @export
 #'
 #' @examples
-#' # For large-scale single-cell data:
-#' # scht_obj <- create_scht(
-#' #   gene_counts = gene_counts,         # Large count matrix
-#' #   transcript_counts = transcript_counts,
-#' #   transcript_info = transcript_info,
-#' #   cell_info = cell_info,
-#' #   n_hvg = 3000,
-#' #   qc_params = list(
-#' #     min_genes_per_cell = 200,
-#' #     max_genes_per_cell = 10000,
-#' #     min_cells_expressing = 0.02,
-#' #     min_expr = 1e-4
-#' #   ),
-#' #   require_cell_type = TRUE,
-#' #   verbose = TRUE,
-#' #   sparsity_threshold = 0.5,  # Adjust based on data sparsity
-#' #   input_type = "raw_counts"  # or "normalised" for TPM/FPKM data
-#' # )
+#' # Load example data
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' # Example 1: Basic SCHT creation with default parameters
+#' scht_basic <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   n_hvg = 2000,
+#'   verbose = TRUE
+#' )
+#' 
+#' # Examine the structure
+#' print(scht_basic)
+#' summary(scht_basic)
+#' 
+#' # Example 2: Using recommended QC parameters
+#' # First, get QC recommendations
+#' qc_recommendations <- recommend_qc_parameters(gene_counts_blood)
+#' print(qc_recommendations$explanation)
+#' 
+#' # Use the moderate (90% interval) strategy
+#' recommended_params <- qc_recommendations$Interval_90
+#' # Add the missing parameters
+#' recommended_params$min_cells_expressing <- 0.02
+#' recommended_params$min_expr <- 1e-6
+#' 
+#' scht_recommended <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   n_hvg = 1500,
+#'   qc_params = recommended_params,
+#'   verbose = TRUE
+#' )
+#' 
+#' # Example 3: Manual QC parameters for different experimental designs
+#' # For high-depth sequencing or full-length protocols
+#' scht_manual <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   n_hvg = 1000,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   verbose = TRUE
+#' )
+#' 
+#' # Example 4: Working with normalised data
+#' # If your data is already normalised (TPM/FPKM)
+#' \donttest{
+#' scht_normalised <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   n_hvg = 1500,
+#'   input_type = "normalised",
+#'   verbose = TRUE
+#' )
+#' }
+#' 
+#' # Example 5: Accessing SCHT components
+#' # Get list of cell types
+#' cell_types <- names(scht_basic)
+#' print(cell_types)
+#' 
+#' # Access specific cell type data
+#' if ("AEC" %in% cell_types) {
+#'   aec_data <- scht_basic[["AEC"]]
+#'   print(paste("AEC dimensions:", paste(dim(aec_data), collapse=" x ")))
+#' }
+#' 
+#' # Get highly variable genes used
+#' hvgs <- attr(scht_basic, "hvg_genes")
+#' print(head(hvgs))
+#' print(paste("Total HVGs:", length(hvgs)))
+#' 
+#' # Check transcript usage per gene
+#' transcript_usage <- attr(scht_basic, "transcript_gene_map")
+#' print(head(transcript_usage))
 create_scht <- function(gene_counts,
                         transcript_counts,
                         transcript_info,
@@ -1378,7 +1551,7 @@ create_scht <- function(gene_counts,
                         n_hvg = 3000,
                         qc_params = list(
                           min_genes_per_cell = 200,       
-                          max_genes_per_cell = 10000,      
+                          max_genes_per_cell = 20000,      
                           min_cells_expressing = 0.02,   
                           min_expr = 1e-4),
                         require_cell_type = TRUE,

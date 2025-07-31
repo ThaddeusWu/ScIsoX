@@ -1,0 +1,210 @@
+url: https://ThaddeusWu.github.io/ScIsoX/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    bg: "#f8f9fa"
+    fg: "#2c3e50"
+    primary: "#1a5490"
+    secondary: "#95a5a6"
+    success: "#27ae60"
+    info: "#1a5490"
+    warning: "#f39c12"
+    danger: "#e74c3c"
+    base_font: "Helvetica Neue, Helvetica, Arial, sans-serif"
+    heading_font: "Helvetica Neue, Helvetica, Arial, sans-serif"
+    code_font: "Monaco, Consolas, 'Courier New', monospace"
+
+home:
+  title: "ScIsoX"
+  description: |
+    A comprehensive R package for measuring isoform-level transcriptomic 
+    complexity in single cells. ScIsoX provides a robust computational 
+    framework for investigating alternative splicing patterns at 
+    single-cell resolution.
+  
+  links:
+  - text: Report an issue
+    href: https://github.com/ThaddeusWu/ScIsoX/issues
+  - text: Ask a question
+    href: https://github.com/ThaddeusWu/ScIsoX/discussions
+  - text: View on Zenodo
+    href: https://doi.org/10.5281/zenodo.16569860
+  
+  sidebar:
+    structure: [links, license, community, citation, authors, dev]
+    components:
+      custom:
+        title: "Quick Links"
+        text: |
+          - [5-Minute Quick Start](articles/vignette-01-getting-started.html#minute-quick-start)
+          - [Visualisation Gallery](articles/vignette-04-visualisation.html)
+          - [Example Data](reference/gene_counts_blood.html)
+      citation:
+        title: "Citation"
+        text: |
+          <strong>Software DOI:</strong><br>
+          <a href="https://doi.org/10.5281/zenodo.16569860">
+            <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16569860.svg" alt="DOI">
+          </a><br><br>
+          <strong>Manuscript:</strong><br>
+          Wu & Schmitz (2025)<br>
+          bioRxiv: <a href="https://doi.org/10.1101/2025.04.28.650897">10.1101/2025.04.28.650897</a>
+
+navbar:
+  bg: "#1a5490"
+  type: dark
+  structure:
+    left:  [intro, reference, articles, tutorials, news]
+    right: [search, github]
+  components:
+    articles:
+      text: Vignettes
+      menu:
+      - text: "Getting Started"
+        href: articles/vignette-01-getting-started.html
+      - text: "Data Import and QC"
+        href: articles/vignette-02-data-import-qc.html
+      - text: "Complexity Metrics"
+        href: articles/vignette-03-complexity-metrics.html
+      - text: "Visualisation Gallery"
+        href: articles/vignette-04-visualisation.html
+      - text: "Co-expression Analysis"
+        href: articles/vignette-05-coexpression.html
+
+reference:
+- title: "🚀 Getting Started"
+  desc: "Essential functions to begin your analysis"
+  contents:
+  - create_scht
+  - calculate_isoform_complexity_metrics
+  - plot_tc_landscape
+
+- title: "📊 Data Import & Preprocessing"
+  desc: "Functions for importing and preparing your data"
+  contents:
+  - create_transcript_info
+  - generate_gene_counts
+  - plot_genes_per_cell_distribution
+  - recommend_qc_parameters
+
+- title: "🧬 Complexity Analysis"
+  desc: "Core functions for transcriptomic complexity analysis"
+  contents:
+  - calculate_isoform_complexity_metrics
+  - select_genes_of_interest
+  - find_complexity_pattern
+  - compare_gene_metrics
+
+- title: "📈 Visualisation - Complexity Landscapes"
+  desc: "Functions for visualising overall complexity patterns"
+  contents:
+  - plot_tc_landscape
+  - plot_tc_density
+  - plot_diversity_comparison
+  - plot_complexity_ridges
+  - plot_threshold_visualisations
+
+- title: "🧩 Visualisation - Isoform Patterns"
+  desc: "Functions for visualising isoform-specific patterns"
+  contents:
+  - plot_isoform_coexpression
+  - plot_isoform_profile
+  - plot_isoform_transitions
+
+- title: "🎯 Visualisation - Multi-dimensional"
+  desc: "Advanced visualisation for complex comparisons"
+  contents:
+  - plot_complexity_radar
+  - plot_single_gene_radar_cell_type
+  - plot_compare_multiple_genes_radar_cell_type
+  - plot_compare_tc_complexity_heatmap
+  - plot_compare_tc_density_difference
+
+- title: "🔗 Co-expression Analysis"
+  desc: "Comprehensive isoform co-expression analysis toolkit"
+  contents:
+  - calculate_isoform_coexpression
+  - calculate_gene_coexpression_all_celltypes
+  - detect_isoform_switching
+  - analyse_coexpression_conservation
+  - calculate_coexpression_stats
+  - calculate_celltype_coexpression_similarity
+  - plot_coexpression_across_celltypes
+  - plot_conservation_summary
+  - export_coexpression_results
+  - launch_coexpression_app
+
+- title: "🔍 Quality Control & Performance"
+  desc: "Tools for QC and performance analysis"
+  contents:
+  - generate_qc_report
+  - calculate_scht_sparsity
+  - calculate_ct_scht_sparsity
+  - compare_sparsity
+  - analyse_sparsity_for_table
+
+- title: "📦 Data Objects"
+  desc: "Example datasets included with ScIsoX"
+  contents:
+  - gene_counts_blood
+  - transcript_counts_blood
+  - transcript_info
+  - sample2stage
+
+- title: "🛠️ Utilities & Methods"
+  desc: "Helper functions and S3 methods"
+  contents:
+  - install_scisox_suggests
+  - starts_with("print.")
+  - starts_with("summary.")
+
+figures:
+  dev: ragg::agg_png
+  dpi: 96
+  dev.args: []
+  fig.ext: png
+  fig.width: 8
+  fig.height: 6
+  fig.retina: 2
+  fig.asp: 0.75
+  bg: "white"
+  other.parameters: []
+
+development:
+  mode: auto
+  version_label: success
+  version_tooltip: "Released version"
+  
+footer:
+  structure: 
+    left: [package_info]
+    right: [data_attribution]
+  components:
+    package_info: |
+      Developed by Siyuan Wu, Ulf Schmitz<br>
+      Site built with <a href="https://pkgdown.r-lib.org">pkgdown</a> 2.1.1
+    data_attribution: |
+      <strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT">MIT</a><br>
+      <br>
+      <strong>Example Data Attribution</strong>:<br>
+      The example datasets included in this package are derived from:<br>
+      Wang et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. <em>Science Advances</em> 8(1):eabg5369<br>
+      Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><br>
+      We gratefully acknowledge the authors for making their data publicly available.
+      
+authors:
+  Siyuan Wu:
+    href: https://github.com/ThaddeusWu
+    html: "<img src='https://github.com/ThaddeusWu.png' height='24' /> Siyuan Wu"
+  Ulf Schmitz:
+    href: https://github.com/ulfschmitz
+    html: "<img src='https://github.com/ulfschmitz.png' height='24' /> Ulf Schmitz"
+    
+news:
+  releases:
+  - text: "Version 1.1.1"
+    href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1
+  - text: "Version 1.1.0"
+    href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/V1.1.0

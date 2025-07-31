@@ -1,8 +1,9 @@
 # ScIsoX
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.1.0-blue.svg)](https://github.com/ThaddeusWu/ScIsoX)
+[![Version](https://img.shields.io/badge/Version-1.1.1-blue.svg)](https://github.com/ThaddeusWu/ScIsoX)
 [![R](https://img.shields.io/badge/R-%3E%3D%204.0.0-blue.svg)](https://www.r-project.org/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16569860.svg)](https://doi.org/10.5281/zenodo.16569860)
 
 ## Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R
 
@@ -19,12 +20,13 @@ Wu S and Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Is
 1. [Introduction](#introduction)
 2. [Installation](#installation)
 3. [Package Architecture](#package-architecture)
-4. [Basic Tutorial](#basic-tutorial)
-5. [Advanced Usage](#advanced-usage)
-6. [Visualisation Gallery](#visualisation-gallery)
-7. [Troubleshooting](#troubleshooting)
-8. [Citation](#citation)
-9. [Contact & Support](#contact--support)
+4. [5-Minute Quick Start](#5-minute-quick-start)
+5. [Basic Tutorial](#basic-tutorial)
+6. [Advanced Usage](#advanced-usage)
+7. [Visualisation Gallery](#visualisation-gallery)
+8. [Troubleshooting](#troubleshooting)
+9. [Citation](#citation)
+10. [Contact & Support](#contact--support)
 
 ---
 
@@ -212,6 +214,27 @@ library(ScIsoX)
 # You'll see a message about missing packages and how to install them
 
 # The core analysis still works perfectly:
+# First create SCHT object
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  n_hvg = 3000,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  verbose = FALSE
+)
+
 tc_results <- calculate_isoform_complexity_metrics(scht_obj)
 
 # Some visualisations may have reduced features:
@@ -269,7 +292,67 @@ ScIsoX is organised into several functional modules:
 
 ---
 
+## 5-Minute Quick Start
+
+Want to get started quickly? Here's a minimal example using the included example data:
+
+```r
+# Load ScIsoX
+library(ScIsoX)
+
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create SCHT object with recommended parameters
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# Visualise complexity landscape
+plot_tc_landscape(tc_results, n_label = 5)
+
+# Find genes with high complexity
+complex_genes <- tc_results$metrics[
+  tc_results$metrics$intra_cellular_isoform_diversity_class == "high" &
+  tc_results$metrics$inter_cellular_isoform_diversity_class == "high",
+]
+print(paste("Found", nrow(complex_genes), "highly complex genes"))
+
+# Launch interactive co-expression app (optional)
+# launch_coexpression_app(scht_obj)
+```
+
+That's it! You've just:
+- Created a Single-Cell Hierarchical Tensor (SCHT)
+- Calculated transcriptomic complexity metrics
+- Visualised the complexity landscape
+- Identified highly complex genes
+
+For more details, continue to the tutorials below.
+
+---
+
 ## Basic Tutorial
+
+### Input data recommendations
+The accuracy of _ScIsoX_'s complexity metrics is contingent upon the quality of the input isoform-by-cell count matrix. Users should be aware that artefacts from library preparation, sequencing errors, or read misalignment can lead to the spurious identification of transcripts, potentially inflating complexity metrics. Rigorous upstream quality control and filtering are therefore essential. For instance, for long-read data, several tools can be employed to collapse redundant transcripts and filter artefacts such as TALON or IsoQuant. Similarly, for isoform-level quantification from short-read data, established tools include Salmon, Kallisto-Bustools, and RSEM. The performance of these and other tools can vary depending on the dataset, and we encourage readers to consult comprehensive benchmarking studies, such as Dong et al. for long-read RNA-seq and Westoby et al. for short-read RNA-seq, to select the most appropriate method for their specific needs. For experimental designs with multiple batches, we recommend applying batch correction using established methods (e.g., Harmony, Seurat's integration workflow) before analysis with _ScIsoX_. For all data types, starting with a high-quality reference annotation and applying appropriate expression thresholds to filter out extremely low-abundance isoforms is critical. While _ScIsoX_'s internal filtering of low-expression genes and its focus on highly variable genes help to mitigate the impact of residual noise, the validity of novel isoform analysis ultimately depends on robust upstream quantification.
 
 ### 1. Data Preparation
 
@@ -278,6 +361,22 @@ ScIsoX works with single-cell gene and transcript expression matrices. Let's sta
 ```r
 library(ScIsoX)
 
+# Example data is included with the package
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# View the structure of example data
+str(gene_counts_blood)    # Gene-level count matrix
+str(transcript_counts_blood)  # Transcript-level count matrix
+str(transcript_info)      # Transcript annotation information
+str(sample2stage)         # Cell metadata
+```
+
+#### Working with Your Own Data
+
+```r
 # If working with a GTF file, create transcript information
 transcript_info <- create_transcript_info(
   gtf_path = "path/to/gencode.gtf",
@@ -295,21 +394,29 @@ gene_counts <- count_results$gene_counts
 transcript_counts <- your_isoform_matrix  # Original isoform counts
 ```
 
+### Data Attribution
+
+The example dataset included in ScIsoX is derived from:
+
+> Wang Q, et al. (2022). Single-cell transcriptomic atlas of the human endometrium during the menstrual cycle. *Science Advances* 8(1):eabg5369. DOI: 10.1126/sciadv.abg5369
+
+This data is provided under CC BY 4.0 license and has been processed for use as example data in this package.
+
 ### 2. Quality Control Analysis
 
 Before creating the SCHT object, analyse the distribution of genes per cell to determine appropriate QC parameters:
 
 ```r
-# Visualise genes per cell distribution
+# Visualise genes per cell distribution using example data
 qc_suggestions <- plot_genes_per_cell_distribution(
-  gene_counts = gene_counts,
+  gene_counts = gene_counts_blood,
   plot_type = "density",  # Options: "density" or "hist"
   percentile_cutoffs = c(0.05, 0.95),  # Customise percentile lines to show
   return_suggestions = TRUE
 )
 
 # Get data-driven QC recommendations with multiple strategies
-qc_recommendations <- recommend_qc_parameters(gene_counts)
+qc_recommendations <- recommend_qc_parameters(gene_counts_blood)
 
 # View recommendations
 print(qc_recommendations)
@@ -343,24 +450,28 @@ custom_params <- list(
 Use the QC parameters to create the Single-Cell Hierarchical Tensor object:
 
 ```r
-# Create cell info data frame with cell type information
-cell_info <- data.frame(
-  cell_id = colnames(gene_counts),
-  cell_type = your_cell_type_vector,
-  stringsAsFactors = FALSE
-)
+# Using the example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)  # This contains cell type information
 
-# Create SCHT object using selected QC strategy
+# Create SCHT object using recommended parameters
 scht_obj <- create_scht(
-  gene_counts = gene_counts,
-  transcript_counts = transcript_counts,
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
   transcript_info = transcript_info,
-  cell_info = cell_info,
-  n_hvg = 3000,  # Number of highly variable genes to select (can be adjusted based on dataset size)
-  qc_params = selected_strategy,  # Or use custom_params if preferred
-  require_cell_type = TRUE,  # Set to FALSE if cell type information is not available
+  cell_info = sample2stage,
+  n_hvg = 3000,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  require_cell_type = TRUE,
   verbose = TRUE,
-  sparsity_threshold = 0.4  # Adjust to control when sparse matrices are used (lower = more memory efficient)
+  sparsity_threshold = 0.4
 )
 
 # Examine the SCHT object
@@ -422,7 +533,8 @@ landscape_plot <- plot_tc_landscape(
   y_metric = "inter_cell_type_specificity",
   highlight_genes = NULL,  # Optionally specify genes to highlight
   label_annotation = "intra_cell_type_heterogeneity",  # Metric used for colour intensity
-  label_top = 10,  # Number of genes to label
+  n_label = 10,  # Number of genes to label
+  label_direction = "top",  # "top" or "bottom"
   use_thresholds = TRUE,  # Use thresholds from tc_results
   point_transparency = 0.85
 )
@@ -555,33 +667,41 @@ These visualisations provide different perspectives on gene complexity. The rada
 Analyse isoform usage patterns for genes of interest:
 
 ```r
-# Create heatmap for isoform co-expression
-coexp_heatmap <- plot_isoform_coexpression(
-  scht_obj = scht_obj,
-  gene = complex_genes[1],
-  display_numbers = TRUE  # Show correlation values in cells
-)
-
-# Create stacked bar chart for isoform usage across cell types
-isoform_profile <- plot_isoform_profile(
-  scht_obj = scht_obj,
-  gene = complex_genes[1],
-  cell_type_order = NULL,  # Optional ordering of cell types
-  min_prop = 0.05,  # Minimum proportion to display (minor isoforms grouped as "Other")
-  color_palette = NULL  # Optional custom colour palette
-)
-
-# Create line plot for isoform transitions across cell types
-# For developmental trajectory analysis
-cell_type_order <- c("Progenitor", "Intermediate", "Mature")
-transition_plot <- plot_isoform_transitions(
-  scht_obj = scht_obj,
-  gene = complex_genes[1],
-  cell_type_order = cell_type_order,  # Required for meaningful transitions
-  min_prop = 0.05,  # Minimum proportion to display
-  smooth = TRUE,  # Apply smoothing to lines
-  color_palette = NULL  # Optional custom colour palette
-)
+# Find a gene with multiple isoforms for demonstration
+multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
+if(length(multi_iso_genes) > 0) {
+  example_gene <- multi_iso_genes[1]
+  
+  # Create heatmap for isoform co-expression
+  coexp_heatmap <- plot_isoform_coexpression(
+    scht_obj = scht_obj,
+    gene = example_gene,
+    display_numbers = TRUE  # Show correlation values in cells
+  )
+  
+  # Create stacked bar chart for isoform usage across cell types
+  isoform_profile <- plot_isoform_profile(
+    scht_obj = scht_obj,
+    gene = example_gene,
+    cell_type_order = NULL,  # Optional ordering of cell types
+    min_prop = 0.05,  # Minimum proportion to display
+    color_palette = NULL  # Optional custom colour palette
+  )
+  
+  # Create line plot for isoform transitions across cell types
+  # Get actual cell types from the data
+  cell_types <- sort(unique(scht_obj$cell_info$cell_type))
+  if(length(cell_types) >= 2) {
+    transition_plot <- plot_isoform_transitions(
+      scht_obj = scht_obj,
+      gene = example_gene,
+      cell_type_order = cell_types,  # Use actual cell types
+      min_prop = 0.05,  # Minimum proportion to display
+      smooth = TRUE,  # Apply smoothing to lines
+      color_palette = NULL  # Optional custom colour palette
+    )
+  }
+}
 ```
 
 These functions help you understand isoform usage dynamics:
@@ -595,57 +715,53 @@ These functions help you understand isoform usage dynamics:
 For experiments comparing different conditions:
 
 ```r
-# Assuming you have SCHT objects for different conditions
-scht_obj_A <- scht_obj_condition_1  # Condition 1
-scht_obj_B <- scht_obj_condition_2  # Condition 2
-scht_obj_C <- scht_obj_condition_3  # Condition 3  
-scht_obj_D <- scht_obj_condition_4  # Condition 4
+# For demonstration, we'll simulate different conditions by subsetting our data
+# In practice, you would have separate datasets for each condition
 
-# Calculate complexity metrics for each condition
-tc_results_A <- calculate_isoform_complexity_metrics(scht_obj_A)
-tc_results_B <- calculate_isoform_complexity_metrics(scht_obj_B)
-tc_results_C <- calculate_isoform_complexity_metrics(scht_obj_C)
-tc_results_D <- calculate_isoform_complexity_metrics(scht_obj_D)
-
-# Create a list of results
-tc_results_list <- list(
-  Condition_1 = tc_results_A,
-  Condition_2 = tc_results_B,
-  Condition_3 = tc_results_C,
-  Condition_4 = tc_results_D
-)
-
-# Create a list of paired comparisons
-pair_indices <- list(
-  c(1,2),  # Condition 1 vs Condition 2
-  c(1,3),  # Condition 1 vs Condition 3
-  c(1,4),  # Condition 1 vs Condition 4
-)
-
-# Compare complexity density differences
-diff_plot <- plot_compare_tc_density_difference(
-  tc_results_list = tc_results_list,
-  group_names = c("Condition 1", "Condition 2", "Condition 3", "Condition 4"),
-  pair_indices = pair_indices,
-  x_metric = "inter_cellular_isoform_diversity",
-  y_metric = "inter_cell_type_specificity",
-  grid_size = 100  # Resolution of density estimation
-)
-
-# Create heatmaps for metrics across conditions
-heatmap_results <- plot_compare_tc_complexity_heatmap(
-  tc_results_list = tc_results_list,
-  groups = c("Control", "Treatment"),
-  metrics = NULL,  # NULL will use all metrics, or specify a subset
-  n_top_genes = 50,  # Number of genes to include
-  selection_method = "variance",  # Options: "variance", "magnitude", or "custom"
-  custom_genes = NULL,  # Used when selection_method = "custom"
-  cluster_genes = FALSE,  # Whether to cluster genes
-  show_changes = TRUE  # Whether to show changes between groups
-)
-
-# Display a heatmap
-print(heatmap_results$heatmaps$intra_cellular_isoform_diversity)
+# Create subsets to simulate conditions (e.g., different developmental stages)
+stages <- unique(sample2stage$cell_type)
+if(length(stages) >= 2) {
+  # Create SCHT objects for different stages/conditions
+  stage1_cells <- rownames(sample2stage)[sample2stage$cell_type == stages[1]]
+  stage2_cells <- rownames(sample2stage)[sample2stage$cell_type == stages[2]]
+  
+  # Create subset SCHT objects (in practice, these would be your different conditions)
+  # Note: This is for demonstration only
+  scht_stage1 <- create_scht(
+    gene_counts = gene_counts_blood[, stage1_cells],
+    transcript_counts = transcript_counts_blood[, stage1_cells],
+    transcript_info = transcript_info,
+    cell_info = sample2stage[stage1_cells, , drop = FALSE],
+    n_hvg = 1000,  # Fewer HVGs for smaller dataset
+    qc_params = list(
+      min_genes_per_cell = 2000,  # Adjusted for subset
+      max_genes_per_cell = 8000,
+      min_cells_expressing = 0.05,
+      min_expr = 1e-6
+    ),
+    verbose = FALSE
+  )
+  
+  # Calculate complexity metrics
+  tc_results_stage1 <- calculate_isoform_complexity_metrics(scht_stage1, verbose = FALSE)
+  tc_results_stage2 <- tc_results_stage1  # For demo purposes
+  
+  # Create a list of results
+  tc_results_list <- list(
+    Stage1 = tc_results_stage1,
+    Stage2 = tc_results_stage2  # In practice, calculate separately
+  )
+  
+  # Compare complexity (demonstration with same data)
+  # In practice, these would show real differences between conditions
+  diff_plot <- plot_compare_tc_density_difference(
+    tc_results_list = tc_results_list,
+    group_names = c("Stage 1", "Stage 2"),
+    x_metric = "inter_cellular_isoform_diversity",
+    y_metric = "inter_cell_type_specificity",
+    grid_size = 50  # Lower resolution for demo
+  )
+}
 ```
 
 These comparative functions are designed for experimental designs with multiple conditions:
@@ -660,37 +776,81 @@ Each function offers different ways to select genes of interest, including varia
 ScIsoX provides comprehensive tools for analysing isoform co-expression patterns:
 
 ```r
-# Calculate co-expression for a single gene
-coexp_result <- calculate_isoform_coexpression(
-  scht_obj = scht_obj,
-  gene = "GENE_NAME",
-  method = "pearson",  # Options: "pearson", "spearman"
-  min_cells = 10
-)
+# Find genes with multiple isoforms for co-expression analysis
+multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
 
-# Analyse co-expression across all cell types
-multi_coexp <- calculate_gene_coexpression_all_celltypes(
-  scht_obj = scht_obj,
-  gene = "GENE_NAME",
-  method = "pearson"
-)
+if(length(multi_iso_genes) > 0) {
+  # Calculate co-expression for a single gene
+  coexp_result <- calculate_isoform_coexpression(
+    scht_obj = scht_obj,
+    gene = multi_iso_genes[1],
+    method = "pearson",  # Options: "pearson", "spearman"
+    min_cells = 10
+  )
+  
+  # Analyse co-expression across all cell types
+  multi_coexp <- calculate_gene_coexpression_all_celltypes(
+    scht_obj = scht_obj,
+    gene = multi_iso_genes[1],
+    method = "pearson"
+  )
+}
 
 # Identify conservation patterns
-conservation_results <- analyse_coexpression_conservation(
-  multi_coexp,
-  correlation_threshold = 0.3,
-  fdr_method = "BH",
-  bootstrap_iterations = 100,
-  seed = 123
-)
+if(exists("multi_coexp") && length(multi_iso_genes) > 0) {
+  conservation_results <- analyse_coexpression_conservation(
+    integrated_scht = scht_obj,
+    gene = multi_iso_genes[1],
+    method = "pearson",
+    min_cells = 10,
+    consistency_threshold = 0.7,
+    correlation_threshold = 0.3
+  )
+  
+  # View conservation summary
+  print(conservation_results$summary)
+  
+  # Plot conservation summary
+  plot_conservation_summary(
+    conservation_results,
+    output_file = "conservation_summary.pdf",
+    width = 8,
+    height = 6
+  )
+}
 
 # Detect isoform switching (antagonistic relationships)
-switching_genes <- detect_isoform_switching(
-  scht_obj = scht_obj,
-  genes = NULL,  # NULL analyses all genes
-  correlation_threshold = -0.3,
-  min_pairs = 1
-)
+if(exists("coexp_result")) {
+  switching_results <- detect_isoform_switching(
+    cor_result = coexp_result,
+    threshold = -0.3,
+    strong_threshold = -0.5
+  )
+  
+  # View switching pairs
+  if(switching_results$n_switching_pairs > 0) {
+    print(switching_results$switching_pairs)
+  }
+}
+
+# Calculate co-expression statistics
+if(exists("coexp_result")) {
+  coexp_stats <- calculate_coexpression_stats(
+    cor_result = coexp_result,
+    include_pairwise = TRUE
+  )
+  print(paste("Mean correlation:", round(coexp_stats$mean_correlation, 3)))
+  print(paste("Positive correlations:", coexp_stats$pct_positive, "%"))
+}
+
+# Export co-expression results
+if(exists("multi_coexp")) {
+  export_coexpression_results(
+    coexpr_result = multi_coexp,
+    output_prefix = "coexpression_analysis",
+    formats = c("csv", "rds")
+  )
+}
 
 # Launch interactive Shiny application
 launch_coexpression_app(scht_obj)
@@ -725,7 +885,11 @@ generate_qc_report(
 
 # Analyse sparsity across different data representations
 sparsity_comparison <- analyse_sparsity_for_table(
-  list(dataset1 = scht_obj1, dataset2 = scht_obj2)
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  scht_obj = scht_obj,
+  dataset_name = "Blood Cell Example Data"
 )
 ```
 
@@ -734,6 +898,255 @@ These functions help you:
 - **Monitor performance**: Track processing time and memory utilisation
 - **Quality control**: Generate detailed reports on data quality and filtering results
 - **Compare efficiency**: Demonstrate advantages over naive tensor approaches
+
+---
+
+## Visualisation Gallery
+
+ScIsoX provides over 13 specialised visualisation functions for comprehensive exploration of transcriptomic complexity. Here are detailed examples:
+
+### Threshold Visualisations
+
+```r
+# View threshold determination plots from complexity calculation
+if(tc_results$visualise) {
+  plot_threshold_visualisations(
+    threshold_plots = tc_results$threshold_plots,
+    ncol = 3,
+    title = "Threshold Determination for Complexity Metrics"
+  )
+}
+```
+
+### Complexity Landscape Plots
+
+```r
+# Create landscape plot with marginal distributions
+landscape <- plot_tc_landscape(
+  tc_results = tc_results,
+  x_metric = "inter_cellular_isoform_diversity",
+  y_metric = "inter_cell_type_specificity",
+  highlight_genes = names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
+                              decreasing = TRUE))[1:5],
+  label_annotation = "intra_cell_type_heterogeneity",
+  n_label = 10,
+  label_direction = "top",  # "top" or "bottom"
+  use_thresholds = TRUE,
+  x_threshold = NULL,  # Use threshold from tc_results
+  y_threshold = NULL,  # Use threshold from tc_results
+  point_transparency = 0.85
+)
+
+# Create density contour plot
+density <- plot_tc_density(
+  tc_results = tc_results,
+  x_metric = "inter_cellular_isoform_diversity",
+  y_metric = "inter_cell_type_specificity",
+  use_thresholds = TRUE,
+  x_threshold = 0.6,
+  y_threshold = 0.6
+)
+```
+
+### Diversity Analysis Plots
+
+```r
+# Compare intra- vs inter-cellular diversity
+diversity_comp <- plot_diversity_comparison(
+  tc_results = tc_results,
+  label_top = 20,
+  point_transparency = 0.85,
+  use_thresholds = TRUE,
+  x_threshold = 0.6,
+  y_threshold = 0.6
+)
+
+# Create ridge plots for metric distributions
+ridge_global <- plot_complexity_ridges(
+  tc_results = tc_results,
+  type = "global",
+  metrics = NULL,  # Use all metrics
+  scale_values = TRUE
+)
+
+# Cell type-specific ridge plots
+ridge_ct <- plot_complexity_ridges(
+  tc_results = tc_results,
+  type = "cell_type",
+  cell_types = NULL,  # Auto-detect
+  metrics = c("intra_cellular_isoform_diversity", 
+              "inter_cellular_isoform_diversity"),
+  n_celltypes = 5,
+  label_y_axis = TRUE
+)
+```
+
+### Isoform Co-expression Visualisations
+
+```r
+# Find genes with multiple isoforms
+multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
+
+if(length(multi_iso_genes) > 0) {
+  # Co-expression heatmap
+  coexp_heatmap <- plot_isoform_coexpression(
+    scht_obj = scht_obj,
+    gene = multi_iso_genes[1],
+    method = "pearson",
+    display_numbers = TRUE,
+    cluster_rows = TRUE,
+    cluster_columns = TRUE,
+    title = NULL  # Auto-generated
+  )
+  
+  # Isoform usage profile across cell types
+  usage_profile <- plot_isoform_profile(
+    scht_obj = scht_obj,
+    gene = multi_iso_genes[1],
+    cell_type_order = NULL,  # Auto-order
+    min_prop = 0.05,
+    colour_palette = NULL  # Default palette
+  )
+  
+  # Isoform transitions (if ordered cell types)
+  cell_types <- sort(unique(scht_obj$cell_info$cell_type))
+  if(length(cell_types) >= 2) {
+    transitions <- plot_isoform_transitions(
+      scht_obj = scht_obj,
+      gene = multi_iso_genes[1],
+      cell_type_order = cell_types,
+      selected_isoforms = NULL,  # All isoforms
+      min_prop = 0.05,
+      smooth = TRUE,
+      colour_palette = NULL
+    )
+  }
+}
+```
+
+### Radar Charts for Multi-dimensional Comparison
+
+```r
+# Compare top complex genes
+complex_genes <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
+                           decreasing = TRUE))[1:5]
+
+# Multi-gene radar chart
+if(requireNamespace("ggradar", quietly = TRUE)) {
+  radar_multi <- plot_complexity_radar(
+    tc_metrics = tc_results,
+    genes = complex_genes,
+    scale_type = "global"  # "global", "per_metric", or "none"
+  )
+  
+  # Single gene across cell types
+  radar_single <- plot_single_gene_radar_cell_type(
+    tc_results = tc_results,
+    gene_name = complex_genes[1],
+    metrics = NULL,  # Default metrics
+    scale_values = TRUE
+  )
+  
+  # Multiple genes across cell types
+  radar_compare <- plot_compare_multiple_genes_radar_cell_type(
+    tc_results = tc_results,
+    gene_names = complex_genes[1:3],
+    cell_types = NULL,  # All cell types
+    metrics = NULL,
+    scale_type = "per_cell_type",
+    ncol = 3
+  )
+}
+```
+
+### Comparative Analysis Visualisations
+
+```r
+# For comparing conditions (requires multiple tc_results)
+# Example with simulated conditions
+if(length(unique(sample2stage$cell_type)) >= 2) {
+  # Create comparison list (in practice, use different conditions)
+  tc_results_list <- list(
+    Baseline = tc_results,
+    Treatment = tc_results  # Would be different condition
+  )
+  
+  # Density difference plots
+  density_diff <- plot_compare_tc_density_difference(
+    tc_results_list = tc_results_list,
+    group_names = c("Baseline", "Treatment"),
+    pair_indices = list(c(1, 2)),
+    x_metric = "inter_cellular_isoform_diversity",
+    y_metric = "inter_cell_type_specificity",
+    grid_size = 50
+  )
+  
+  # Complexity heatmaps
+  if(requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+    heatmap_comp <- plot_compare_tc_complexity_heatmap(
+      tc_results_list = tc_results_list,
+      groups = c("Baseline", "Treatment"),
+      metrics = c("intra_cellular_isoform_diversity", 
+                  "inter_cellular_isoform_diversity"),
+      n_top_genes = 30,
+      selection_method = "variance",
+      cluster_genes = TRUE,
+      show_changes = TRUE
+    )
+    
+    # Display specific metric heatmap
+    print(heatmap_comp$heatmaps$intra_cellular_isoform_diversity)
+  }
+}
+```
+
+### Co-expression Pattern Visualisations
+
+```r
+# Plot co-expression across cell types
+if(exists("multi_coexp") && length(multi_coexp$cell_types) > 0) {
+  coexp_pattern <- plot_coexpression_across_celltypes(
+    coexpr_all_result = multi_coexp,
+    pair_selection = "all",  # "all", "switching", "conserved"
+    threshold = 0.3
+  )
+  print(coexp_pattern)
+}
+
+# Cell type similarity based on co-expression
+if(exists("multi_coexp") && length(multi_coexp$cell_types) >= 2) {
+  # Extract correlation matrices
+  cor_list <- lapply(multi_coexp$cell_types, function(x) x$cor_matrix)
+  
+  # Calculate similarity
+  ct_similarity <- calculate_celltype_coexpression_similarity(
+    correlation_list = cor_list,
+    method = "correlation"  # "correlation", "euclidean", "manhattan"
+  )
+  
+  # Visualise with hierarchical clustering
+  hc <- hclust(ct_similarity)
+  plot(hc, main = "Cell Type Similarity Based on Co-expression Patterns")
+}
+```
+
+### Export Visualisations
+
+```r
+# Save plots to PDF
+pdf("scisox_visualisations.pdf", width = 10, height = 8)
+
+# Add your plots here
+print(landscape)
+print(diversity_comp)
+print(ridge_global)
+
+dev.off()
+
+# Save individual plots
+ggsave("complexity_landscape.pdf", landscape, width = 10, height = 8)
+ggsave("diversity_comparison.pdf", diversity_comp, width = 8, height = 8)
+```
 
 ---
 
@@ -796,12 +1209,20 @@ If you encounter problems not addressed here, please:
 
 If you use ScIsoX in your research, please cite:
 
+**Manuscript:**
 ```
 ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells
 Wu, S and Schmitz, U
 bioRxiv, 2025
 DOI: 10.1101/2025.04.28.650897
 url: https://www.biorxiv.org/content/10.1101/2025.04.28.650897v2
+```
+
+**Software:**
+```
+Wu, S and Schmitz, U (2025). ScIsoX: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline 
+and Transcriptomic Complexity Analysis in R. R package version 1.1.1.
+DOI: 10.5281/zenodo.16569860
 ```
 
 BibTeX entry:
@@ -839,6 +1260,14 @@ Please report bugs and feature requests via the [GitHub issue tracker](https://g
 ### License
 
 This package is licensed under the MIT License.
+
+### Acknowledgments
+
+We gratefully acknowledge Wang et al. (2022) for making their single-cell multiomics data publicly available. The example datasets included in ScIsoX are derived from their publication:
+
+> Wang W, et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. *Science Advances* 8(1):eabg5369. DOI: 10.1126/sciadv.abg5369
+
+These datasets are used under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
 
 ---
 

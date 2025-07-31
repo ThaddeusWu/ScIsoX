@@ -30,7 +30,7 @@ utils::globalVariables(c(
   "Metric", "CellType", "diversity_pattern", "idx", "isoform", "proportion", 
   "quadrant", "short_name", "count", "percentage", "z_norm", 
   "stable_count", "unclassified_count", "Value", "cell_type", "gene",
-  "gene_colors"
+  "gene_colours"
 ))
 
 #' Plot multiple threshold visualisations in a grid layout
@@ -46,13 +46,40 @@ utils::globalVariables(c(
 #' @return A grid arrangement of threshold visualisation plots that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Plot all threshold visualisations in a 2-column grid
+#' # Create SCHT object with recommended QC parameters
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+#' 
+#' # Plot all threshold visualisations
 #' plot_threshold_visualisations(tc_results$threshold_plots, ncol = 2)
-#' }
+#' 
+#' # Plot with custom title
+#' plot_threshold_visualisations(
+#'   tc_results$threshold_plots, 
+#'   ncol = 3, 
+#'   title = "Complexity Metric Thresholds"
+#' )
 #' 
 #' @export
 plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Threshold Fitting Visualisations") {
@@ -511,24 +538,49 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
 #' @return A ggplot object with marginal distributions that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
 #' # Create landscape plot with default metrics
 #' plot_tc_landscape(tc_results)
 #' 
 #' # Use different metrics and highlight specific genes
-#' plot_tc_landscape(tc_results, 
-#'                  x_metric = "intra_cellular_isoform_diversity", 
-#'                  y_metric = "inter_cellular_isoform_diversity",
-#'                  highlight_genes = c("GENE1", "GENE2", "GENE3"))
+#' # Find some multi-isoform genes to highlight
+#' multi_iso_genes <- names(which(tc_results$metrics$n_isoforms > 3))[1:3]
+#' plot_tc_landscape(
+#'   tc_results, 
+#'   x_metric = "intra_cellular_isoform_diversity", 
+#'   y_metric = "inter_cellular_isoform_diversity",
+#'   highlight_genes = multi_iso_genes
+#' )
 #'                  
 #' # Highlight bottom 10 genes by heterogeneity
-#' plot_tc_landscape(tc_results,
-#'                  n_label = 10,
-#'                  label_direction = "bottom")
-#' }
+#' plot_tc_landscape(
+#'   tc_results,
+#'   n_label = 10,
+#'   label_direction = "bottom"
+#' )
 #' 
 #' @export
 plot_tc_landscape <- function(tc_results, 
@@ -804,18 +856,39 @@ plot_tc_landscape <- function(tc_results,
 #' @return A ggplot object with density visualisation that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
 #' # Create density plot with default metrics
 #' plot_tc_density(tc_results)
 #' 
 #' # Use different metrics
-#' plot_tc_density(tc_results, 
-#'                 x_metric = "intra_cellular_isoform_diversity", 
-#'                 y_metric = "inter_cellular_isoform_diversity")
-#' }
+#' plot_tc_density(
+#'   tc_results, 
+#'   x_metric = "intra_cellular_isoform_diversity", 
+#'   y_metric = "inter_cellular_isoform_diversity"
+#' )
 #' 
 #' @export
 plot_tc_density <- function(tc_results, 
@@ -964,16 +1037,44 @@ plot_tc_density <- function(tc_results,
 #' @return A ggplot object with the diversity comparison visualization that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
 #' # Create diversity comparison plot
 #' plot_diversity_comparison(tc_results)
 #' 
 #' # Label more genes
 #' plot_diversity_comparison(tc_results, label_top = 20)
-#' }
+#' 
+#' # Adjust transparency and thresholds
+#' plot_diversity_comparison(
+#'   tc_results, 
+#'   label_top = 15,
+#'   point_transparency = 0.7,
+#'   x_threshold = 0.5,
+#'   y_threshold = 0.5
+#' )
 #' 
 #' @export
 plot_diversity_comparison <- function(tc_results, 
@@ -1192,16 +1293,42 @@ plot_diversity_comparison <- function(tc_results,
 #' @return A ggplot object that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
 #' # Create global ridge plot for all metrics
 #' plot_complexity_ridges(tc_results, type = "global")
 #' 
-#' # Create cell type-specific ridge plots for core metrics
+#' # Create cell type-specific ridge plots
 #' plot_complexity_ridges(tc_results, type = "cell_type")
-#' }
+#' 
+#' # Plot specific metrics only
+#' plot_complexity_ridges(
+#'   tc_results, 
+#'   type = "global",
+#'   metrics = c("inter_cellular_isoform_diversity", "n_expressed_isoforms")
+#' )
 #' 
 #' @export
 plot_complexity_ridges <- function(tc_results, 
@@ -1470,128 +1597,6 @@ plot_complexity_ridges <- function(tc_results,
   return(p)
 }
 
-#' Create a heatmap of isoform co-expression patterns using ComplexHeatmap
-#' 
-#' This function creates a heatmap visualisation showing the correlation between 
-#' different isoforms of a gene. Strong positive correlations suggest coordinated 
-#' expression, while negative correlations indicate mutually exclusive usage.
-#' 
-#' @param scht_obj Single-Cell Hierarchical Tensor object (integrated SCHT)
-#' @param gene Gene name to analyse
-#' @param method a character string indicating which correlation coefficient is to be computed. One of "pearson" (default), "kendall or "spearman"
-#' @param display_numbers Logical, whether to show correlation values in cells (default: FALSE)
-#' 
-#' @return A ComplexHeatmap object that can be printed or saved
-#' 
-#' @examples
-#' \dontrun{
-#' # Assuming you have a Single-Cell Hierarchical Tensor object
-#' # Create co-expression heatmap for a gene of interest
-#' plot_isoform_coexpression(scht_obj, "GENE1")
-#' 
-#' # With correlation values displayed
-#' plot_isoform_coexpression(scht_obj, "GENE1", display_numbers = TRUE)
-#' 
-#' # With custom legend title
-#' plot_isoform_coexpression(scht_obj, "GENE1", legend_title = "Co-expression")
-#' }
-#' 
-#' @export
-plot_isoform_coexpression <- function(scht_obj, gene, method = "pearson", display_numbers = FALSE) {
-  # Check if packages is available
-  if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-    stop("Package 'ComplexHeatmap' is needed for this function. Please install it with: BiocManager::install('ComplexHeatmap')")
-  }
-  
-  if (!requireNamespace("circlize", quietly = TRUE)) {
-    stop("Package 'circlize' is needed for this function. Please install it with: install.packages('circlize')")
-  }
-  # Check if gene exists
-  if(!gene %in% names(scht_obj$original_results)) {
-    stop(paste("Gene", gene, "not found in SCHT object"))
-  }
-  
-  # Get isoform expression matrix
-  iso_mat <- scht_obj$original_results[[gene]]
-  
-  # Skip if insufficient data
-  if(nrow(iso_mat) < 2 || ncol(iso_mat) == 0) {
-    stop(paste("Gene", gene, "has insufficient data (needs multiple isoforms)"))
-  }
-  
-  # Calculate correlation matrix between isoforms
-  cor_mat <- cor(t(iso_mat), method = method)
-  
-  # Create a diverging color mapping function from -1 to 1
-  heatmap_colors <- circlize::colorRamp2(
-    c(-1, -0.5, 0, 0.5, 1),
-    c("#6a0624", "#feab88", "#f7f7f7", "#6fafd2", "#053061")
-  )
-  
-  # Format cell labels if display_numbers is TRUE
-  if (display_numbers) {
-    cell_fun <- function(j, i, x, y, width, height, fill) {
-      # Only show text for cells that are not on the diagonal
-      if (i != j) {
-        value <- sprintf("%.2f", cor_mat[i, j])
-        grid::grid.text(value, x, y, gp = grid::gpar(
-          fontsize = 10,
-          col = ifelse(abs(cor_mat[i, j]) < 0.5, "black", "white")
-        ))
-      }
-    }
-  } else {
-    cell_fun <- NULL
-  }
-  
-  if (method == "pearson") {
-    legend_name = "Pearson\nCorrelation"
-  } else if (method == "kendall") {
-    legend_name = "Kendall\nCorrelation"
-  } else if (method == "spearman") {
-    legend_name = "Spearman\nCorrelation"
-  }
-  
-  # Create heatmap with ComplexHeatmap
-  ht <- ComplexHeatmap::Heatmap(
-    cor_mat,
-    name = legend_name, 
-    col = heatmap_colors,             
-    row_title_gp = grid::gpar(fontsize = 16, fontface = "bold"),
-    column_title = paste("Isoform Co-expression Pattern:", gene),
-    column_title_gp = grid::gpar(fontsize = 16, fontface = "bold"),
-    
-    # Clustering parameters
-    cluster_rows = TRUE,
-    cluster_columns = TRUE,
-    show_column_dend = FALSE,
-    clustering_distance_rows = "euclidean",
-    clustering_distance_columns = "euclidean", 
-    clustering_method_rows = "complete",
-    clustering_method_columns = "complete",
-    row_dend_width = unit(20, "mm"),
-    
-    # Cell and text appearance
-    rect_gp = grid::gpar(col = "white", lwd = 1),
-    cell_fun = cell_fun,
-    row_names_gp = grid::gpar(fontsize = 14),
-    column_names_gp = grid::gpar(fontsize = 14),
-    column_names_rot = 45,
-    column_names_side = "top",
-    
-    # Legend parameters
-    heatmap_legend_param = list(
-      title = legend_name,
-      at = seq(-1, 1, 0.5),
-      labels = c("-1.0", "-0.5", "0.0", "0.5", "1.0"),
-      legend_height = grid::unit(5, "cm"),
-      title_gp = grid::gpar(fontsize = 14, fontface = "bold")
-    )
-  )
-  
-  return(ht)
-}
-
 #' Extract and compare metrics for multiple genes
 #'
 #' This helper function extracts metrics from stored results for multiple genes,
@@ -1605,14 +1610,37 @@ plot_isoform_coexpression <- function(scht_obj, gene, method = "pearson", displa
 #' @return Data frame with all genes' metrics for easy comparison
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Compare metrics for genes of interest
-#' genes_of_interest <- c("GENE1", "GENE2", "GENE3")
-#' comparison_data <- compare_gene_metrics(tc_results, genes_of_interest)
-#' }
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+#' 
+#' # Compare metrics for genes with high complexity
+#' high_complexity_genes <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
+#'                                    decreasing = TRUE))[1:3]
+#' comparison_data <- compare_gene_metrics(tc_results, high_complexity_genes)
+#' 
+#' # View the comparison
+#' print(comparison_data)
 #' 
 #' @export
 compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
@@ -1706,14 +1734,37 @@ compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
 #' @return A ggplot object that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have a Single-Cell Hierarchical Tensor object
-#' # Create isoform profile for a gene of interest
-#' plot_isoform_profile(scht_obj, "GENE1")
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Specify cell type order (e.g., for developmental trajectory)
-#' cell_types <- c("Progenitor", "Intermediate", "Mature")
-#' plot_isoform_profile(scht_obj, "GENE1", cell_type_order = cell_types)
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Find a gene with multiple isoforms
+#' multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
+#' if(length(multi_iso_genes) > 0) {
+#'   # Create isoform profile for first multi-isoform gene
+#'   plot_isoform_profile(scht_obj, multi_iso_genes[1])
+#'   
+#'   # Specify cell type order if known
+#'   cell_types <- unique(scht_obj$cell_info$cell_type)
+#'   plot_isoform_profile(scht_obj, multi_iso_genes[1], 
+#'                       cell_type_order = sort(cell_types))
 #' }
 #' 
 #' @export
@@ -1908,16 +1959,35 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
 #' @return A ggplot object that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have a Single-Cell Hierarchical Tensor object
-#' # Create isoform transition plot for a gene along a developmental trajectory
-#' cell_types <- c("Progenitor", "Intermediate", "Mature")
-#' plot_isoform_transitions(scht_obj, "GENE1", cell_type_order = cell_types)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Plot only specific isoforms
-#' plot_isoform_transitions(scht_obj, "GENE1", 
-#'                         cell_type_order = cell_types,
-#'                         selected_isoforms = c("ENSMUST00000001", "ENSMUST00000002"))
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Find a gene with multiple isoforms across cell types
+#' multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
+#' cell_types <- sort(unique(scht_obj$cell_info$cell_type))
+#' 
+#' if(length(multi_iso_genes) > 0 && length(cell_types) >= 2) {
+#'   # Create isoform transition plot
+#'   plot_isoform_transitions(scht_obj, multi_iso_genes[1], 
+#'                           cell_type_order = cell_types)
 #' }
 #' 
 #' @export
@@ -2185,13 +2255,37 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
 #' @return A ggplot object that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Create radar plot for genes of interest
-#' genes_of_interest <- c("GENE1", "GENE2", "GENE3")
-#' plot_complexity_radar(tc_results, genes_of_interest)
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+#' 
+#' # Create radar plot for top complex genes
+#' complex_genes <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
+#'                            decreasing = TRUE))[1:3]
+#' 
+#' # Note: This example requires the 'ggradar' package
+#' if(requireNamespace("ggradar", quietly = TRUE)) {
+#'   plot_complexity_radar(tc_results, complex_genes)
 #' }
 #' 
 #' @export
@@ -2345,7 +2439,7 @@ plot_complexity_radar <- function(tc_metrics, genes, scale_type = "global") {
     base.size = 15,  
     axis.label.offset = 1.15,  
     gridline.mid.colour = "grey65",
-    group.colours = gene_colors  
+    group.colours = gene_colours  
   ) +
     ggplot2::theme(
       legend.title = ggplot2::element_text(size = 12, face = "bold"),
@@ -2373,12 +2467,38 @@ plot_complexity_radar <- function(tc_metrics, genes, scale_type = "global") {
 #' @return A ggplot object that can be printed or saved
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Create radar plot for a single gene across cell types
-#' plot_single_gene_radar_cell_type(tc_results, "GENE1")
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+#' 
+#' # Find a gene with cell type-specific patterns
+#' gene_with_patterns <- names(tc_results$metrics$inter_cell_type_specificity)[
+#'   tc_results$metrics$inter_cell_type_specificity > 0.5
+#' ][1]
+#' 
+#' # Note: This example requires the 'ggradar' package
+#' if(requireNamespace("ggradar", quietly = TRUE) && !is.na(gene_with_patterns)) {
+#'   plot_single_gene_radar_cell_type(tc_results, gene_with_patterns)
 #' }
 #' 
 #' @export
@@ -2560,16 +2680,42 @@ plot_single_gene_radar_cell_type <- function(tc_results, gene_name,
 #' @return A combined plot grid with informative legend and clean labels
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have calculated transcriptomic complexity
-#' tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
 #' 
-#' # Create multi-gene radar plots across cell types with default per-cell-type scaling
-#' genes_of_interest <- c("GENE1", "GENE2", "GENE3")
-#' plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest)
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
 #' 
-#' # Create plots with global scaling for direct comparison across cell types
-#' plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest, scale_type = "global")
+#' # Calculate complexity metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+#' 
+#' # Select genes with varying complexity patterns
+#' genes_of_interest <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
+#'                                decreasing = TRUE))[c(1, 10, 20)]
+#' 
+#' # Note: This example requires the 'ggradar' package
+#' if(requireNamespace("ggradar", quietly = TRUE)) {
+#'   # Create multi-gene radar plots with per-cell-type scaling
+#'   plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest)
+#'   
+#'   # Use global scaling for direct comparison
+#'   plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest, 
+#'                                              scale_type = "global")
 #' }
 #' 
 #' @export
@@ -2955,20 +3101,44 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
 #' @return A ggplot object (single comparison) or patchwork combined plot (multiple comparisons)
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have transcriptomic complexity results for 3 conditions
-#' tc_results_list <- list(condition_A = tc_results_A, 
-#'                         condition_B = tc_results_B,
-#'                         condition_C = tc_results_C)
+#' \donttest{
+#' # This example requires multiple conditions/datasets
+#' # Here we demonstrate with subsampled data to simulate conditions
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' # Create SCHT for full dataset
+#' scht_full <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate metrics for demonstration
+#' tc_results_full <- calculate_isoform_complexity_metrics(scht_full, verbose = FALSE)
+#' 
+#' # For demonstration, use the same results as different "conditions"
+#' tc_results_list <- list(
+#'   baseline = tc_results_full,
+#'   treatment = tc_results_full  # In practice, these would be different
+#' )
 #'                         
-#' # Compare all consecutive pairs
-#' plot_compare_tc_density_difference(tc_results_list, 
-#'                              group_names = c("Condition A", "Condition B", "Condition C"))
-#'                              
-#' # Compare specific pairs
-#' plot_compare_tc_density_difference(tc_results_list,
-#'                              group_names = c("Condition A", "Condition B", "Condition C"),
-#'                              pair_indices = list(c(1, 3), c(2, 3)))
+#' # Compare the conditions
+#' plot_compare_tc_density_difference(
+#'   tc_results_list, 
+#'   group_names = c("Baseline", "Treatment")
+#' )
 #' }
 #' 
 #' @export
@@ -3216,24 +3386,48 @@ plot_compare_tc_density_difference <- function(tc_results_list,
 #'   \item{selection_method}{Method used for gene selection}
 #' 
 #' @examples
-#' \dontrun{
-#' # Assuming you have transcriptomic complexity results for 3 conditions
-#' tc_results_list <- list(condition_A = tc_results_A, 
-#'                         condition_B = tc_results_B,
-#'                         condition_C = tc_results_C)
+#' \donttest{
+#' # This example requires multiple conditions/datasets  
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' # Create SCHT
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate metrics
+#' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+#' 
+#' # For demonstration, create a list with the same results
+#' tc_results_list <- list(
+#'   baseline = tc_results,
+#'   treatment = tc_results  # In practice, these would be different
+#' )
 #'                         
 #' # Create heatmaps with default settings
-#' heatmap_results <- plot_compare_tc_complexity_heatmap(tc_results_list, 
-#'                   groups = c("Condition A", "Condition B", "Condition C"))
+#' heatmap_results <- plot_compare_tc_complexity_heatmap(
+#'   tc_results_list, 
+#'   groups = c("Baseline", "Treatment")
+#' )
 #'                   
-#' # Display the first heatmap
-#' heatmap_results$heatmaps$intra_cellular_isoform_diversity
-#' 
-#' # Use custom gene selection
-#' custom_heatmaps <- plot_compare_tc_complexity_heatmap(tc_results_list,
-#'                   groups = c("Condition A", "Condition B", "Condition C"),
-#'                   selection_method = "custom",
-#'                   custom_genes = c("GENE1", "GENE2", "GENE3"))
+#' # Display the first heatmap if ComplexHeatmap is available
+#' if(requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+#'   print(heatmap_results$heatmaps$intra_cellular_isoform_diversity)
+#' }
 #' }
 #' 
 #' @export

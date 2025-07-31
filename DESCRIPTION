@@ -1,7 +1,7 @@
 Package: ScIsoX
 Title: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R
-Version: 1.1.0
-Date: 2025-07-29
+Version: 1.1.1
+Date: 2025-08-01
 Authors@R: c(
     person("Siyuan", "Wu", email = "thaddeus.wu@jcu.edu.au", role = c("aut", "cre")),
     person("Ulf", "Schmitz", role = "aut"))
@@ -13,7 +13,7 @@ Description: This package enables comprehensive analysis of transcriptomic compl
     those metrics, exploring cell type-specific isoform expression patterns, comprehensive
     co-expression analysis with conservation testing, and interactive Shiny applications. 
 License: MIT + file LICENSE
-URL: https://github.com/ThaddeusWu/ScIsoX
+URL: https://ThaddeusWu.github.io/ScIsoX/, https://github.com/ThaddeusWu/ScIsoX
 BugReports: https://github.com/ThaddeusWu/ScIsoX/issues
 LazyData: true
 Imports:
@@ -71,7 +71,10 @@ Collate: package_utils.R
 	generate_qc_report.R
 	coexpression_analysis.R
 	coexpression_shiny_app.R
+	data.R
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Config/testthat/edition: 3
+Depends: 
+    R (>= 3.5)

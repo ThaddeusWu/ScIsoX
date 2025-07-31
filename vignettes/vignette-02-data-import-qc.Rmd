@@ -1,0 +1,176 @@
+---
+title: "Data Import and Quality Control"
+author: "Siyuan Wu & Ulf Schmitz"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data Import and Quality Control}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 6,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+This vignette covers the essential steps for importing data and performing quality control (QC) in ScIsoX. Proper QC is crucial for obtaining reliable complexity metrics.
+
+```{r load-package}
+library(ScIsoX)
+```
+
+## Data Requirements
+
+ScIsoX requires three main inputs:
+
+1. **Gene counts matrix**: Gene-level expression (genes × cells)
+2. **Transcript counts matrix**: Isoform-level expression (transcripts × cells)  
+3. **Transcript information**: Mapping between transcripts and genes
+
+### Loading Example Data
+
+```{r load-data}
+# Load example datasets
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Check dimensions
+cat("Gene counts:", dim(gene_counts_blood), "\n")
+cat("Transcript counts:", dim(transcript_counts_blood), "\n")
+cat("Number of cells with metadata:", nrow(sample2stage), "\n")
+```
+
+## Quality Control Visualisation
+
+Before creating the SCHT structure, examine your data quality:
+
+```{r qc-viz, fig.alt = "Histogram of genes per cell distribution with suggested quality control thresholds"}
+# Visualise genes per cell distribution
+qc_plot <- plot_genes_per_cell_distribution(
+  gene_counts_blood,
+  plot_type = "hist",
+  return_suggestions = TRUE
+)
+
+# The plot shows distribution and suggests thresholds
+print(qc_plot$suggestions)
+```
+
+## Automated QC Recommendations
+
+ScIsoX can automatically recommend QC parameters based on your data:
+
+```{r auto-qc}
+# Get automated recommendations
+qc_rec <- recommend_qc_parameters(gene_counts_blood)
+
+# View different strategies
+cat("=== Conservative Strategy (MAD-based) ===\n")
+print(qc_rec$MAD_strategy)
+
+cat("\n=== Moderate Strategy (90% interval) ===\n")
+print(qc_rec$Interval_90)
+
+cat("\n=== Lenient Strategy (80% interval) ===\n")
+print(qc_rec$Interval_80)
+```
+
+## Creating Transcript Information
+
+If you need to generate transcript information from a GTF file:
+
+```{r gtf-demo, eval=FALSE}
+# Create transcript info from GTF
+transcript_info <- create_transcript_info(
+  gtf_file = "path/to/annotation.gtf",
+  remove_version = TRUE
+)
+
+# View the structure
+head(transcript_info)
+```
+
+## Generating Gene Counts
+
+If you only have transcript counts, you can generate gene counts:
+
+```{r generate-genes}
+# Generate gene counts from transcript counts
+# Note: Row names must be in GeneName-TranscriptID format
+gene_counts_generated <- generate_gene_counts(transcript_counts_blood)
+
+# Compare with original
+cat("Generated genes:", nrow(gene_counts_generated$gene_counts), "\n")
+cat("Original genes:", nrow(gene_counts_blood), "\n")
+```
+
+## Creating the SCHT Object
+
+With QC parameters selected, create the SCHT structure:
+
+```{r create-scht}
+# Use moderate QC strategy
+qc_params <- qc_rec$Interval_90
+qc_params$min_cells_expressing <- 0.02
+qc_params$min_expr <- 1e-6
+
+# Create SCHT
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = qc_params,
+  n_hvg = 3000,
+  verbose = TRUE
+)
+
+# View the result
+summary(scht_obj)
+```
+
+## Generating QC Report
+
+For a comprehensive QC analysis, generate an HTML report:
+
+```{r qc-report, eval=FALSE}
+# Generate detailed QC report
+generate_qc_report(
+  gene_counts = gene_counts_blood,
+  output_file = "qc_report.html",
+  dataset_name = "Blood Cells Analysis"
+)
+```
+
+## Best Practices
+
+1. **Always visualise your data** before setting QC parameters
+2. **Start with automated recommendations** then adjust based on your experimental design
+3. **Consider your sequencing depth** when setting thresholds:
+   - Deep sequencing: Higher gene count thresholds
+   - Shallow sequencing: Lower thresholds
+4. **Document your QC choices** for reproducibility
+
+## Next Steps
+
+After QC and SCHT creation, you're ready to:
+- Calculate complexity metrics (see "Complexity Metrics" vignette)
+- Explore visualisations (see "Visualisation Gallery" vignette)
+- Perform co-expression analysis (see "Co-expression Analysis" vignette)
+
+## Session Information
+
+```{r session-info}
+sessionInfo()
+```

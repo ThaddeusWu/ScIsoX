@@ -1,0 +1,280 @@
+---
+title: "Visualisation Gallery and Interpretation"
+author: "Siyuan Wu & Ulf Schmitz"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Visualisation Gallery and Interpretation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 10,
+  fig.height = 8,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Introduction
+
+ScIsoX provides 13+ specialised visualisation functions to explore transcriptomic complexity from different perspectives. This vignette demonstrates each visualisation type with interpretation guidelines.
+
+```{r load-package}
+library(ScIsoX)
+library(ggplot2)
+
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create SCHT object
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+```
+
+## Complexity Landscape Visualisations
+
+### 1. Complexity Landscape
+
+**Purpose**: Visualise the relationship between complexity metrics in a 2D scatter plot.
+
+```{r landscape, fig.width = 15, fig.height = 15, fig.alt = "Complexity landscape scatter plot showing genes in 2D complexity space"}
+plot_tc_landscape(
+  tc_results,
+  n_label = 10,
+  label_direction = "top"
+)
+```
+
+**Interpretation**:
+- **Top-right**: Genes with high complexity in both dimensions
+- **Bottom-left**: Simple genes with limited isoform diversity
+- **Top-left**: Genes with cell-specific isoform expression
+- **Bottom-right**: Genes with constitutive multi-isoform expression
+
+### 2. Density Contour Plot
+
+**Purpose**: Show the density distribution of genes in complexity space.
+
+```{r density, fig.width = 10, fig.height = 8, fig.alt = "Density contour plot showing gene distribution in complexity space"}
+plot_tc_density(
+  tc_results,
+  use_thresholds = TRUE
+)
+```
+
+**Interpretation**:
+- Contour lines indicate gene density
+- Multiple peaks suggest distinct gene populations
+- Useful for identifying common complexity patterns
+
+### 3. Diversity Comparison
+
+**Purpose**: Compare the distributions of different diversity metrics.
+
+```{r diversity-comp, fig.width = 10, fig.height = 8, fig.alt = "Comparison plot of different diversity metrics"}
+plot_diversity_comparison(
+  tc_results,
+  label_top = 10
+)
+```
+
+### 4. Complexity Ridge Plots
+
+**Purpose**: Show distributions of complexity metrics across categories.
+
+```{r ridges, fig.width = 10, fig.height = 8, fig.alt = "Ridge plots showing complexity metric distributions"}
+# For global view
+plot_complexity_ridges(
+  tc_results,
+  type = "global"
+)
+```
+
+### 5. Threshold Visualisations
+
+**Purpose**: Understand how metrics are classified into low/medium/high categories.
+
+```{r threshold, fig.width = 20, fig.height = 15, fig.alt = "Threshold visualisation plots showing metric classification"}
+# Note: This function expects threshold plots object, not tc_results
+# Skip this example as it requires different input
+plot_threshold_visualisations(tc_results$threshold_plots)
+```
+
+## Isoform-Specific Visualisations
+
+### 6. Isoform Co-expression Heatmap
+
+**Purpose**: Visualise correlation patterns between isoforms of a gene.
+
+```{r coexp-heatmap, fig.width = 8, fig.height = 8, fig.alt = "Heatmap showing correlation patterns between isoforms"}
+
+plot_isoform_coexpression(
+  scht_obj,
+  gene = "Irf8",
+  method = "pearson",
+  display_numbers = TRUE
+)
+
+```
+
+**Interpretation**:
+- Red: Positive correlation (co-expressed isoforms)
+- Blue: Negative correlation (mutually exclusive isoforms)
+- Clustering reveals isoform groups
+
+### 7. Isoform Usage Profile
+
+**Purpose**: Show the relative usage of isoforms across cell types.
+
+```{r iso-profile, fig.width = 10, fig.height = 6, fig.alt = "Bar plot showing relative isoform usage across cell types"}
+plot_isoform_profile(
+  scht_obj,
+  gene = "Irf8"
+)
+
+```
+
+### 8. Isoform Transitions
+
+**Purpose**: Visualise how isoform usage changes across cell types or states.
+
+```{r iso-transitions, fig.width = 10, fig.height = 6, fig.alt = "Line plot showing isoform usage transitions across cell types"}
+plot_isoform_transitions(
+  scht_obj,
+  gene = "Atl1",
+  cell_type_order = c("AEC","HEC","T1_pre_HSC","T2_pre_HSC","E12","E14","Adult_HSC" )
+)
+
+```
+
+## Multi-dimensional Comparisons
+
+### 9. Complexity Radar Chart
+
+**Purpose**: Compare multiple complexity metrics for selected genes.
+
+```{r radar, fig.width = 15, fig.height = 15, fig.alt = "Radar chart comparing complexity metrics for multiple genes"}
+# Select interesting genes
+complex_genes <- tc_results$metrics[
+  tc_results$metrics$cell_type_coexpression_variability_class == "Cell-Type-Consistent Co-expression",
+]$gene
+
+if (length(complex_genes) > 0) {
+  plot_complexity_radar(
+    tc_results,
+    genes = complex_genes[1:min(10, length(complex_genes))]
+  )
+}
+```
+
+### 10. Single Gene Radar Across Cell Types
+
+**Purpose**: Show how a gene's complexity varies across cell types.
+
+```{r single-radar, fig.width = 15, fig.height = 15, fig.alt = "Radar chart showing single gene complexity across cell types"}
+
+plot_single_gene_radar_cell_type(
+  tc_results,
+  gene_name = "Irf8"
+)
+
+```
+
+### 11. Multiple Genes Radar Comparison
+
+**Purpose**: Compare multiple genes across cell types simultaneously.
+
+```{r multi-radar, fig.width = 15, fig.height = 15, fig.alt = "Multiple radar charts comparing genes across cell types"}
+plot_compare_multiple_genes_radar_cell_type(
+  tc_results,
+  gene_names = complex_genes[1:min(10, length(complex_genes))],
+  scale_type = "per_cell_type"
+)
+
+```
+
+
+## Interpretation Guidelines
+
+### For Complexity Landscapes:
+1. **Gene positioning**: Location indicates relative complexity
+2. **Clustering patterns**: Groups of genes with similar profiles
+3. **Outliers**: Often biologically interesting genes
+4. **Threshold lines**: Help identify significantly complex genes
+
+### For Isoform Visualisations:
+1. **Co-expression patterns**: Indicate functional relationships
+2. **Cell type specificity**: Suggests regulatory mechanisms
+3. **Transition patterns**: May indicate differentiation paths
+
+### For Multi-dimensional Views:
+1. **Radar charts**: Compare overall complexity profiles
+2. **Heatmaps**: Identify patterns across many genes/conditions
+3. **Ridge plots**: Understand distribution shapes
+
+## Customisation Options
+
+Most visualisation functions support customisation:
+
+```{r customisation, eval=FALSE}
+# Example: Customised landscape plot
+plot_tc_landscape(
+  tc_results,
+  x_metric = "intra_cellular_isoform_diversity",  # Change axes
+  y_metric = "intra_cell_type_heterogeneity_variability",
+  highlight_genes = c("Gene1", "Gene2"),          # Highlight specific genes
+  n_label = 20,                                   # Label more genes
+  point_transparency = 0.7                        # Adjust transparency
+)
+```
+
+## Saving Plots
+
+```{r save-plots, eval=FALSE}
+# High-resolution plots for publication
+pdf("complexity_analysis.pdf", width = 12, height = 10)
+plot_tc_landscape(tc_results, n_label = 20)
+dev.off()
+
+# PNG for presentations
+png("complexity_landscape.png", width = 1200, height = 1000, res = 150)
+plot_tc_landscape(tc_results, n_label = 20)
+dev.off()
+```
+
+## Best Practices
+
+1. **Start with overview plots** (landscape, density) to understand overall patterns
+2. **Zoom in on interesting genes** using isoform-specific plots
+3. **Use comparative plots** when analysing multiple conditions
+4. **Adjust parameters** based on your dataset size and complexity
+5. **Consider colour-blind friendly palettes** for publication figures
+
+## Session Information
+
+```{r session-info}
+sessionInfo()
+```

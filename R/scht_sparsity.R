@@ -31,11 +31,33 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' # Calculate sparsity for an SCHT object
-#' sparsity_stats <- calculate_scht_sparsity(my_scht)
-#' print(sparsity_stats)
-#' }
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Calculate sparsity statistics
+#' sparsity_stats <- calculate_scht_sparsity(scht_obj)
+#' print(paste("SCHT sparsity:", round(sparsity_stats$sparsity, 2), "%"))
+#' 
+#' # With verbose output
+#' sparsity_verbose <- calculate_scht_sparsity(scht_obj, verbose = TRUE)
 calculate_scht_sparsity <- function(scht_obj, verbose = FALSE) {
   
   # Validate input and extract SCHT data based on object type
@@ -295,15 +317,40 @@ compare_sparsity <- function(scht_obj,
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' # Load example data and create SCHT
+#' data(gene_counts_blood)
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = list(
+#'     min_genes_per_cell = 4000,       
+#'     max_genes_per_cell = 10000,      
+#'     min_cells_expressing = 0.02,   
+#'     min_expr = 1e-6
+#'   ),
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#' 
+#' # Analyse sparsity across representations
 #' results <- analyse_sparsity_for_table(
-#'   gene_counts = gene_counts,
-#'   transcript_counts = transcript_counts,
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
 #'   transcript_info = transcript_info,
 #'   scht_obj = scht_obj,
-#'   dataset_name = "Brain Data"
+#'   dataset_name = "Blood Cell Data"
 #' )
-#' }
+#' 
+#' # Access specific statistics
+#' print(paste("SCHT uses only", 
+#'             round(results$scht$total / results$original$total * 100, 2),
+#'             "% of original matrix size"))
 analyse_sparsity_for_table <- function(gene_counts, 
                                      transcript_counts,
                                      transcript_info,

@@ -26,6 +26,30 @@
 #'     \item summary_stats: Additional statistics
 #'   }
 #'
+#' @examples
+#' # Load example data
+#' data(gene_counts_blood)
+#' 
+#' # Create histogram plot with default settings
+#' qc_suggestions <- plot_genes_per_cell_distribution(
+#'   gene_counts = gene_counts_blood,
+#'   plot_type = "hist",
+#'   percentile_cutoffs = c(0.05, 0.95),
+#'   return_suggestions = TRUE
+#' )
+#' 
+#' # View QC suggestions
+#' print(qc_suggestions$min_genes_per_cell)
+#' print(qc_suggestions$max_genes_per_cell)
+#' 
+#' # Create density plot
+#' plot_genes_per_cell_distribution(
+#'   gene_counts = gene_counts_blood,
+#'   plot_type = "density",
+#'   percentile_cutoffs = c(0.1, 0.9),
+#'   return_suggestions = FALSE
+#' )
+#'
 #' @export
 plot_genes_per_cell_distribution <- function(gene_counts,
                                              plot_type = "hist",
@@ -33,7 +57,9 @@ plot_genes_per_cell_distribution <- function(gene_counts,
                                              return_suggestions = TRUE) {
   # Detect matrix type and process accordingly for memory efficiency
   is_sparse <- inherits(gene_counts, "sparseMatrix") ||
-               any(class(gene_counts) %in% c("dgCMatrix", "dgTMatrix", "dgRMatrix"))
+               inherits(gene_counts, "dgCMatrix") ||
+               inherits(gene_counts, "dgTMatrix") ||
+               inherits(gene_counts, "dgRMatrix")
   
   # Calculate genes per cell with optimised method based on matrix type
   if (is_sparse) {
@@ -126,11 +152,45 @@ plot_genes_per_cell_distribution <- function(gene_counts,
 #'     \item explanation: Descriptions of each approach
 #'   }
 #'
+#' @examples
+#' # Load example data
+#' data(gene_counts_blood)
+#' 
+#' # Get QC recommendations
+#' qc_recommendations <- recommend_qc_parameters(gene_counts_blood)
+#' 
+#' # View different strategies
+#' print("MAD Strategy (Conservative):")
+#' print(qc_recommendations$MAD_strategy)
+#' 
+#' print("\n90% Interval Strategy (Moderate):")
+#' print(qc_recommendations$Interval_90)
+#' 
+#' print("\n80% Interval Strategy (Aggressive):")
+#' print(qc_recommendations$Interval_80)
+#' 
+#' # Use recommended parameters in create_scht
+#' data(transcript_counts_blood)
+#' data(transcript_info)
+#' data(sample2stage)
+#' 
+#' scht_obj <- create_scht(
+#'   gene_counts = gene_counts_blood,
+#'   transcript_counts = transcript_counts_blood,
+#'   transcript_info = transcript_info,
+#'   cell_info = sample2stage,
+#'   qc_params = qc_recommendations$MAD_strategy,  # Use conservative approach
+#'   n_hvg = 3000,
+#'   verbose = FALSE
+#' )
+#'
 #' @export
 recommend_qc_parameters <- function(gene_counts) {
   # Detect matrix type for memory-efficient processing
   is_sparse <- inherits(gene_counts, "sparseMatrix") ||
-               any(class(gene_counts) %in% c("dgCMatrix", "dgTMatrix", "dgRMatrix"))
+               inherits(gene_counts, "dgCMatrix") ||
+               inherits(gene_counts, "dgTMatrix") ||
+               inherits(gene_counts, "dgRMatrix")
   
   # Calculate number of genes per cell with optimised method based on matrix type
   if (is_sparse) {

@@ -10,7 +10,7 @@ create_scht(
   transcript_info,
   cell_info = NULL,
   n_hvg = 3000,
-  qc_params = list(min_genes_per_cell = 200, max_genes_per_cell = 10000,
+  qc_params = list(min_genes_per_cell = 200, max_genes_per_cell = 20000,
     min_cells_expressing = 0.02, min_expr = 1e-04),
   require_cell_type = TRUE,
   verbose = TRUE,
@@ -60,22 +60,95 @@ with efficient operations for large-scale datasets. Supports
 pre-normalized data and comprehensive QC tracking.
 }
 \examples{
-# For large-scale single-cell data:
-# scht_obj <- create_scht(
-#   gene_counts = gene_counts,         # Large count matrix
-#   transcript_counts = transcript_counts,
-#   transcript_info = transcript_info,
-#   cell_info = cell_info,
-#   n_hvg = 3000,
-#   qc_params = list(
-#     min_genes_per_cell = 200,
-#     max_genes_per_cell = 10000,
-#     min_cells_expressing = 0.02,
-#     min_expr = 1e-4
-#   ),
-#   require_cell_type = TRUE,
-#   verbose = TRUE,
-#   sparsity_threshold = 0.5,  # Adjust based on data sparsity
-#   input_type = "raw_counts"  # or "normalised" for TPM/FPKM data
-# )
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Example 1: Basic SCHT creation with default parameters
+scht_basic <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  n_hvg = 2000,
+  verbose = TRUE
+)
+
+# Examine the structure
+print(scht_basic)
+summary(scht_basic)
+
+# Example 2: Using recommended QC parameters
+# First, get QC recommendations
+qc_recommendations <- recommend_qc_parameters(gene_counts_blood)
+print(qc_recommendations$explanation)
+
+# Use the moderate (90\% interval) strategy
+recommended_params <- qc_recommendations$Interval_90
+# Add the missing parameters
+recommended_params$min_cells_expressing <- 0.02
+recommended_params$min_expr <- 1e-6
+
+scht_recommended <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  n_hvg = 1500,
+  qc_params = recommended_params,
+  verbose = TRUE
+)
+
+# Example 3: Manual QC parameters for different experimental designs
+# For high-depth sequencing or full-length protocols
+scht_manual <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  n_hvg = 1000,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  verbose = TRUE
+)
+
+# Example 4: Working with normalised data
+# If your data is already normalised (TPM/FPKM)
+\donttest{
+scht_normalised <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  n_hvg = 1500,
+  input_type = "normalised",
+  verbose = TRUE
+)
+}
+
+# Example 5: Accessing SCHT components
+# Get list of cell types
+cell_types <- names(scht_basic)
+print(cell_types)
+
+# Access specific cell type data
+if ("AEC" \%in\% cell_types) {
+  aec_data <- scht_basic[["AEC"]]
+  print(paste("AEC dimensions:", paste(dim(aec_data), collapse=" x ")))
+}
+
+# Get highly variable genes used
+hvgs <- attr(scht_basic, "hvg_genes")
+print(head(hvgs))
+print(paste("Total HVGs:", length(hvgs)))
+
+# Check transcript usage per gene
+transcript_usage <- attr(scht_basic, "transcript_gene_map")
+print(head(transcript_usage))
 }

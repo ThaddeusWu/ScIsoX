@@ -38,23 +38,78 @@
 #'   }
 #'
 #' @examples
-#' \dontrun{
-#' # Create example data
-#' isoform_mat <- matrix(
-#'   rnorm(20), nrow = 4,
+#' # IMPORTANT: This function requires transcript names in "GeneName-TranscriptID" format
+#' # For example: "Sox2-201", "Nanog-001", "Oct4-202"
+#' 
+#' # Example 1: Create synthetic data with correct naming format
+#' # Simulate an isoform count matrix
+#' set.seed(123)
+#' n_genes <- 50
+#' n_isoforms <- 120  # Some genes have multiple isoforms
+#' n_cells <- 100
+#' 
+#' # Generate transcript names in required format
+#' gene_names <- paste0("Gene", 1:n_genes)
+#' transcript_names <- character(n_isoforms)
+#' idx <- 1
+#' 
+#' for (i in 1:n_genes) {
+#'   n_iso <- sample(1:4, 1)  # 1-4 isoforms per gene
+#'   for (j in 1:n_iso) {
+#'     transcript_names[idx] <- paste0(gene_names[i], "-", sprintf("%03d", j))
+#'     idx <- idx + 1
+#'     if (idx > n_isoforms) break
+#'   }
+#'   if (idx > n_isoforms) break
+#' }
+#' 
+#' # Remove empty entries and create count matrix
+#' transcript_names <- transcript_names[transcript_names != ""]
+#' isoform_counts <- matrix(
+#'   rpois(length(transcript_names) * n_cells, lambda = 5),
+#'   nrow = length(transcript_names),
+#'   dimnames = list(transcript_names,
+#'                  paste0("Cell", 1:n_cells))
+#' )
+#' 
+#' # Generate gene counts
+#' result <- generate_gene_counts(isoform_counts, show_progress = FALSE)
+#' 
+#' # Check results
+#' print(paste("Input transcripts:", nrow(isoform_counts)))
+#' print(paste("Output genes:", nrow(result$gene_counts)))
+#' print(head(result$transcript_info))
+#' 
+#' # Example 2: Working with real data that needs reformatting
+#' # If your transcript names are not in the required format:
+#' \donttest{
+#' # Current format: ENSMUST00000193812
+#' # Need to convert to: GeneName-TranscriptID format
+#' # This would require mapping transcript IDs to gene names first
+#' 
+#' # For demonstration, create a small subset with correct format
+#' demo_transcripts <- matrix(
+#'   rpois(500, lambda = 3),
+#'   nrow = 10,
 #'   dimnames = list(
-#'     c("Gene1-201", "Gene1-202", "Gene2-201", "Gene2-202"),
-#'     c("cell1", "cell2", "cell3", "cell4", "cell5")
+#'     c("Actb-201", "Actb-202", "Gapdh-201", "Gapdh-202", "Gapdh-203",
+#'       "Tubb5-201", "Ppia-201", "Ppia-202", "B2m-201", "Hprt-201"),
+#'     paste0("Cell", 1:50)
 #'   )
 #' )
-#'
-#' # Generate gene counts
-#' result <- generate_gene_counts(isoform_mat)
-#'
-#' # Access results
-#' gene_counts <- result$gene_counts
-#' transcript_info <- result$transcript_info
+#' 
+#' demo_result <- generate_gene_counts(demo_transcripts)
+#' print(demo_result$gene_counts[, 1:5])
 #' }
+#' 
+#' # Example 3: Understanding the pseudo-transcript_info
+#' # Even without create_transcript_info(), this function creates
+#' # a basic transcript_info for gene-transcript mapping
+#' print("Pseudo-transcript_info structure:")
+#' print(str(result$transcript_info))
+#' 
+#' # This ensures compatibility with downstream SCHT analysis
+#' # The mapping can be used directly in create_scht()
 #'
 #' @details
 #' The function performs the following steps:
