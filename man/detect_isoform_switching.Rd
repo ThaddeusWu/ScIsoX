@@ -20,3 +20,88 @@ A list containing switching pairs and statistics
 Identifies potential isoform switching events based on negative
 correlations between isoforms.
 }
+\examples{
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create SCHT object
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Use specific genes known to have multiple isoforms
+test_genes <- c("Mapk13", "Atl1", "Irf8")
+
+for (gene in test_genes) {
+  tryCatch({
+    # Calculate coexpression for the gene
+    cor_result <- calculate_isoform_coexpression(
+      scht_obj, 
+      gene = gene,
+      method = "pearson"
+    )
+    
+    # Detect switching with default threshold (-0.3)
+    switching_default <- detect_isoform_switching(cor_result)
+    cat("\nGene:", gene, "\n")
+    cat("Found", switching_default$n_switching_pairs, "switching pairs\n")
+    
+    # Detect switching with more stringent threshold
+    switching_strict <- detect_isoform_switching(
+      cor_result, 
+      threshold = -0.4,
+      strong_threshold = -0.6
+    )
+    
+    # Examine switching pairs
+    if (switching_default$n_switching_pairs > 0) {
+      cat("Switching pairs detected:\n")
+      print(switching_default$switching_pairs)
+      
+      # Check specific pair types
+      strong_pairs <- switching_default$switching_pairs[
+        switching_default$switching_pairs$strength == "strong", 
+      ]
+      if (nrow(strong_pairs) > 0) {
+        cat("Strong switching pairs (r <", 
+            switching_default$strong_threshold, "):\n")
+        print(strong_pairs)
+      }
+    }
+    
+    # For cell type-specific analysis (only if IntegratedSCHT)
+    if (inherits(scht_obj, "IntegratedSCHT")) {
+      ct_cor <- calculate_gene_coexpression_all_celltypes(
+        scht_obj, 
+        gene = gene
+      )
+      
+      # Check switching in specific cell types
+      for (ct in names(ct_cor$cell_types)) {
+        ct_switching <- detect_isoform_switching(ct_cor$cell_types[[ct]])
+        if (ct_switching$n_switching_pairs > 0) {
+          cat("Cell type", ct, "has", 
+              ct_switching$n_switching_pairs, "switching pairs\n")
+        }
+      }
+    }
+  }, error = function(e) {
+    cat("Could not analyze gene", gene, ":", e$message, "\n")
+  })
+}
+
+}

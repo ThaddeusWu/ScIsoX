@@ -18,3 +18,29 @@ None (prints to console)
 Displays a summary of an integrated SCHT object, including both original
 and cell type-specific information.
 }
+\examples{
+# Create IntegratedSCHT object (with cell types)
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+integrated_scht <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  require_cell_type = TRUE,  # This creates IntegratedSCHT
+  verbose = FALSE
+)
+
+# Print the IntegratedSCHT object
+print(integrated_scht)
+}

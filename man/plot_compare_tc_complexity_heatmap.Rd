@@ -52,23 +52,47 @@ selecting genes to display.
 }
 \examples{
 \dontrun{
-# Assuming you have transcriptomic complexity results for 3 conditions
-tc_results_list <- list(condition_A = tc_results_A, 
-                        condition_B = tc_results_B,
-                        condition_C = tc_results_C)
+# This example requires multiple conditions/datasets  
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create SCHT
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# For demonstration, create a list with the same results
+tc_results_list <- list(
+  baseline = tc_results,
+  treatment = tc_results  # In practice, these would be different
+)
                         
 # Create heatmaps with default settings
-heatmap_results <- plot_compare_tc_complexity_heatmap(tc_results_list, 
-                  groups = c("Condition A", "Condition B", "Condition C"))
+heatmap_results <- plot_compare_tc_complexity_heatmap(
+  tc_results_list, 
+  groups = c("Baseline", "Treatment")
+)
                   
-# Display the first heatmap
-heatmap_results$heatmaps$intra_cellular_isoform_diversity
-
-# Use custom gene selection
-custom_heatmaps <- plot_compare_tc_complexity_heatmap(tc_results_list,
-                  groups = c("Condition A", "Condition B", "Condition C"),
-                  selection_method = "custom",
-                  custom_genes = c("GENE1", "GENE2", "GENE3"))
+# Display the first heatmap if ComplexHeatmap is available
+if(requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  print(heatmap_results$heatmaps$intra_cellular_isoform_diversity)
+}
 }
 
 }

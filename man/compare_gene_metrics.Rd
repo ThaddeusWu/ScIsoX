@@ -22,13 +22,37 @@ and returns a structured data frame for comparison. It's useful for preparing
 data for custom visualisations or statistical analyses.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
 
-# Compare metrics for genes of interest
-genes_of_interest <- c("GENE1", "GENE2", "GENE3")
-comparison_data <- compare_gene_metrics(tc_results, genes_of_interest)
-}
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# Compare metrics for specific genes
+# Use genes from the middle of the results to ensure they exist
+available_genes <- rownames(tc_results$metrics)
+genes_to_compare <- available_genes[c(100, 200, 300, 400)]
+comparison_data <- compare_gene_metrics(tc_results, genes_to_compare)
+
+# View the comparison
+print(comparison_data)
 
 }

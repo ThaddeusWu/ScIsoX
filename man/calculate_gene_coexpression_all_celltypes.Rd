@@ -30,3 +30,99 @@ A list containing overall and cell type-specific correlations
 Calculates co-expression patterns for a gene across all cell types,
 returning both overall and cell type-specific correlations.
 }
+\examples{
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create IntegratedSCHT object with cell type information
+integrated_scht <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  require_cell_type = TRUE,  # Creates IntegratedSCHT
+  verbose = FALSE
+)
+
+# Use specific genes known to have multiple isoforms
+test_gene <- "Mapk13"  # Known multi-isoform gene in the example data
+
+tryCatch({
+  # Calculate coexpression across all cell types
+  ct_cor_results <- calculate_gene_coexpression_all_celltypes(
+    integrated_scht,
+    gene = test_gene,
+    method = "pearson",
+    min_cells = 10
+  )
+  
+  # Examine overall correlation
+  cat("\nOverall correlation matrix for", test_gene, ":\n")
+  print(round(ct_cor_results$overall$cor_matrix, 2))
+  
+  # Examine cell type-specific patterns
+  cat("\nFound correlations for", 
+      length(ct_cor_results$cell_types), "cell types\n")
+  
+  # Compare correlations across cell types
+  for (ct in names(ct_cor_results$cell_types)) {
+    ct_data <- ct_cor_results$cell_types[[ct]]
+    cat("\nCell type:", ct, "\n")
+    cat("Number of cells:", ct_data$n_cells, "\n")
+    cat("Number of isoforms:", ct_data$n_isoforms, "\n")
+    
+    # Show correlation matrix
+    if (!is.null(ct_data$cor_matrix)) {
+      cat("Correlation matrix:\n")
+      print(round(ct_data$cor_matrix, 2))
+    }
+  }
+  
+  # Identify cell type-specific switching
+  switching_summary <- lapply(names(ct_cor_results$cell_types), function(ct) {
+    ct_data <- ct_cor_results$cell_types[[ct]]
+    if (!is.null(ct_data$cor_matrix)) {
+      switching <- detect_isoform_switching(ct_data)
+      return(data.frame(
+        cell_type = ct,
+        n_switching_pairs = switching$n_switching_pairs,
+        n_strong_switching = switching$n_strong_switching
+      ))
+    }
+    return(NULL)
+  })
+  
+  switching_df <- do.call(rbind, switching_summary[!sapply(switching_summary, is.null)])
+  if (!is.null(switching_df) && nrow(switching_df) > 0) {
+    cat("\nSwitching summary by cell type:\n")
+    print(switching_df)
+  }
+  
+  # Use different correlation methods
+  ct_cor_spearman <- calculate_gene_coexpression_all_celltypes(
+    integrated_scht,
+    gene = test_gene,
+    method = "spearman"
+  )
+  
+  # Compare methods
+  cat("\nComparing Pearson vs Spearman correlations (overall):\n")
+  pearson_vals <- ct_cor_results$overall$cor_matrix[upper.tri(ct_cor_results$overall$cor_matrix)]
+  spearman_vals <- ct_cor_spearman$overall$cor_matrix[upper.tri(ct_cor_spearman$overall$cor_matrix)]
+  cat("Mean absolute difference:", 
+      round(mean(abs(pearson_vals - spearman_vals)), 3), "\n")
+}, error = function(e) {
+  cat("Error analyzing gene", test_gene, ":", e$message, "\n")
+})
+
+}

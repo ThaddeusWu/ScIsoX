@@ -4329,7 +4329,11 @@ utils::globalVariables(c("Value", "x", "y", "Component"))
 #' custom_thresholds <- list(
 #'   intra_cellular_isoform_diversity = 0.7,
 #'   inter_cellular_isoform_diversity = 0.7,
-#'   intra_cell_type_heterogeneity = 0.5
+#'   intra_cell_type_heterogeneity = 0.5,
+#'   inter_cell_type_specificity = 0.5,
+#'   intra_cell_type_heterogeneity_variability = 0.8,
+#'   inter_cell_type_difference_variability = 0.6,
+#'   cell_type_coexpression_variability = 1.0
 #' )
 #' 
 #' \donttest{

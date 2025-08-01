@@ -22,13 +22,38 @@ This visualisation provides a compact way to compare different genes across
 multiple complexity dimensions simultaneously.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
 
-# Create radar plot for genes of interest
-genes_of_interest <- c("GENE1", "GENE2", "GENE3")
-plot_complexity_radar(tc_results, genes_of_interest)
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# Create radar plot for specific genes
+# Use genes from the middle of the results
+available_genes <- rownames(tc_results$metrics)
+genes_to_plot <- available_genes[c(100, 200, 300, 400, 500)]
+
+# Note: This example requires the 'ggradar' package
+if(requireNamespace("ggradar", quietly = TRUE)) {
+  plot_complexity_radar(tc_results, genes_to_plot)
 }
 
 }

@@ -35,3 +35,28 @@ Creates a detailed visualisation of genes per cell distribution and
 calculates suggested quality control parameters. Optimised for both
 dense and sparse matrices to accommodate large-scale single-cell datasets.
 }
+\examples{
+# Load example data
+data(gene_counts_blood)
+
+# Create histogram plot with default settings
+qc_suggestions <- plot_genes_per_cell_distribution(
+  gene_counts = gene_counts_blood,
+  plot_type = "hist",
+  percentile_cutoffs = c(0.05, 0.95),
+  return_suggestions = TRUE
+)
+
+# View QC suggestions
+print(qc_suggestions$min_genes_per_cell)
+print(qc_suggestions$max_genes_per_cell)
+
+# Create density plot
+plot_genes_per_cell_distribution(
+  gene_counts = gene_counts_blood,
+  plot_type = "density",
+  percentile_cutoffs = c(0.1, 0.9),
+  return_suggestions = FALSE
+)
+
+}

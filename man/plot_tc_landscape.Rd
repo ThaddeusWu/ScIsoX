@@ -50,23 +50,48 @@ and marginal distributions. This plot reveals the distribution of genes across
 different complexity dimensions and helps identify genes with interesting patterns.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 
 # Create landscape plot with default metrics
 plot_tc_landscape(tc_results)
 
 # Use different metrics and highlight specific genes
-plot_tc_landscape(tc_results, 
-                 x_metric = "intra_cellular_isoform_diversity", 
-                 y_metric = "inter_cellular_isoform_diversity",
-                 highlight_genes = c("GENE1", "GENE2", "GENE3"))
+# Find some multi-isoform genes to highlight
+multi_iso_genes <- names(which(tc_results$metrics$n_isoforms > 3))[1:3]
+plot_tc_landscape(
+  tc_results, 
+  x_metric = "intra_cellular_isoform_diversity", 
+  y_metric = "inter_cellular_isoform_diversity",
+  highlight_genes = multi_iso_genes
+)
                  
 # Highlight bottom 10 genes by heterogeneity
-plot_tc_landscape(tc_results,
-                 n_label = 10,
-                 label_direction = "bottom")
-}
+plot_tc_landscape(
+  tc_results,
+  n_label = 10,
+  label_direction = "bottom"
+)
 
 }

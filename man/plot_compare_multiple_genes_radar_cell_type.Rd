@@ -36,16 +36,57 @@ This function is useful for comparing multiple genes across different
 cell types in a structured grid format.
 }
 \examples{
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
 \dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 
-# Create multi-gene radar plots across cell types with default per-cell-type scaling
-genes_of_interest <- c("GENE1", "GENE2", "GENE3")
-plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest)
+# Select genes that exist in the complexity results
+available_genes <- names(tc_results$metrics$inter_cellular_isoform_diversity)
+# Pick genes at different complexity levels
+n_genes <- length(available_genes)
+genes_of_interest <- available_genes[c(1, 
+                                      round(n_genes/4), 
+                                      round(n_genes/2))]
 
-# Create plots with global scaling for direct comparison across cell types
-plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest, scale_type = "global")
+# Note: This example requires the 'ggradar' package
+if(requireNamespace("ggradar", quietly = TRUE) && 
+   length(genes_of_interest) > 0) {
+  # Check that genes exist in cell type data
+  genes_to_plot <- genes_of_interest[genes_of_interest \%in\% 
+                                    rownames(tc_results$cell_type_metrics[[1]])]
+  
+  if(length(genes_to_plot) > 0) {
+    # Create multi-gene radar plots with per-cell-type scaling
+    plot_compare_multiple_genes_radar_cell_type(tc_results, genes_to_plot)
+    
+    # Use global scaling for direct comparison
+    plot_compare_multiple_genes_radar_cell_type(tc_results, genes_to_plot, 
+                                               scale_type = "global")
+  } else {
+    cat("No suitable genes found for plotting\n")
+  }
+}
 }
 
 }

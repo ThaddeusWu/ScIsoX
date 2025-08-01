@@ -31,7 +31,49 @@ for use in the SCHT pipeline. Can optionally remove version numbers from
 transcript and gene IDs.
 }
 \examples{
+# Using the provided example data
+data(transcript_info)
+
+# Example 1: Examine the structure of transcript information
+print(head(transcript_info))
+print(paste("Total transcripts:", nrow(transcript_info)))
+print(paste("Total genes:", length(unique(transcript_info$gene_id))))
+
+# Check transcript types distribution
+transcript_types <- table(transcript_info$transcript_type)
+print(head(sort(transcript_types, decreasing = TRUE), 10))
+
+# Example 2: Find multi-isoform genes
+isoforms_per_gene <- table(transcript_info$gene_id)
+multi_isoform_genes <- names(isoforms_per_gene[isoforms_per_gene > 1])
+print(paste("Genes with multiple isoforms:", length(multi_isoform_genes)))
+
+# Show an example of a multi-isoform gene
+if(length(multi_isoform_genes) > 0) {
+  example_gene <- multi_isoform_genes[1]
+  gene_isoforms <- transcript_info[transcript_info$gene_id == example_gene, ]
+  print(paste("Gene", example_gene, "has", nrow(gene_isoforms), "isoforms:"))
+  print(gene_isoforms[, c("transcript_id", "transcript_type")])
+}
+
+# Example 3: Filter for protein-coding transcripts only
+protein_coding <- transcript_info[
+  transcript_info$transcript_type == "protein_coding", 
+]
+print(paste("Protein-coding transcripts:", nrow(protein_coding)))
+
+# Example 4: Prepare for use with transcript count matrix
+# Ensure transcript IDs match between count matrix and info
+data(transcript_counts_blood)
+count_transcripts <- rownames(transcript_counts_blood)
+info_transcripts <- transcript_info$transcript_id
+
+# Check overlap
+common_transcripts <- intersect(count_transcripts, info_transcripts)
+print(paste("Common transcripts:", length(common_transcripts)))
+
 \dontrun{
+# Example 5: Direct usage - creating transcript_info from GTF file
 # With version number removal (default)
 transcript_info <- create_transcript_info("path/to/gencode.gtf")
 

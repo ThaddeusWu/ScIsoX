@@ -88,9 +88,6 @@ print(head(result$transcript_info))
 # Example 2: Working with real data that needs reformatting
 # If your transcript names are not in the required format:
 \donttest{
-# Load data
-data(transcript_counts_blood)
-
 # Current format: ENSMUST00000193812
 # Need to convert to: GeneName-TranscriptID format
 # This would require mapping transcript IDs to gene names first

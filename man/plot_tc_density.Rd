@@ -35,17 +35,38 @@ gene distribution patterns. This plot provides a smoother representation of
 gene concentration across the complexity landscape, highlighting hotspots.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 
 # Create density plot with default metrics
 plot_tc_density(tc_results)
 
 # Use different metrics
-plot_tc_density(tc_results, 
-                x_metric = "intra_cellular_isoform_diversity", 
-                y_metric = "inter_cellular_isoform_diversity")
-}
+plot_tc_density(
+  tc_results, 
+  x_metric = "intra_cellular_isoform_diversity", 
+  y_metric = "inter_cellular_isoform_diversity"
+)
 
 }

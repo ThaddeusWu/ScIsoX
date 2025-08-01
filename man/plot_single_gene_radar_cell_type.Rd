@@ -29,12 +29,38 @@ better visual elements and higher resolution output. This function helps
 visualise how complexity metrics vary across different cell types for a single gene.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
 
-# Create radar plot for a single gene across cell types
-plot_single_gene_radar_cell_type(tc_results, "GENE1")
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# Find a gene with cell type-specific patterns
+high_specificity_genes <- names(tc_results$metrics$inter_cell_type_specificity)[
+  tc_results$metrics$inter_cell_type_specificity > 0.5
+]
+
+# Note: This example requires the 'ggradar' package
+if(requireNamespace("ggradar", quietly = TRUE) && length(high_specificity_genes) > 0) {
+  plot_single_gene_radar_cell_type(tc_results, high_specificity_genes[1])
 }
 
 }

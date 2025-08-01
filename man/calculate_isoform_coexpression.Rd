@@ -37,9 +37,57 @@ Calculates correlation matrix between isoforms of a gene using
 the specified correlation method.
 }
 \examples{
-\dontrun{
-# Calculate correlation for a single gene
-cor_result <- calculate_isoform_coexpression(scht_obj, "GAPDH")
-print(cor_result$cor_matrix)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Example 1: Find genes with multiple isoforms in the filtered data
+# Get the actual gene list from the SCHT object
+if (inherits(scht_obj, "IntegratedSCHT")) {
+  gene_list <- names(scht_obj$original_results)
+} else {
+  gene_list <- names(scht_obj)
+}
+
+# Find genes with multiple isoforms
+multi_iso_genes <- character()
+for (g in gene_list[1:min(50, length(gene_list))]) {
+  if (inherits(scht_obj, "IntegratedSCHT")) {
+    n_iso <- nrow(scht_obj$original_results[[g]])
+  } else {
+    n_iso <- nrow(scht_obj[[g]])
+  }
+  if (n_iso > 2) multi_iso_genes <- c(multi_iso_genes, g)
+}
+
+# Analyze the first multi-isoform gene found
+if (length(multi_iso_genes) > 0) {
+  cor_result <- calculate_isoform_coexpression(scht_obj, multi_iso_genes[1])
+  cat("Gene:", multi_iso_genes[1], "\n")
+  cat("Number of isoforms:", cor_result$n_isoforms, "\n")
+  print(cor_result$cor_matrix)
+  
+  # Check switching patterns
+  switching <- detect_isoform_switching(cor_result)
+  if (switching$n_switching_pairs > 0) {
+    cat("Switching pairs found:", switching$n_switching_pairs, "\n")
+  }
 }
 }

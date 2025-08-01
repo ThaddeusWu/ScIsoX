@@ -36,15 +36,43 @@ genes with unusual patterns, particularly those with higher intra-cellular
 than inter-cellular diversity.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 
 # Create diversity comparison plot
 plot_diversity_comparison(tc_results)
 
 # Label more genes
 plot_diversity_comparison(tc_results, label_top = 20)
-}
+
+# Adjust transparency and thresholds
+plot_diversity_comparison(
+  tc_results, 
+  label_top = 15,
+  point_transparency = 0.7,
+  x_threshold = 0.5,
+  y_threshold = 0.5
+)
 
 }

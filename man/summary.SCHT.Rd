@@ -18,3 +18,29 @@ None (prints to console)
 Generates a detailed summary of an SCHT object, including preprocessing
 information and data characteristics.
 }
+\examples{
+# Using the same SCHT object from print example
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  require_cell_type = FALSE,
+  verbose = FALSE
+)
+
+# Get summary of SCHT object
+summary(scht_obj)
+}

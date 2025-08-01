@@ -17,3 +17,30 @@ Invisibly returns x
 \description{
 Print method for transcriptomic_complexity objects
 }
+\examples{
+# Create SCHT and calculate complexity metrics
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,
+    max_genes_per_cell = 10000,
+    min_cells_expressing = 0.02,
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# Print the results
+print(tc_results)
+}

@@ -39,19 +39,43 @@ regions where gene distributions shift between groups.
 }
 \examples{
 \dontrun{
-# Assuming you have transcriptomic complexity results for 3 conditions
-tc_results_list <- list(condition_A = tc_results_A, 
-                        condition_B = tc_results_B,
-                        condition_C = tc_results_C)
+# This example requires multiple conditions/datasets
+# Here we demonstrate with subsampled data to simulate conditions
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create SCHT for full dataset
+scht_full <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate metrics for demonstration
+tc_results_full <- calculate_isoform_complexity_metrics(scht_full, verbose = FALSE)
+
+# For demonstration, use the same results as different "conditions"
+tc_results_list <- list(
+  baseline = tc_results_full,
+  treatment = tc_results_full  # In practice, these would be different
+)
                         
-# Compare all consecutive pairs
-plot_compare_tc_density_difference(tc_results_list, 
-                             group_names = c("Condition A", "Condition B", "Condition C"))
-                             
-# Compare specific pairs
-plot_compare_tc_density_difference(tc_results_list,
-                             group_names = c("Condition A", "Condition B", "Condition C"),
-                             pair_indices = list(c(1, 3), c(2, 3)))
+# Compare the conditions
+plot_compare_tc_density_difference(
+  tc_results_list, 
+  group_names = c("Baseline", "Treatment")
+)
 }
 
 }

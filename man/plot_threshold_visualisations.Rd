@@ -26,12 +26,39 @@ which is useful for comparing distributions and threshold choices across
 different complexity metrics.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
 
-# Plot all threshold visualisations in a 2-column grid
+# Create SCHT object with recommended QC parameters
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
+
+# Plot all threshold visualisations
 plot_threshold_visualisations(tc_results$threshold_plots, ncol = 2)
-}
+
+# Plot with custom title
+plot_threshold_visualisations(
+  tc_results$threshold_plots, 
+  ncol = 3, 
+  title = "Complexity Metric Thresholds"
+)
 
 }

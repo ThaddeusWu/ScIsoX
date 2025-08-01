@@ -32,14 +32,43 @@ different cell types or developmental stages. This visualisation helps identify
 cell type-specific isoform preferences.
 }
 \examples{
-\dontrun{
-# Assuming you have a Single-Cell Hierarchical Tensor object
-# Create isoform profile for a gene of interest
-plot_isoform_profile(scht_obj, "GENE1")
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
 
-# Specify cell type order (e.g., for developmental trajectory)
-cell_types <- c("Progenitor", "Intermediate", "Mature")
-plot_isoform_profile(scht_obj, "GENE1", cell_type_order = cell_types)
-}
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Example 1: Plot isoform profile for a gene with multiple isoforms
+plot_isoform_profile(scht_obj, "Mapk13")
+
+# Example 2: Specify cell type order
+plot_isoform_profile(
+  scht_obj, 
+  "Atl1",
+  cell_type_order = c("AEC", "HEC", "T1_pre_HSC", "T2_pre_HSC", 
+                      "E12", "E14", "Adult_HSC")
+)
+
+# Example 3: Try another gene with error handling
+tryCatch({
+  plot_isoform_profile(scht_obj, "Irf8", min_prop = 0.03)
+}, error = function(e) {
+  print(paste("Error:", e$message))
+})
 
 }

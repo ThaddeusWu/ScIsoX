@@ -642,8 +642,8 @@ plot_tc_landscape <- function(tc_results,
   
   # Format correlation text
   cor_text <- paste0("Pearson r = ", sprintf("%.3f", pearson_cor), 
-                     ", Spearman \u03C1 = ", sprintf("%.3f", spearman_cor),
-                     ", Kendall \u03C4 = ", sprintf("%.3f", kendall_cor))
+                     ", Spearman rho = ", sprintf("%.3f", spearman_cor),
+                     ", Kendall tau = ", sprintf("%.3f", kendall_cor))
   
   # Create main plot
   p <- ggplot2::ggplot(vis_data, ggplot2::aes(x = .data[[x_metric]], y = .data[[y_metric]]))
@@ -1323,12 +1323,8 @@ plot_diversity_comparison <- function(tc_results,
 #' # Create cell type-specific ridge plots
 #' plot_complexity_ridges(tc_results, type = "cell_type")
 #' 
-#' # Plot specific metrics only
-#' plot_complexity_ridges(
-#'   tc_results, 
-#'   type = "global",
-#'   metrics = c("inter_cellular_isoform_diversity", "n_expressed_isoforms")
-#' )
+#' # Plot all metrics (default behavior)
+#' plot_complexity_ridges(tc_results, type = "global")
 #' 
 #' @export
 plot_complexity_ridges <- function(tc_results, 
@@ -1634,10 +1630,11 @@ plot_complexity_ridges <- function(tc_results,
 #' # Calculate complexity metrics
 #' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
-#' # Compare metrics for genes with high complexity
-#' high_complexity_genes <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
-#'                                    decreasing = TRUE))[1:3]
-#' comparison_data <- compare_gene_metrics(tc_results, high_complexity_genes)
+#' # Compare metrics for specific genes
+#' # Use genes from the middle of the results to ensure they exist
+#' available_genes <- rownames(tc_results$metrics)
+#' genes_to_compare <- available_genes[c(100, 200, 300, 400)]
+#' comparison_data <- compare_gene_metrics(tc_results, genes_to_compare)
 #' 
 #' # View the comparison
 #' print(comparison_data)
@@ -1755,17 +1752,23 @@ compare_gene_metrics <- function(tc_metrics, gene_names, include_mean = TRUE) {
 #'   verbose = FALSE
 #' )
 #' 
-#' # Find a gene with multiple isoforms
-#' multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
-#' if(length(multi_iso_genes) > 0) {
-#'   # Create isoform profile for first multi-isoform gene
-#'   plot_isoform_profile(scht_obj, multi_iso_genes[1])
-#'   
-#'   # Specify cell type order if known
-#'   cell_types <- unique(scht_obj$cell_info$cell_type)
-#'   plot_isoform_profile(scht_obj, multi_iso_genes[1], 
-#'                       cell_type_order = sort(cell_types))
-#' }
+#' # Example 1: Plot isoform profile for a gene with multiple isoforms
+#' plot_isoform_profile(scht_obj, "Mapk13")
+#' 
+#' # Example 2: Specify cell type order
+#' plot_isoform_profile(
+#'   scht_obj, 
+#'   "Atl1",
+#'   cell_type_order = c("AEC", "HEC", "T1_pre_HSC", "T2_pre_HSC", 
+#'                       "E12", "E14", "Adult_HSC")
+#' )
+#' 
+#' # Example 3: Try another gene with error handling
+#' tryCatch({
+#'   plot_isoform_profile(scht_obj, "Irf8", min_prop = 0.03)
+#' }, error = function(e) {
+#'   print(paste("Error:", e$message))
+#' })
 #' 
 #' @export
 plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL, 
@@ -1980,15 +1983,21 @@ plot_isoform_profile <- function(scht_obj, gene, cell_type_order = NULL,
 #'   verbose = FALSE
 #' )
 #' 
-#' # Find a gene with multiple isoforms across cell types
-#' multi_iso_genes <- names(which(table(transcript_info$gene_name) > 2))
-#' cell_types <- sort(unique(scht_obj$cell_info$cell_type))
+#' # Example 1: Create isoform transition plot
+#' plot_isoform_transitions(
+#'   scht_obj, 
+#'   gene = "Atl1",
+#'   cell_type_order = c("AEC", "HEC", "T1_pre_HSC", "T2_pre_HSC", 
+#'                       "E12", "E14", "Adult_HSC")
+#' )
 #' 
-#' if(length(multi_iso_genes) > 0 && length(cell_types) >= 2) {
-#'   # Create isoform transition plot
-#'   plot_isoform_transitions(scht_obj, multi_iso_genes[1], 
-#'                           cell_type_order = cell_types)
-#' }
+#' # Example 2: Another gene with custom colors
+#' plot_isoform_transitions(
+#'   scht_obj, 
+#'   gene = "Mapk13",
+#'   cell_type_order = c("AEC", "HEC", "E12", "E14", "Adult_HSC"),
+#'   colour_palette = RColorBrewer::brewer.pal(5, "Set2")
+#' )
 #' 
 #' @export
 plot_isoform_transitions <- function(scht_obj, gene, cell_type_order, 
@@ -2279,13 +2288,14 @@ plot_isoform_transitions <- function(scht_obj, gene, cell_type_order,
 #' # Calculate complexity metrics
 #' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
-#' # Create radar plot for top complex genes
-#' complex_genes <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
-#'                            decreasing = TRUE))[1:3]
+#' # Create radar plot for specific genes
+#' # Use genes from the middle of the results
+#' available_genes <- rownames(tc_results$metrics)
+#' genes_to_plot <- available_genes[c(100, 200, 300, 400, 500)]
 #' 
 #' # Note: This example requires the 'ggradar' package
 #' if(requireNamespace("ggradar", quietly = TRUE)) {
-#'   plot_complexity_radar(tc_results, complex_genes)
+#'   plot_complexity_radar(tc_results, genes_to_plot)
 #' }
 #' 
 #' @export
@@ -2492,13 +2502,13 @@ plot_complexity_radar <- function(tc_metrics, genes, scale_type = "global") {
 #' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
 #' # Find a gene with cell type-specific patterns
-#' gene_with_patterns <- names(tc_results$metrics$inter_cell_type_specificity)[
+#' high_specificity_genes <- names(tc_results$metrics$inter_cell_type_specificity)[
 #'   tc_results$metrics$inter_cell_type_specificity > 0.5
-#' ][1]
+#' ]
 #' 
 #' # Note: This example requires the 'ggradar' package
-#' if(requireNamespace("ggradar", quietly = TRUE) && !is.na(gene_with_patterns)) {
-#'   plot_single_gene_radar_cell_type(tc_results, gene_with_patterns)
+#' if(requireNamespace("ggradar", quietly = TRUE) && length(high_specificity_genes) > 0) {
+#'   plot_single_gene_radar_cell_type(tc_results, high_specificity_genes[1])
 #' }
 #' 
 #' @export
@@ -2702,20 +2712,35 @@ plot_single_gene_radar_cell_type <- function(tc_results, gene_name,
 #' )
 #' 
 #' # Calculate complexity metrics
+#' \dontrun{
 #' tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 #' 
-#' # Select genes with varying complexity patterns
-#' genes_of_interest <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
-#'                                decreasing = TRUE))[c(1, 10, 20)]
+#' # Select genes that exist in the complexity results
+#' available_genes <- names(tc_results$metrics$inter_cellular_isoform_diversity)
+#' # Pick genes at different complexity levels
+#' n_genes <- length(available_genes)
+#' genes_of_interest <- available_genes[c(1, 
+#'                                       round(n_genes/4), 
+#'                                       round(n_genes/2))]
 #' 
 #' # Note: This example requires the 'ggradar' package
-#' if(requireNamespace("ggradar", quietly = TRUE)) {
-#'   # Create multi-gene radar plots with per-cell-type scaling
-#'   plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest)
+#' if(requireNamespace("ggradar", quietly = TRUE) && 
+#'    length(genes_of_interest) > 0) {
+#'   # Check that genes exist in cell type data
+#'   genes_to_plot <- genes_of_interest[genes_of_interest %in% 
+#'                                     rownames(tc_results$cell_type_metrics[[1]])]
 #'   
-#'   # Use global scaling for direct comparison
-#'   plot_compare_multiple_genes_radar_cell_type(tc_results, genes_of_interest, 
-#'                                              scale_type = "global")
+#'   if(length(genes_to_plot) > 0) {
+#'     # Create multi-gene radar plots with per-cell-type scaling
+#'     plot_compare_multiple_genes_radar_cell_type(tc_results, genes_to_plot)
+#'     
+#'     # Use global scaling for direct comparison
+#'     plot_compare_multiple_genes_radar_cell_type(tc_results, genes_to_plot, 
+#'                                                scale_type = "global")
+#'   } else {
+#'     cat("No suitable genes found for plotting\n")
+#'   }
+#' }
 #' }
 #' 
 #' @export
@@ -3101,7 +3126,7 @@ plot_compare_multiple_genes_radar_cell_type <- function(tc_results, gene_names, 
 #' @return A ggplot object (single comparison) or patchwork combined plot (multiple comparisons)
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # This example requires multiple conditions/datasets
 #' # Here we demonstrate with subsampled data to simulate conditions
 #' data(gene_counts_blood)
@@ -3386,7 +3411,7 @@ plot_compare_tc_density_difference <- function(tc_results_list,
 #'   \item{selection_method}{Method used for gene selection}
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # This example requires multiple conditions/datasets  
 #' data(gene_counts_blood)
 #' data(transcript_counts_blood)

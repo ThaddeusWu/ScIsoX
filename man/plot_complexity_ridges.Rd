@@ -35,15 +35,37 @@ metrics either globally or by cell type. Ridge plots offer a compact way to
 compare multiple distributions simultaneously.
 }
 \examples{
-\dontrun{
-# Assuming you have calculated transcriptomic complexity
-tc_results <- calculate_isoform_complexity_metrics(scht_obj)
+# Load example data and create SCHT
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+# Calculate complexity metrics
+tc_results <- calculate_isoform_complexity_metrics(scht_obj, verbose = FALSE)
 
 # Create global ridge plot for all metrics
 plot_complexity_ridges(tc_results, type = "global")
 
-# Create cell type-specific ridge plots for core metrics
+# Create cell type-specific ridge plots
 plot_complexity_ridges(tc_results, type = "cell_type")
-}
+
+# Plot all metrics (default behavior)
+plot_complexity_ridges(tc_results, type = "global")
 
 }

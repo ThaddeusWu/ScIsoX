@@ -65,7 +65,9 @@ utils::globalVariables(c(".scht_obj_temp"))
 #' )
 #' 
 #' # Launch the Shiny app
+#' \dontrun{
 #' launch_coexpression_app(scht_obj)
+#' }
 #' 
 #' # Launch on specific port without opening browser
 #' \dontrun{

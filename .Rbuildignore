@@ -19,3 +19,5 @@
 ^.*\.aux$
 ^update_dates\.sh$
 ^\.github$
+^doc$
+^Meta$

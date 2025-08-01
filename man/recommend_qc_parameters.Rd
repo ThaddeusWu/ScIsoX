@@ -25,3 +25,42 @@ for quality control parameter settings using different stringency levels.
 Supports both dense and sparse matrices for efficient processing of
 large-scale single-cell datasets.
 }
+\examples{
+# Load example data
+data(gene_counts_blood)
+
+# Get QC recommendations
+qc_recommendations <- recommend_qc_parameters(gene_counts_blood)
+
+# View different strategies
+print("MAD Strategy (Conservative):")
+print(qc_recommendations$MAD_strategy)
+
+print("\n90\% Interval Strategy (Moderate):")
+print(qc_recommendations$Interval_90)
+
+print("\n80\% Interval Strategy (Aggressive):")
+print(qc_recommendations$Interval_80)
+
+# Use recommended parameters in create_scht
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  qc_params = c(
+    qc_recommendations$MAD_strategy,
+    list(
+      min_cells_expressing = 0.02,
+      min_expr = 1e-6
+    )
+  ),
+  n_hvg = 3000,
+  verbose = FALSE
+)
+
+}

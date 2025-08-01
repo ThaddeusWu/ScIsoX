@@ -1,6 +1,6 @@
 Package: ScIsoX
 Title: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R
-Version: 1.1.1
+Version: 1.1.2
 Date: 2025-08-01
 Authors@R: c(
     person("Siyuan", "Wu", email = "thaddeus.wu@jcu.edu.au", role = c("aut", "cre")),
@@ -16,6 +16,8 @@ License: MIT + file LICENSE
 URL: https://ThaddeusWu.github.io/ScIsoX/, https://github.com/ThaddeusWu/ScIsoX
 BugReports: https://github.com/ThaddeusWu/ScIsoX/issues
 LazyData: true
+LazyDataCompression: xz
+VignetteBuilder: knitr
 Imports:
     progress,
     stats,
@@ -48,6 +50,7 @@ Imports:
     circlize,
     plyr
 Suggests:
+    rmarkdown,
     ggridges,
     ggrepel,
     ggExtra,

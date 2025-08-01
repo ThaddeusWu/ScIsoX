@@ -179,7 +179,13 @@ plot_genes_per_cell_distribution <- function(gene_counts,
 #'   transcript_counts = transcript_counts_blood,
 #'   transcript_info = transcript_info,
 #'   cell_info = sample2stage,
-#'   qc_params = qc_recommendations$MAD_strategy,  # Use conservative approach
+#'   qc_params = c(
+#'     qc_recommendations$MAD_strategy,
+#'     list(
+#'       min_cells_expressing = 0.02,
+#'       min_expr = 1e-6
+#'     )
+#'   ),
 #'   n_hvg = 3000,
 #'   verbose = FALSE
 #' )

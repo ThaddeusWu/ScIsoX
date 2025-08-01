@@ -1027,9 +1027,10 @@ if(length(multi_iso_genes) > 0) {
 ### Radar Charts for Multi-dimensional Comparison
 
 ```r
-# Compare top complex genes
-complex_genes <- names(sort(tc_results$metrics$inter_cellular_isoform_diversity, 
-                           decreasing = TRUE))[1:5]
+# Compare genes from the results
+# Use genes from the middle of the results to ensure they exist
+available_genes <- rownames(tc_results$metrics)
+complex_genes <- available_genes[c(100, 200, 300, 400, 500)]
 
 # Multi-gene radar chart
 if(requireNamespace("ggradar", quietly = TRUE)) {

@@ -86,3 +86,85 @@ Some metrics may contain NA values, which have specific biological meanings:
 These NA values are properly handled during threshold determination and classification.
 }
 }
+\examples{
+# Load example data
+data(gene_counts_blood)
+data(transcript_counts_blood)
+data(transcript_info)
+data(sample2stage)
+
+# Create SCHT object first
+scht_obj <- create_scht(
+  gene_counts = gene_counts_blood,
+  transcript_counts = transcript_counts_blood,
+  transcript_info = transcript_info,
+  cell_info = sample2stage,
+  n_hvg = 3000,
+  qc_params = list(
+    min_genes_per_cell = 4000,       
+    max_genes_per_cell = 10000,      
+    min_cells_expressing = 0.02,   
+    min_expr = 1e-6
+  ),
+  verbose = FALSE
+)
+
+# Example 1: Calculate complexity metrics with default settings
+tc_results <- calculate_isoform_complexity_metrics(
+  scht_obj,
+  verbose = TRUE
+)
+
+# Examine the results
+print(names(tc_results))
+print(head(tc_results$metrics))
+
+# Check classification distribution
+print(table(tc_results$metrics$intra_cellular_isoform_diversity_class))
+
+# Example 2: Use custom thresholds
+custom_thresholds <- list(
+  intra_cellular_isoform_diversity = 0.7,
+  inter_cellular_isoform_diversity = 0.7,
+  intra_cell_type_heterogeneity = 0.5,
+  inter_cell_type_specificity = 0.5,
+  intra_cell_type_heterogeneity_variability = 0.8,
+  inter_cell_type_difference_variability = 0.6,
+  cell_type_coexpression_variability = 1.0
+)
+
+\donttest{
+tc_custom <- calculate_isoform_complexity_metrics(
+  scht_obj,
+  default_thresholds = custom_thresholds,
+  data_driven_thresholds = FALSE,  # Use only custom thresholds
+  verbose = FALSE
+)
+}
+
+# Example 3: Process in smaller batches for memory efficiency
+\donttest{
+tc_batched <- calculate_isoform_complexity_metrics(
+  scht_obj,
+  batch_size = 100,  # Process 100 genes at a time
+  verbose = TRUE
+)
+}
+
+# Example 4: Access specific metrics for genes of interest
+genes_of_interest <- head(rownames(tc_results$metrics), 10)
+gene_metrics <- tc_results$metrics[
+  tc_results$metrics$gene \%in\% genes_of_interest,
+]
+print(gene_metrics[, c("gene", "intra_cellular_isoform_diversity", 
+                       "inter_cellular_isoform_diversity")])
+
+# Example 5: Identify highly complex genes
+complex_genes <- tc_results$metrics[
+  tc_results$metrics$intra_cellular_isoform_diversity_class == "high" &
+  tc_results$metrics$inter_cellular_isoform_diversity_class == "high" &
+  !is.na(tc_results$metrics$intra_cellular_isoform_diversity),
+]
+print(paste("Number of highly complex genes:", nrow(complex_genes)))
+
+}
