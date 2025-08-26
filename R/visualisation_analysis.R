@@ -133,7 +133,7 @@ plot_threshold_visualisations <- function(threshold_plots, ncol = 3, title = "Th
   }
   
   list(
-    main = c("#ec6e66", "#7392c6", "#81b095", "#867bb9"),
+    main = c("#cc6677", "#40b0a6", "#e1be6a", "#867bb9"),
     highlight = "#f7ac53",  
     gradient = gradient,
     background = "white",
