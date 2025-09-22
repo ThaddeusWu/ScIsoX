@@ -9,9 +9,9 @@
 
 *A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution*
 
-```
+
 Wu, S., Schmitz, U. ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells. _Genome Biol_ **26**, 289 (2025). https://doi.org/10.1186/s13059-025-03758-5
-```
+
 
 ---
 
@@ -1211,9 +1211,10 @@ If you encounter problems not addressed here, please:
 If you use ScIsoX in your research, please cite:
 
 **Manuscript:**
-```
+
+
 Wu, S., Schmitz, U. ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells. _Genome Biol_ **26**, 289 (2025). https://doi.org/10.1186/s13059-025-03758-5
-```
+
 
 BibTeX entry:
 
