@@ -10,7 +10,7 @@
 *A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution*
 
 ```
-Wu S and Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells.
+Wu, S., Schmitz, U. ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells. _Genome Biol_ **26**, 289 (2025). https://doi.org/10.1186/s13059-025-03758-5
 ```
 
 ---
@@ -1212,33 +1212,21 @@ If you use ScIsoX in your research, please cite:
 
 **Manuscript:**
 ```
-ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells
-Wu, S and Schmitz, U
-bioRxiv, 2025
-DOI: 10.1101/2025.04.28.650897
-url: https://www.biorxiv.org/content/10.1101/2025.04.28.650897v2
-```
-
-**Software:**
-```
-Wu, S and Schmitz, U (2025). ScIsoX: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline 
-and Transcriptomic Complexity Analysis in R. R package version 1.1.1.
-DOI: 10.5281/zenodo.16569860
+Wu, S., Schmitz, U. ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells. _Genome Biol_ **26**, 289 (2025). https://doi.org/10.1186/s13059-025-03758-5
 ```
 
 BibTeX entry:
 
 ```bibtex
-
-@article{Wu2025.04.28.650897,
+@article{ScIsoXWu,
 	author = {Wu, Siyuan and Schmitz, Ulf},
-	doi = {10.1101/2025.04.28.650897},
-	eprint = {https://www.biorxiv.org/content/early/2025/05/01/2025.04.28.650897.full.pdf},
-	journal = {bioRxiv},
-	title = {{ScIsoX}: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells},
-	url = {https://www.biorxiv.org/content/early/2025/05/01/2025.04.28.650897},
-	year = {2025}
-}
+	journal = {Genome Biology},
+	number = {1},
+	pages = {289},
+	title = {ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells},
+	volume = {26},
+	doi = {10.1186/s13059-025-03758-5},
+	year = {2025}}
 ```
 ---
 
