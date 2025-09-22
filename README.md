@@ -1222,7 +1222,6 @@ BibTeX entry:
 @article{ScIsoXWu,
 	author = {Wu, Siyuan and Schmitz, Ulf},
 	journal = {Genome Biology},
-	number = {1},
 	pages = {289},
 	title = {ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells},
 	volume = {26},
