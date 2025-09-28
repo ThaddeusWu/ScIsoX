@@ -204,6 +204,8 @@ authors:
     
 news:
   releases:
+  - text: "Version 1.1.3"
+    href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3
   - text: "Version 1.1.1"
     href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1
   - text: "Version 1.1.0"
