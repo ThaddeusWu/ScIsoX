@@ -7,7 +7,7 @@ characterisation of transcriptomic complexity."><meta property="og:description" 
 transcriptomic complexity at multiple levels: within cells, across cells,
 within cell types, and across cell types. It analyses isoform diversity,
 cell type specificity, and expression patterns to provide a multidimensional
-characterisation of transcriptomic complexity."></head><body>
+characterisation of transcriptomic complexity."><meta property="og:image" content="https://ThaddeusWu.github.io/ScIsoX/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -15,7 +15,7 @@ characterisation of transcriptomic complexity."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ScIsoX</a>
 
-    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.1</small>
+    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,8 @@ characterisation of transcriptomic complexity."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-news"><li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3">Version 1.1.3</a></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.2">Version 1.1.2</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1">Version 1.1.1</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/V1.1.0">Version 1.1.0</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -50,8 +52,7 @@ characterisation of transcriptomic complexity."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Calculate all complexity metrics for all genes in SCHT object</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Calculate all complexity metrics for all genes in SCHT object</h1>
       <small class="dont-index">Source: <a href="https://github.com/ThaddeusWu/ScIsoX/blob/HEAD/R/complexity_metrics.R" class="external-link"><code>R/complexity_metrics.R</code></a></small>
       <div class="d-none name"><code>calculate_isoform_complexity_metrics.Rd</code></div>
     </div>
@@ -148,6 +149,1005 @@ profile for each gene across multiple dimensions.</p>
 These NA values are properly handled during threshold determination and classification.</p></li>
 </ul></div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Load example data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gene_counts_blood</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_counts_blood</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sample2stage</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create SCHT object first</span></span></span>
+<span class="r-in"><span><span class="va">scht_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="create_scht.html">create_scht</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  gene_counts <span class="op">=</span> <span class="va">gene_counts_blood</span>,</span></span>
+<span class="r-in"><span>  transcript_counts <span class="op">=</span> <span class="va">transcript_counts_blood</span>,</span></span>
+<span class="r-in"><span>  transcript_info <span class="op">=</span> <span class="va">transcript_info</span>,</span></span>
+<span class="r-in"><span>  cell_info <span class="op">=</span> <span class="va">sample2stage</span>,</span></span>
+<span class="r-in"><span>  n_hvg <span class="op">=</span> <span class="fl">3000</span>,</span></span>
+<span class="r-in"><span>  qc_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    min_genes_per_cell <span class="op">=</span> <span class="fl">4000</span>,       </span></span>
+<span class="r-in"><span>    max_genes_per_cell <span class="op">=</span> <span class="fl">10000</span>,      </span></span>
+<span class="r-in"><span>    min_cells_expressing <span class="op">=</span> <span class="fl">0.02</span>,   </span></span>
+<span class="r-in"><span>    min_expr <span class="op">=</span> <span class="fl">1e-6</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="calculate_isoform_complexity_metrics-1.png" alt="" width="768" height="576"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> === Sparsity Analysis for Current Dataset ===</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1. Original Transcript Matrix:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of genes: 55,487</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of isoforms: 142,238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of cells: 205</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 2,457,789</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 26,701,001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 29,158,790</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 91.57%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2. Filtered Transcript Matrix (Post-QC HVG):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of genes: 1,936</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of isoforms: 7,327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of cells: 181</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 73,057</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 1,253,130</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 1,326,187</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 94.49%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3. SCHT Structure (Post-QC HVG):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 73,057</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 154,780</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 227,837</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 67.93%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4. Naive 3D Tensor (Post-QC HVG):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Required dimensions: 1,936 x 21 x 181</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 73,057</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 7,285,679</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 7,358,736</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 99.01%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5. Zero Elements Avoided by SCHT:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vs Original Matrix: 26,546,221</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vs Filtered Matrix: 1,098,350</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vs Naive 3D Tensor: 7,130,899</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6. Memory Efficiency Summary:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SCHT uses only 0.78% of original matrix size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SCHT uses only 17.18% of filtered matrix size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SCHT uses only 3.10% of naive tensor size</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 1: Calculate complexity metrics with default settings</span></span></span>
+<span class="r-in"><span><span class="va">tc_results</span> <span class="op">&lt;-</span> <span class="fu">calculate_isoform_complexity_metrics</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">scht_obj</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating complexity metrics for 1936 genes...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computed metrics for 1936 genes with sufficient data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Determining optimal classification thresholds for all seven core metrics...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> NA value proportions for core metrics:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity: 163 NA values (8.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Specificity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity Variability: 492 NA values (25.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Difference Variability: 137 NA values (7.1%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Cell-type-specific Co-expression Variability: 184 NA values (9.5%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for intra_cellular_isoform_diversity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1936</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 0.991]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.351, Median: 0.321</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: No preprocessing needed (distribution suitable for analysis)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: unimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for intra_cellular_isoform_diversity : 0.456</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using unimodal.balanced_threshold method for unimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.94</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for inter_cellular_isoform_diversity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1936</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0.01, 1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.591, Median: 0.63</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: No preprocessing needed (distribution suitable for analysis)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: unimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for inter_cellular_isoform_diversity : 0.758</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using unimodal.balanced_threshold method for unimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.84</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for intra_cell_type_heterogeneity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1773</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.363, Median: 0.367</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Preserved multimodal structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: multimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.122, 0.399, 0.645</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.099, NA, NA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.367, 0.366, 0.268</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ERROR in mixture model method: missing value where TRUE/FALSE needed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Falling back to alternative methods</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Searching for inflection points in distribution with skewness 0.11 and peak position at 0.4</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Symmetric distribution detected, searching both sides equally</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Left search range: 344 points, Right search range: 472 points</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected inflection point: 0.389 (normalised: 0.39), strength: 0.85, reliability: 0.84 (left of peak)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected curve inflection</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for intra_cell_type_heterogeneity : 0.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using curve.inflection method for multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.83</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for inter_cell_type_specificity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1936</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.401, Median: 0.382</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: No preprocessing needed (distribution suitable for analysis)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: unimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for inter_cell_type_specificity : 0.497</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using unimodal.balanced_threshold method for unimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.84</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for intra_cell_type_heterogeneity_variability:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1444</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 2.646]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.77, Median: 0.62</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Preserved multimodal structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: multimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Skewed: right (0.86)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Feature type: Difference/variability metric</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.188, 0.627, 1.429</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.118, 0.222, 0.505</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.337, 0.299, 0.364</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.382 between components 1 and 2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 2.48</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No valid intersections with sufficient density, using weighted midpoint</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.832 between components 1 and 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 3.39</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.952 between components 2 and 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 2.06</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected threshold at 0.832 with separation 3.385 and reliability 0.95</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SUCCESS: Mixture model method successfully found a threshold</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for intra_cell_type_heterogeneity_variability : 0.832</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using multimodal.mixture.model method for multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for inter_cell_type_difference_variability:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1799</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 1.62]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.646, Median: 0.567</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Preserved multimodal structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: multimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Skewed: right (0.91)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Feature type: Difference/variability metric</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.425, 0.715, 1.557</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.12, 0.31, 0.078</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.355, 0.605, 0.04</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.552 between components 1 and 2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 1.23</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No valid intersections with sufficient density, using weighted midpoint</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping components 1 and 3 as one mode is insignificant</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping components 2 and 3 as one mode is insignificant</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected threshold at 0.552 with separation 1.234 and reliability 0.69</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SUCCESS: Mixture model method successfully found a threshold</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for inter_cell_type_difference_variability : 0.552</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using multimodal.mixture.model method for multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.75</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for cell_type_coexpression_variability:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1502</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0.161, 2.646]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 1.202, Median: 1.155</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Extracted non-zero values which show multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: zero_inflated</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Zero-inflated: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Feature type: Difference/variability metric</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.69, 1.427, 2.197</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.28, NA, NA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.464, 0.384, 0.153</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ERROR in mixture model method: missing value where TRUE/FALSE needed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Falling back to alternative methods</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Searching for inflection points in distribution with skewness 0.42 and peak position at 0.26</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Symmetric distribution detected, searching both sides equally</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Left search range: 260 points, Right search range: 555 points</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected inflection point: 1.389 (normalised: 0.49), strength: 0.95, reliability: 0.95 (right of peak)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected curve inflection</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for cell_type_coexpression_variability : 1.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using zero_inflated.curve.inflection method for zero_inflated distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Optimal thresholds determined:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cellular Isoform Diversity: 0.456</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cellular Isoform Diversity: 0.758</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cell-type Heterogeneity: 0.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cell-type Specificity: 0.497</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cell-type Heterogeneity Variability: 0.832</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cell-type Difference Variability: 0.552</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Cell-type-specific Co-expression Variability: 1.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Complexity metric calculation completed in 81.67 seconds (1.36 minutes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Memory utilised: 1405.50 MB</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Examine the results</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "metrics"                "cell_type_metrics"      "single_cell_type_genes"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "thresholds"             "threshold_plots"        "na_statistics"         </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              gene intra_cellular_isoform_diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177       Cd177                       0.83395764</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8     S100a8                       0.79798059</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9     S100a9                       0.74087285</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1       Shtn1                       0.08815128</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10 Ceacam10                       0.17570749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3         Oas3                       0.41139081</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          inter_cellular_isoform_diversity intra_cell_type_heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                           0.9015444                    0.56679210</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                          0.9042768                    0.19944695</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                          0.9078688                    0.19080723</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                           0.6872735                    0.62006866</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                        0.2123721                    0.09494158</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                            0.5081484                    0.19594428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          inter_cell_type_specificity intra_cell_type_heterogeneity_variability</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                              1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                             1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                             1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                              1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                           1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                               1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          inter_cell_type_difference_variability</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          cell_type_coexpression_variability idi_difference dominant_iso_prop</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                                    NA     0.06758677         0.6825884</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                                   NA     0.10629618         0.6800962</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                                   NA     0.16699597         0.6767612</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                                    NA     0.59912220         0.5735695</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                                 NA     0.03666457         0.9663513</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                                     NA     0.09675763         0.8291382</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           dominant_iso_name n_isoforms n_expressed_isoforms simpson_index</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177    ENSMUST00000063956          2                    2     0.4333229</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8   ENSMUST00000069927          2                    2     0.4351307</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9   ENSMUST00000069960          2                    2     0.4375110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1    ENSMUST00000163821          3                    3     0.5034247</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10 ENSMUST00000038069          2                    2     0.0650329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3     ENSMUST00000044833          3                    3     0.2950585</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           evenness is_single_cell_type specific_cell_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177    0.9015444                TRUE          Adult_HSC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8   0.9042768                TRUE          Adult_HSC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9   0.9078688                TRUE          Adult_HSC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1    0.4336213                TRUE          Adult_HSC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10 0.2123721                TRUE          Adult_HSC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3     0.3206060                TRUE          Adult_HSC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          expressed_cell_types_count cells_expressing pct_cells_expressing</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                             1                5                  100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                            1               12                  100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                            1               13                  100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                             1                5                  100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                          1                4                  100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                              1               12                  100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          pct_multi_iso_cells intra_cellular_isoform_diversity_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177               40.00000           Strong Isoform Co-expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8              25.00000           Strong Isoform Co-expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9              23.07692           Strong Isoform Co-expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1               20.00000             Weak Isoform Co-expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10            25.00000             Weak Isoform Co-expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                33.33333             Weak Isoform Co-expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          inter_cellular_isoform_diversity_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                    High Isoform Diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                   High Isoform Diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                   High Isoform Diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                     Low Isoform Diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                  Low Isoform Diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                      Low Isoform Diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          intra_cell_type_heterogeneity_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177            High Cellular Heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8            Low Cellular Heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9            Low Cellular Heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1            High Cellular Heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10          Low Cellular Heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3              Low Cellular Heterogeneity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              inter_cell_type_specificity_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177    Cell-Type-Specific Isoform Expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8   Cell-Type-Specific Isoform Expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9   Cell-Type-Specific Isoform Expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1    Cell-Type-Specific Isoform Expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10 Cell-Type-Specific Isoform Expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3     Cell-Type-Specific Isoform Expression</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          intra_cell_type_heterogeneity_variability_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                        Insufficient Cell Type Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                       Insufficient Cell Type Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                       Insufficient Cell Type Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                        Insufficient Cell Type Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                     Insufficient Cell Type Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                         Insufficient Cell Type Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          inter_cell_type_difference_variability_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                    Insufficient Difference Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                   Insufficient Difference Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                   Insufficient Difference Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                    Insufficient Difference Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                 Insufficient Difference Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                     Insufficient Difference Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          cell_type_coexpression_variability_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                           Insufficient Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                          Insufficient Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                          Insufficient Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                           Insufficient Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                        Insufficient Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                            Insufficient Data</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        complexity_category</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177    High Diversity + High Specificity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8   High Diversity + High Specificity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9   High Diversity + High Specificity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1     Low Diversity + High Specificity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10  Low Diversity + High Specificity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3      Low Diversity + High Specificity</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check classification distribution</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">intra_cellular_isoform_diversity_class</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Strong Isoform Co-expression   Weak Isoform Co-expression </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          704                         1232 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 2: Use custom thresholds</span></span></span>
+<span class="r-in"><span><span class="va">custom_thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  intra_cellular_isoform_diversity <span class="op">=</span> <span class="fl">0.7</span>,</span></span>
+<span class="r-in"><span>  inter_cellular_isoform_diversity <span class="op">=</span> <span class="fl">0.7</span>,</span></span>
+<span class="r-in"><span>  intra_cell_type_heterogeneity <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
+<span class="r-in"><span>  inter_cell_type_specificity <span class="op">=</span> <span class="fl">0.5</span>,</span></span>
+<span class="r-in"><span>  intra_cell_type_heterogeneity_variability <span class="op">=</span> <span class="fl">0.8</span>,</span></span>
+<span class="r-in"><span>  inter_cell_type_difference_variability <span class="op">=</span> <span class="fl">0.6</span>,</span></span>
+<span class="r-in"><span>  cell_type_coexpression_variability <span class="op">=</span> <span class="fl">1.0</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">tc_custom</span> <span class="op">&lt;-</span> <span class="fu">calculate_isoform_complexity_metrics</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">scht_obj</span>,</span></span>
+<span class="r-in"><span>  default_thresholds <span class="op">=</span> <span class="va">custom_thresholds</span>,</span></span>
+<span class="r-in"><span>  data_driven_thresholds <span class="op">=</span> <span class="cn">FALSE</span>,  <span class="co"># Use only custom thresholds</span></span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating complexity metrics for 1936 genes...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computed metrics for 1936 genes with sufficient data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using default thresholds for classification</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> NA value proportions for core metrics:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity: 163 NA values (8.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Specificity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity Variability: 492 NA values (25.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Difference Variability: 137 NA values (7.1%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Cell-type-specific Co-expression Variability: 184 NA values (9.5%)</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: Process in smaller batches for memory efficiency</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">tc_batched</span> <span class="op">&lt;-</span> <span class="fu">calculate_isoform_complexity_metrics</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">scht_obj</span>,</span></span>
+<span class="r-in"><span>  batch_size <span class="op">=</span> <span class="fl">100</span>,  <span class="co"># Process 100 genes at a time</span></span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating complexity metrics for 1936 genes...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computed metrics for 1936 genes with sufficient data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Determining optimal classification thresholds for all seven core metrics...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> NA value proportions for core metrics:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity: 163 NA values (8.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Specificity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity Variability: 492 NA values (25.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Difference Variability: 137 NA values (7.1%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Cell-type-specific Co-expression Variability: 184 NA values (9.5%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for intra_cellular_isoform_diversity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1936</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 0.991]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.351, Median: 0.321</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: No preprocessing needed (distribution suitable for analysis)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: unimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for intra_cellular_isoform_diversity : 0.456</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using unimodal.balanced_threshold method for unimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.94</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for inter_cellular_isoform_diversity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1936</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0.01, 1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.591, Median: 0.63</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: No preprocessing needed (distribution suitable for analysis)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: unimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for inter_cellular_isoform_diversity : 0.758</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using unimodal.balanced_threshold method for unimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.84</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for intra_cell_type_heterogeneity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1773</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.363, Median: 0.367</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Preserved multimodal structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: multimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.122, 0.399, 0.645</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.099, NA, NA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.367, 0.366, 0.268</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ERROR in mixture model method: missing value where TRUE/FALSE needed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Falling back to alternative methods</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Searching for inflection points in distribution with skewness 0.11 and peak position at 0.4</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Symmetric distribution detected, searching both sides equally</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Left search range: 344 points, Right search range: 472 points</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected inflection point: 0.389 (normalised: 0.39), strength: 0.85, reliability: 0.84 (left of peak)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected curve inflection</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for intra_cell_type_heterogeneity : 0.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using curve.inflection method for multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.83</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for inter_cell_type_specificity:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1936</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 1]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.401, Median: 0.382</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: No preprocessing needed (distribution suitable for analysis)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: unimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for inter_cell_type_specificity : 0.497</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using unimodal.balanced_threshold method for unimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.84</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for intra_cell_type_heterogeneity_variability:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1444</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 2.646]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.77, Median: 0.62</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Preserved multimodal structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: multimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Skewed: right (0.86)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Feature type: Difference/variability metric</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.188, 0.627, 1.429</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.118, 0.222, 0.505</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.337, 0.299, 0.364</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.382 between components 1 and 2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 2.48</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No valid intersections with sufficient density, using weighted midpoint</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.832 between components 1 and 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 3.39</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.952 between components 2 and 3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 2.06</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected threshold at 0.832 with separation 3.385 and reliability 0.95</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SUCCESS: Mixture model method successfully found a threshold</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for intra_cell_type_heterogeneity_variability : 0.832</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using multimodal.mixture.model method for multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for inter_cell_type_difference_variability:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1799</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0, 1.62]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 0.646, Median: 0.567</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Preserved multimodal structure</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: multimodal</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Skewed: right (0.91)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Feature type: Difference/variability metric</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.425, 0.715, 1.557</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.12, 0.31, 0.078</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.355, 0.605, 0.04</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Candidate threshold 0.552 between components 1 and 2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Separation: 1.23</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No valid intersections with sufficient density, using weighted midpoint</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping components 1 and 3 as one mode is insignificant</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Skipping components 2 and 3 as one mode is insignificant</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Selected threshold at 0.552 with separation 1.234 and reliability 0.69</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> SUCCESS: Mixture model method successfully found a threshold</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for inter_cell_type_difference_variability : 0.552</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using multimodal.mixture.model method for multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 0.83</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution characteristics for cell_type_coexpression_variability:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Sample size: 1502</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Range: [0.161, 2.646]</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Mean: 1.202, Median: 1.155</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Preprocessing: Extracted non-zero values which show multimodal distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Distribution type: zero_inflated</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Zero-inflated: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Multimodal: Yes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Feature type: Difference/variability metric</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Mclust selected 3 components</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component means: 0.69, 1.427, 2.197</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component SDs: 0.28, NA, NA</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Component weights: 0.464, 0.384, 0.153</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> ERROR in mixture model method: missing value where TRUE/FALSE needed</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Falling back to alternative methods</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Searching for inflection points in distribution with skewness 0.42 and peak position at 0.26</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Symmetric distribution detected, searching both sides equally</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Left search range: 260 points, Right search range: 555 points</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected inflection point: 1.389 (normalised: 0.49), strength: 0.95, reliability: 0.95 (right of peak)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Detected curve inflection</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Running 100 bootstrap iterations to assess threshold stability...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Performing 10 fold cross-validation for threshold consistency...</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Final threshold for cell_type_coexpression_variability : 1.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using zero_inflated.curve.inflection method for zero_inflated distribution</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reliability score: 1</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Optimal thresholds determined:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cellular Isoform Diversity: 0.456</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cellular Isoform Diversity: 0.758</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cell-type Heterogeneity: 0.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cell-type Specificity: 0.497</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cell-type Heterogeneity Variability: 0.832</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cell-type Difference Variability: 0.552</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Cell-type-specific Co-expression Variability: 1.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Complexity metric calculation completed in 87.98 seconds (1.47 minutes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Memory utilised: 916.30 MB</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 4: Access specific metrics for genes of interest</span></span></span>
+<span class="r-in"><span><span class="va">genes_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">gene_metrics</span> <span class="op">&lt;-</span> <span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">[</span></span></span>
+<span class="r-in"><span>  <span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">gene</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">genes_of_interest</span>,</span></span>
+<span class="r-in"><span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">gene_metrics</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gene"</span>, <span class="st">"intra_cellular_isoform_diversity"</span>, </span></span>
+<span class="r-in"><span>                       <span class="st">"inter_cellular_isoform_diversity"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              gene intra_cellular_isoform_diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177       Cd177                       0.83395764</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8     S100a8                       0.79798059</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9     S100a9                       0.74087285</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1       Shtn1                       0.08815128</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10 Ceacam10                       0.17570749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3         Oas3                       0.41139081</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Il7           Il7                       0.77498775</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Nup62cl   Nup62cl                       0.81975777</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cideb       Cideb                       0.38298515</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ctss         Ctss                       0.42502421</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          inter_cellular_isoform_diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cd177                           0.9015444</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a8                          0.9042768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> S100a9                          0.9078688</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Shtn1                           0.6872735</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ceacam10                        0.2123721</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oas3                            0.5081484</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Il7                             0.8055326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Nup62cl                         0.9041507</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Cideb                           0.5871549</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ctss                            0.7506525</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 5: Identify highly complex genes</span></span></span>
+<span class="r-in"><span><span class="va">complex_genes</span> <span class="op">&lt;-</span> <span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">[</span></span></span>
+<span class="r-in"><span>  <span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">intra_cellular_isoform_diversity_class</span> <span class="op">==</span> <span class="st">"high"</span> <span class="op">&amp;</span></span></span>
+<span class="r-in"><span>  <span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">inter_cellular_isoform_diversity_class</span> <span class="op">==</span> <span class="st">"high"</span> <span class="op">&amp;</span></span></span>
+<span class="r-in"><span>  <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">intra_cellular_isoform_diversity</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Number of highly complex genes:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">complex_genes</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Number of highly complex genes: 0"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
@@ -157,7 +1157,7 @@ These NA values are properly handled during threshold determination and classifi
 </div>
 
 <div class="pkgdown-footer-right">
-  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
+  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell architecture and functional requirement of alternative splicing during hematopoietic stem cell formation. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
 </div>
 
     </footer></div>

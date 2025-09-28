@@ -1254,7 +1254,7 @@ This package is licensed under the MIT License.
 
 We gratefully acknowledge Wang et al. (2022) for making their single-cell multiomics data publicly available. The example datasets included in ScIsoX are derived from their publication:
 
-> Wang W, et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. *Science Advances* 8(1):eabg5369. DOI: 10.1126/sciadv.abg5369
+> Wang F, et al. (2022). Single-cell architecture and functional requirement of alternative splicing during hematopoietic stem cell formation. *Science Advances* 8(1):eabg5369. DOI: 10.1126/sciadv.abg5369
 
 These datasets are used under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
 

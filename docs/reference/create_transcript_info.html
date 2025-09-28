@@ -3,7 +3,7 @@
 for use in the SCHT pipeline. Can optionally remove version numbers from
 transcript and gene IDs."><meta property="og:description" content="Imports a GTF file and creates a standardised transcript information data frame
 for use in the SCHT pipeline. Can optionally remove version numbers from
-transcript and gene IDs."></head><body>
+transcript and gene IDs."><meta property="og:image" content="https://ThaddeusWu.github.io/ScIsoX/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -11,7 +11,7 @@ transcript and gene IDs."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ScIsoX</a>
 
-    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.1</small>
+    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,8 @@ transcript and gene IDs."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-news"><li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3">Version 1.1.3</a></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.2">Version 1.1.2</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1">Version 1.1.1</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/V1.1.0">Version 1.1.0</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -46,8 +48,7 @@ transcript and gene IDs."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Create transcript information data frame from GTF file</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Create transcript information data frame from GTF file</h1>
       <small class="dont-index">Source: <a href="https://github.com/ThaddeusWu/ScIsoX/blob/HEAD/R/create_transcript_info.R" class="external-link"><code>R/create_transcript_info.R</code></a></small>
       <div class="d-none name"><code>create_transcript_info.Rd</code></div>
     </div>
@@ -92,7 +93,90 @@ transcript and gene IDs (default: TRUE)</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Using the provided example data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 1: Examine the structure of transcript information</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         transcript_id   transcript_name            gene_id</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000193812 ENSMUST00000193812 4933401J01Rik-201 ENSMUSG00000102693</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000082908 ENSMUST00000082908       Gm26206-201 ENSMUSG00000064842</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000162897 ENSMUST00000162897          Xkr4-203 ENSMUSG00000051951</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000159265 ENSMUST00000159265          Xkr4-202 ENSMUSG00000051951</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000070533 ENSMUST00000070533          Xkr4-201 ENSMUSG00000051951</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000192857 ENSMUST00000192857       Gm18956-201 ENSMUSG00000102851</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                        gene_name                transcript_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000193812 4933401J01Rik                            TEC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000082908       Gm26206                          snRNA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000162897          Xkr4 protein_coding_CDS_not_defined</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000159265          Xkr4 protein_coding_CDS_not_defined</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000070533          Xkr4                 protein_coding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000192857       Gm18956           processed_pseudogene</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                               gene_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000193812                  TEC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000082908                snRNA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000162897       protein_coding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000159265       protein_coding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000070533       protein_coding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000192857 processed_pseudogene</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Total transcripts:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total transcripts: 278305"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Total genes:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">gene_id</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Total genes: 78239"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check transcript types distribution</span></span></span>
+<span class="r-in"><span><span class="va">transcript_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">transcript_type</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">transcript_types</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         lncRNA                 protein_coding </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         152339                          58547 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                retained_intron protein_coding_CDS_not_defined </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                          22058                          14192 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           processed_pseudogene        nonsense_mediated_decay </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           9328                           7247 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                            TEC                          miRNA </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           3303                           2201 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         unprocessed_pseudogene                         snoRNA </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                           2163                           1507 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 2: Find multi-isoform genes</span></span></span>
+<span class="r-in"><span><span class="va">isoforms_per_gene</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">gene_id</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">multi_isoform_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">isoforms_per_gene</span><span class="op">[</span><span class="va">isoforms_per_gene</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Genes with multiple isoforms:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">multi_isoform_genes</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Genes with multiple isoforms: 34459"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Show an example of a multi-isoform gene</span></span></span>
+<span class="r-in"><span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">multi_isoform_genes</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">example_gene</span> <span class="op">&lt;-</span> <span class="va">multi_isoform_genes</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="va">gene_isoforms</span> <span class="op">&lt;-</span> <span class="va">transcript_info</span><span class="op">[</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">gene_id</span> <span class="op">==</span> <span class="va">example_gene</span>, <span class="op">]</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Gene"</span>, <span class="va">example_gene</span>, <span class="st">"has"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">gene_isoforms</span><span class="op">)</span>, <span class="st">"isoforms:"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">gene_isoforms</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transcript_id"</span>, <span class="st">"transcript_type"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Gene ENSMUSG00000000003 has 2 isoforms:"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                         transcript_id transcript_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000000003 ENSMUST00000000003  protein_coding</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ENSMUST00000114041 ENSMUST00000114041  protein_coding</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: Filter for protein-coding transcripts only</span></span></span>
+<span class="r-in"><span><span class="va">protein_coding</span> <span class="op">&lt;-</span> <span class="va">transcript_info</span><span class="op">[</span></span></span>
+<span class="r-in"><span>  <span class="va">transcript_info</span><span class="op">$</span><span class="va">transcript_type</span> <span class="op">==</span> <span class="st">"protein_coding"</span>, </span></span>
+<span class="r-in"><span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Protein-coding transcripts:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">protein_coding</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Protein-coding transcripts: 58547"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 4: Prepare for use with transcript count matrix</span></span></span>
+<span class="r-in"><span><span class="co"># Ensure transcript IDs match between count matrix and info</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_counts_blood</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">count_transcripts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">transcript_counts_blood</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">info_transcripts</span> <span class="op">&lt;-</span> <span class="va">transcript_info</span><span class="op">$</span><span class="va">transcript_id</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Check overlap</span></span></span>
+<span class="r-in"><span><span class="va">common_transcripts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">count_transcripts</span>, <span class="va">info_transcripts</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Common transcripts:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">common_transcripts</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Common transcripts: 137639"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># Example 5: Direct usage - creating transcript_info from GTF file</span></span></span>
 <span class="r-in"><span><span class="co"># With version number removal (default)</span></span></span>
 <span class="r-in"><span><span class="va">transcript_info</span> <span class="op">&lt;-</span> <span class="fu">create_transcript_info</span><span class="op">(</span><span class="st">"path/to/gencode.gtf"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -112,7 +196,7 @@ transcript and gene IDs (default: TRUE)</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
+  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell architecture and functional requirement of alternative splicing during hematopoietic stem cell formation. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
 </div>
 
     </footer></div>

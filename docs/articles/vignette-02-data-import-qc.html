@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ScIsoX</a>
 
-    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.1</small>
+    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,8 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-news">
 <li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3">Version 1.1.3</a></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.2">Version 1.1.2</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1">Version 1.1.1</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/V1.1.0">Version 1.1.0</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -74,12 +76,11 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Data Import and Quality Control</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Data Import and Quality Control</h1>
                         <h4 data-toc-skip class="author">Siyuan Wu &amp;
 Ulf Schmitz</h4>
             
-            <h4 data-toc-skip class="date">2025-08-01</h4>
+            <h4 data-toc-skip class="date">2025-09-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ThaddeusWu/ScIsoX/blob/HEAD/vignettes/vignette-02-data-import-qc.Rmd" class="external-link"><code>vignettes/vignette-02-data-import-qc.Rmd</code></a></small>
       <div class="d-none name"><code>vignette-02-data-import-qc.Rmd</code></div>
@@ -311,7 +312,7 @@ data:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Data characteristics:</span></span>
 <span><span class="co">#&gt;   Sparsity: 68.4%</span></span>
-<span><span class="co">#&gt;   Created: 2025-08-01 03:14:43</span></span>
+<span><span class="co">#&gt;   Created: 2025-09-28 20:20:40</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Cell type-specific Summary:</span></span>
 <span><span class="co">#&gt; ----------------------</span></span>
@@ -325,8 +326,8 @@ data:</p>
 <span><span class="co">#&gt; 7  Adult_HSC    1267      44</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Performance metrics:</span></span>
-<span><span class="co">#&gt;   Total processing time: 35.41 seconds (0.59 minutes)</span></span>
-<span><span class="co">#&gt;   Memory utilised: 237.00 MB</span></span>
+<span><span class="co">#&gt;   Total processing time: 34.15 seconds (0.57 minutes)</span></span>
+<span><span class="co">#&gt;   Memory utilised: 236.80 MB</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Note: The actual number of cells for each gene may vary from the shown n_cells,</span></span>
 <span><span class="co">#&gt; as cells with no expression for specific genes are removed from their respective matrices.</span></span>
@@ -382,7 +383,7 @@ metrics (see “Complexity Metrics” vignette) - Explore visualisations
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.4.3 (2025-02-28)</span></span>
 <span><span class="co">#&gt; Platform: aarch64-apple-darwin20</span></span>
-<span><span class="co">#&gt; Running under: macOS Sequoia 15.5</span></span>
+<span><span class="co">#&gt; Running under: macOS 26.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
 <span><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib </span></span>
@@ -398,11 +399,11 @@ metrics (see “Complexity Metrics” vignette) - Explore visualisations
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] ScIsoX_1.1.1</span></span>
+<span><span class="co">#&gt; [1] ScIsoX_1.1.3</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] bitops_1.0-9                gridExtra_2.3              </span></span>
-<span><span class="co">#&gt;   [3] rlang_1.1.6                 magrittr_2.0.3             </span></span>
+<span><span class="co">#&gt;   [3] rlang_1.1.6                 magrittr_2.0.4             </span></span>
 <span><span class="co">#&gt;   [5] clue_0.3-66                 GetoptLong_1.0.5           </span></span>
 <span><span class="co">#&gt;   [7] ggridges_0.5.6              matrixStats_1.5.0          </span></span>
 <span><span class="co">#&gt;   [9] compiler_4.4.3              png_0.1-8                  </span></span>
@@ -412,17 +413,17 @@ metrics (see “Complexity Metrics” vignette) - Explore visualisations
 <span><span class="co">#&gt;  [17] XVector_0.46.0              promises_1.3.3             </span></span>
 <span><span class="co">#&gt;  [19] Rsamtools_2.22.0            rmarkdown_2.29             </span></span>
 <span><span class="co">#&gt;  [21] UCSC.utils_1.2.0            ragg_1.4.0                 </span></span>
-<span><span class="co">#&gt;  [23] purrr_1.1.0                 xfun_0.52                  </span></span>
+<span><span class="co">#&gt;  [23] purrr_1.1.0                 xfun_0.53                  </span></span>
 <span><span class="co">#&gt;  [25] zlibbioc_1.52.0             cachem_1.1.0               </span></span>
 <span><span class="co">#&gt;  [27] GenomeInfoDb_1.42.3         jsonlite_2.0.0             </span></span>
-<span><span class="co">#&gt;  [29] progress_1.2.3              later_1.4.2                </span></span>
+<span><span class="co">#&gt;  [29] progress_1.2.3              later_1.4.4                </span></span>
 <span><span class="co">#&gt;  [31] DelayedArray_0.32.0         BiocParallel_1.40.0        </span></span>
 <span><span class="co">#&gt;  [33] parallel_4.4.3              prettyunits_1.2.0          </span></span>
 <span><span class="co">#&gt;  [35] cluster_2.1.8.1             R6_2.6.1                   </span></span>
 <span><span class="co">#&gt;  [37] bslib_0.9.0                 RColorBrewer_1.1-3         </span></span>
 <span><span class="co">#&gt;  [39] rtracklayer_1.66.0          car_3.1-3                  </span></span>
 <span><span class="co">#&gt;  [41] GenomicRanges_1.58.0        jquerylib_0.1.4            </span></span>
-<span><span class="co">#&gt;  [43] diptest_0.77-1              Rcpp_1.1.0                 </span></span>
+<span><span class="co">#&gt;  [43] diptest_0.77-2              Rcpp_1.1.0                 </span></span>
 <span><span class="co">#&gt;  [45] SummarizedExperiment_1.36.0 iterators_1.0.14           </span></span>
 <span><span class="co">#&gt;  [47] knitr_1.50                  IRanges_2.40.1             </span></span>
 <span><span class="co">#&gt;  [49] httpuv_1.6.16               Matrix_1.7-3               </span></span>
@@ -430,39 +431,40 @@ metrics (see “Complexity Metrics” vignette) - Explore visualisations
 <span><span class="co">#&gt;  [53] rstudioapi_0.17.1           abind_1.4-8                </span></span>
 <span><span class="co">#&gt;  [55] yaml_2.3.10                 miniUI_0.1.1.1             </span></span>
 <span><span class="co">#&gt;  [57] doParallel_1.0.17           codetools_0.2-20           </span></span>
-<span><span class="co">#&gt;  [59] curl_6.4.0                  lattice_0.22-6             </span></span>
+<span><span class="co">#&gt;  [59] curl_7.0.0                  lattice_0.22-6             </span></span>
 <span><span class="co">#&gt;  [61] tibble_3.3.0                plyr_1.8.9                 </span></span>
 <span><span class="co">#&gt;  [63] shiny_1.11.1                Biobase_2.66.0             </span></span>
-<span><span class="co">#&gt;  [65] evaluate_1.0.4              moments_0.14.1             </span></span>
-<span><span class="co">#&gt;  [67] desc_1.4.3                  circlize_0.4.16            </span></span>
-<span><span class="co">#&gt;  [69] mclust_6.1.1                Biostrings_2.74.1          </span></span>
-<span><span class="co">#&gt;  [71] pillar_1.11.0               MatrixGenerics_1.18.1      </span></span>
-<span><span class="co">#&gt;  [73] carData_3.0-5               DT_0.33                    </span></span>
-<span><span class="co">#&gt;  [75] foreach_1.5.2               stats4_4.4.3               </span></span>
-<span><span class="co">#&gt;  [77] plotly_4.11.0               generics_0.1.4             </span></span>
-<span><span class="co">#&gt;  [79] RCurl_1.98-1.16             S4Vectors_0.44.0           </span></span>
-<span><span class="co">#&gt;  [81] hms_1.1.3                   ggplot2_3.5.2              </span></span>
-<span><span class="co">#&gt;  [83] scales_1.4.0                xtable_1.8-4               </span></span>
-<span><span class="co">#&gt;  [85] glue_1.8.0                  lazyeval_0.2.2             </span></span>
-<span><span class="co">#&gt;  [87] tools_4.4.3                 BiocIO_1.16.0              </span></span>
-<span><span class="co">#&gt;  [89] data.table_1.17.8           ggradar_0.2                </span></span>
-<span><span class="co">#&gt;  [91] GenomicAlignments_1.42.0    fs_1.6.6                   </span></span>
-<span><span class="co">#&gt;  [93] XML_3.99-0.18               cowplot_1.2.0              </span></span>
-<span><span class="co">#&gt;  [95] grid_4.4.3                  tidyr_1.3.1                </span></span>
-<span><span class="co">#&gt;  [97] colorspace_2.1-1            patchwork_1.3.0            </span></span>
-<span><span class="co">#&gt;  [99] GenomeInfoDbData_1.2.13     restfulr_0.0.15            </span></span>
-<span><span class="co">#&gt; [101] Formula_1.2-5               cli_3.6.5                  </span></span>
-<span><span class="co">#&gt; [103] textshaping_1.0.0           S4Arrays_1.6.0             </span></span>
-<span><span class="co">#&gt; [105] viridisLite_0.4.2           ComplexHeatmap_2.22.0      </span></span>
-<span><span class="co">#&gt; [107] dplyr_1.1.4                 gtable_0.3.6               </span></span>
-<span><span class="co">#&gt; [109] sass_0.4.10                 digest_0.6.37              </span></span>
-<span><span class="co">#&gt; [111] BiocGenerics_0.52.0         ggrepel_0.9.6              </span></span>
-<span><span class="co">#&gt; [113] SparseArray_1.6.2           rjson_0.2.23               </span></span>
-<span><span class="co">#&gt; [115] htmlwidgets_1.6.4           farver_2.1.2               </span></span>
-<span><span class="co">#&gt; [117] htmltools_0.5.8.1           pkgdown_2.1.3              </span></span>
-<span><span class="co">#&gt; [119] lifecycle_1.0.4             httr_1.4.7                 </span></span>
-<span><span class="co">#&gt; [121] mime_0.13                   GlobalOptions_0.1.2        </span></span>
-<span><span class="co">#&gt; [123] ggExtra_0.10.1              MASS_7.3-65</span></span></code></pre></div>
+<span><span class="co">#&gt;  [65] S7_0.2.0                    evaluate_1.0.5             </span></span>
+<span><span class="co">#&gt;  [67] moments_0.14.1              desc_1.4.3                 </span></span>
+<span><span class="co">#&gt;  [69] circlize_0.4.16             mclust_6.1.1               </span></span>
+<span><span class="co">#&gt;  [71] Biostrings_2.74.1           pillar_1.11.1              </span></span>
+<span><span class="co">#&gt;  [73] MatrixGenerics_1.18.1       carData_3.0-5              </span></span>
+<span><span class="co">#&gt;  [75] DT_0.34.0                   foreach_1.5.2              </span></span>
+<span><span class="co">#&gt;  [77] stats4_4.4.3                plotly_4.11.0              </span></span>
+<span><span class="co">#&gt;  [79] generics_0.1.4              RCurl_1.98-1.16            </span></span>
+<span><span class="co">#&gt;  [81] S4Vectors_0.44.0            hms_1.1.3                  </span></span>
+<span><span class="co">#&gt;  [83] ggplot2_4.0.0               scales_1.4.0               </span></span>
+<span><span class="co">#&gt;  [85] xtable_1.8-4                glue_1.8.0                 </span></span>
+<span><span class="co">#&gt;  [87] lazyeval_0.2.2              tools_4.4.3                </span></span>
+<span><span class="co">#&gt;  [89] BiocIO_1.16.0               data.table_1.17.8          </span></span>
+<span><span class="co">#&gt;  [91] ggradar_0.2                 GenomicAlignments_1.42.0   </span></span>
+<span><span class="co">#&gt;  [93] fs_1.6.6                    XML_3.99-0.18              </span></span>
+<span><span class="co">#&gt;  [95] cowplot_1.2.0               grid_4.4.3                 </span></span>
+<span><span class="co">#&gt;  [97] tidyr_1.3.1                 colorspace_2.1-2           </span></span>
+<span><span class="co">#&gt;  [99] patchwork_1.3.0             GenomeInfoDbData_1.2.13    </span></span>
+<span><span class="co">#&gt; [101] restfulr_0.0.15             Formula_1.2-5              </span></span>
+<span><span class="co">#&gt; [103] cli_3.6.5                   textshaping_1.0.0          </span></span>
+<span><span class="co">#&gt; [105] S4Arrays_1.6.0              viridisLite_0.4.2          </span></span>
+<span><span class="co">#&gt; [107] ComplexHeatmap_2.22.0       dplyr_1.1.4                </span></span>
+<span><span class="co">#&gt; [109] gtable_0.3.6                sass_0.4.10                </span></span>
+<span><span class="co">#&gt; [111] digest_0.6.37               BiocGenerics_0.52.0        </span></span>
+<span><span class="co">#&gt; [113] ggrepel_0.9.6               SparseArray_1.6.2          </span></span>
+<span><span class="co">#&gt; [115] rjson_0.2.23                htmlwidgets_1.6.4          </span></span>
+<span><span class="co">#&gt; [117] farver_2.1.2                htmltools_0.5.8.1          </span></span>
+<span><span class="co">#&gt; [119] pkgdown_2.1.3               lifecycle_1.0.4            </span></span>
+<span><span class="co">#&gt; [121] httr_1.4.7                  mime_0.13                  </span></span>
+<span><span class="co">#&gt; [123] GlobalOptions_0.1.2         ggExtra_0.10.1             </span></span>
+<span><span class="co">#&gt; [125] MASS_7.3-65</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
@@ -475,7 +477,7 @@ metrics (see “Complexity Metrics” vignette) - Explore visualisations
 </div>
 
 <div class="pkgdown-footer-right">
-  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
+  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell architecture and functional requirement of alternative splicing during hematopoietic stem cell formation. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
 </div>
 
     </footer>

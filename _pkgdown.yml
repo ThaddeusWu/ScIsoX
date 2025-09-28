@@ -190,7 +190,7 @@ footer:
       <br>
       <strong>Example Data Attribution</strong>:<br>
       The example datasets included in this package are derived from:<br>
-      Wang et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. <em>Science Advances</em> 8(1):eabg5369<br>
+      Wang et al. (2022). Single-cell architecture and functional requirement of alternative splicing during hematopoietic stem cell formation. <em>Science Advances</em> 8(1):eabg5369<br>
       Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><br>
       We gratefully acknowledge the authors for making their data publicly available.
       
@@ -206,6 +206,8 @@ news:
   releases:
   - text: "Version 1.1.3"
     href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3
+  - text: "Version 1.1.2"
+    href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.2
   - text: "Version 1.1.1"
     href: https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1
   - text: "Version 1.1.0"

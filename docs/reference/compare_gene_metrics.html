@@ -3,7 +3,7 @@
 and returns a structured data frame for comparison. It's useful for preparing
 data for custom visualisations or statistical analyses."><meta property="og:description" content="This helper function extracts metrics from stored results for multiple genes,
 and returns a structured data frame for comparison. It's useful for preparing
-data for custom visualisations or statistical analyses."></head><body>
+data for custom visualisations or statistical analyses."><meta property="og:image" content="https://ThaddeusWu.github.io/ScIsoX/logo.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -11,7 +11,7 @@ data for custom visualisations or statistical analyses."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">ScIsoX</a>
 
-    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.1</small>
+    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,8 @@ data for custom visualisations or statistical analyses."></head><body>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-news"><li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3">Version 1.1.3</a></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.2">Version 1.1.2</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1">Version 1.1.1</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/V1.1.0">Version 1.1.0</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -46,8 +48,7 @@ data for custom visualisations or statistical analyses."></head><body>
 </nav><div class="container template-reference-topic">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Extract and compare metrics for multiple genes</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Extract and compare metrics for multiple genes</h1>
       <small class="dont-index">Source: <a href="https://github.com/ThaddeusWu/ScIsoX/blob/HEAD/R/visualisation_analysis.R" class="external-link"><code>R/visualisation_analysis.R</code></a></small>
       <div class="d-none name"><code>compare_gene_metrics.Rd</code></div>
     </div>
@@ -86,14 +87,430 @@ data for custom visualisations or statistical analyses.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Assuming you have calculated transcriptomic complexity</span></span></span>
-<span class="r-in"><span><span class="va">tc_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_isoform_complexity_metrics.html">calculate_isoform_complexity_metrics</a></span><span class="op">(</span><span class="va">scht_obj</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Load example data and create SCHT</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gene_counts_blood</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_counts_blood</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sample2stage</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Compare metrics for genes of interest</span></span></span>
-<span class="r-in"><span><span class="va">genes_of_interest</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GENE1"</span>, <span class="st">"GENE2"</span>, <span class="st">"GENE3"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">comparison_data</span> <span class="op">&lt;-</span> <span class="fu">compare_gene_metrics</span><span class="op">(</span><span class="va">tc_results</span>, <span class="va">genes_of_interest</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="va">scht_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="create_scht.html">create_scht</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  gene_counts <span class="op">=</span> <span class="va">gene_counts_blood</span>,</span></span>
+<span class="r-in"><span>  transcript_counts <span class="op">=</span> <span class="va">transcript_counts_blood</span>,</span></span>
+<span class="r-in"><span>  transcript_info <span class="op">=</span> <span class="va">transcript_info</span>,</span></span>
+<span class="r-in"><span>  cell_info <span class="op">=</span> <span class="va">sample2stage</span>,</span></span>
+<span class="r-in"><span>  qc_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    min_genes_per_cell <span class="op">=</span> <span class="fl">4000</span>,       </span></span>
+<span class="r-in"><span>    max_genes_per_cell <span class="op">=</span> <span class="fl">10000</span>,      </span></span>
+<span class="r-in"><span>    min_cells_expressing <span class="op">=</span> <span class="fl">0.02</span>,   </span></span>
+<span class="r-in"><span>    min_expr <span class="op">=</span> <span class="fl">1e-6</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  n_hvg <span class="op">=</span> <span class="fl">3000</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="compare_gene_metrics-1.png" alt="" width="768" height="576"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> === Sparsity Analysis for Current Dataset ===</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1. Original Transcript Matrix:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of genes: 55,487</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of isoforms: 142,238</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of cells: 205</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 2,457,789</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 26,701,001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 29,158,790</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 91.57%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2. Filtered Transcript Matrix (Post-QC HVG):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of genes: 1,936</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of isoforms: 7,327</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Number of cells: 181</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 73,057</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 1,253,130</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 1,326,187</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 94.49%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3. SCHT Structure (Post-QC HVG):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 73,057</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 154,780</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 227,837</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 67.93%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4. Naive 3D Tensor (Post-QC HVG):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Required dimensions: 1,936 x 21 x 181</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Non-zero elements: 73,057</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Zero elements: 7,285,679</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Total elements: 7,358,736</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Sparsity: 99.01%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5. Zero Elements Avoided by SCHT:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vs Original Matrix: 26,546,221</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vs Filtered Matrix: 1,098,350</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   vs Naive 3D Tensor: 7,130,899</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6. Memory Efficiency Summary:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SCHT uses only 0.78% of original matrix size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SCHT uses only 17.18% of filtered matrix size</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   SCHT uses only 3.10% of naive tensor size</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Calculate complexity metrics</span></span></span>
+<span class="r-in"><span><span class="va">tc_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="calculate_isoform_complexity_metrics.html">calculate_isoform_complexity_metrics</a></span><span class="op">(</span><span class="va">scht_obj</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating complexity metrics for 1936 genes...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Computed metrics for 1936 genes with sufficient data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Determining optimal classification thresholds for all seven core metrics...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> NA value proportions for core metrics:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cellular Isoform Diversity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity: 163 NA values (8.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Specificity: 0 NA values (0.0%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Intra-cell-type Heterogeneity Variability: 492 NA values (25.4%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Inter-cell-type Difference Variability: 137 NA values (7.1%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   - Cell-type-specific Co-expression Variability: 184 NA values (9.5%)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>longer object length is not a multiple of shorter object length</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Optimal thresholds determined:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cellular Isoform Diversity: 0.456</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cellular Isoform Diversity: 0.758</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cell-type Heterogeneity: 0.389</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cell-type Specificity: 0.497</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Intra-cell-type Heterogeneity Variability: 0.832</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Inter-cell-type Difference Variability: 0.552</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> - Cell-type-specific Co-expression Variability: 1.389</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Compare metrics for specific genes</span></span></span>
+<span class="r-in"><span><span class="co"># Use genes from the middle of the results to ensure they exist</span></span></span>
+<span class="r-in"><span><span class="va">available_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">genes_to_compare</span> <span class="op">&lt;-</span> <span class="va">available_genes</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">200</span>, <span class="fl">300</span>, <span class="fl">400</span><span class="op">)</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">comparison_data</span> <span class="op">&lt;-</span> <span class="fu">compare_gene_metrics</span><span class="op">(</span><span class="va">tc_results</span>, <span class="va">genes_to_compare</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># View the comparison</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison_data</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       gene  cell_type intra_cellular_isoform_diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.1          Efcab11       MEAN                        0.5337570</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.AEC        Efcab11        AEC                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.HEC        Efcab11        HEC                        1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T1_pre_HSC Efcab11 T1_pre_HSC                        0.5209202</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T2_pre_HSC Efcab11 T2_pre_HSC                        0.2070025</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E12        Efcab11        E12                        0.9736027</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E14        Efcab11        E14                        0.5010164</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.1          Gm33104       MEAN                        0.2089547</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.AEC        Gm33104        AEC                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.T1_pre_HSC Gm33104 T1_pre_HSC                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.Adult_HSC  Gm33104  Adult_HSC                        0.6268642</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.1                Gja5       MEAN                        0.3821329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.AEC              Gja5        AEC                        0.9808739</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.HEC              Gja5        HEC                        0.9297906</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T1_pre_HSC       Gja5 T1_pre_HSC                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T2_pre_HSC       Gja5 T2_pre_HSC                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.E12              Gja5        E12                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.1                Relb       MEAN                        0.3395360</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.AEC              Relb        AEC                        0.4420241</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.HEC              Relb        HEC                        0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T1_pre_HSC       Relb T1_pre_HSC                        0.4243940</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T2_pre_HSC       Relb T2_pre_HSC                        0.2078294</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E12              Relb        E12                        0.4027325</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E14              Relb        E14                        0.7727578</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.Adult_HSC        Relb  Adult_HSC                        0.1270142</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    inter_cellular_isoform_diversity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.1                                0.28200975</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.AEC                              0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.HEC                              0.38685281</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T1_pre_HSC                       0.27353600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T2_pre_HSC                       0.40349837</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E12                              0.37664094</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E14                              0.25153037</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.1                                0.28587157</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.AEC                              0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.T1_pre_HSC                       0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.Adult_HSC                        0.85761471</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.1                                   0.25279236</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.AEC                                 0.62109555</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.HEC                                 0.64286626</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T1_pre_HSC                          0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T2_pre_HSC                          0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.E12                                 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.1                                   0.28572524</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.AEC                                 0.42604753</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.HEC                                 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T1_pre_HSC                          0.38903066</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T2_pre_HSC                          0.17698174</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E12                                 0.22601739</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E14                                 0.71883122</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.Adult_HSC                           0.06316812</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    intra_cell_type_heterogeneity simpson_index   evenness</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.1                             0.23740939    0.32165290 0.24838488</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.AEC                           0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.HEC                           0.00000000    0.50000000 0.38685281</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T1_pre_HSC                    0.44435969    0.31113027 0.27353600</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T2_pre_HSC                    0.57780420    0.35909468 0.20174918</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E12                           0.00000000    0.48181465 0.37664094</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E14                           0.40229247    0.27787778 0.25153037</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.1                             0.10073415    0.13486611 0.28587157</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.AEC                           0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.T1_pre_HSC                    0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.Adult_HSC                     0.30220246    0.40459832 0.85761471</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.1                                0.02158658    0.19511131 0.20533980</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.AEC                              0.03729401    0.48923498 0.62109555</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.HEC                              0.07063891    0.48632158 0.40560345</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T1_pre_HSC                       0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T2_pre_HSC                       0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.E12                              0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.1                                0.49033085    0.31254620 0.15576249</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.AEC                              0.76520491    0.52383601 0.26880606</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.HEC                              0.00000000    0.00000000 0.00000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T1_pre_HSC                       0.55576607    0.44264314 0.19451533</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T2_pre_HSC                       0.27631181    0.18078853 0.11166305</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E12                              1.00000000    0.23290292 0.14260110</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E14                              0.75049123    0.75127807 0.30958376</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.Adult_HSC                        0.08454193    0.05637473 0.06316812</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    dominant_iso_prop  dominant_iso_name n_expressed_isoforms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.1                  0.7541604               MEAN             2.166667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.AEC                1.0000000 ENSMUST00000220875             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.HEC                0.5000000 ENSMUST00000220875             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T1_pre_HSC         0.8073026 ENSMUST00000046485             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T2_pre_HSC         0.7890458 ENSMUST00000046485             4.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E12                0.5953555 ENSMUST00000046485             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E14                0.8332583 ENSMUST00000221801             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.1                  0.9061351               MEAN             1.333333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.AEC                1.0000000 ENSMUST00000214178             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.T1_pre_HSC         1.0000000 ENSMUST00000216664             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.Adult_HSC          0.7184052 ENSMUST00000214178             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.1                     0.8339393               MEAN             1.600000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.AEC                   0.5733656 ENSMUST00000132256             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.HEC                   0.5963309 ENSMUST00000132256             3.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T1_pre_HSC            1.0000000 ENSMUST00000072600             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T2_pre_HSC            1.0000000 ENSMUST00000072600             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.E12                   1.0000000 ENSMUST00000199597             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.1                     0.7808020               MEAN             3.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.AEC                   0.6304617 ENSMUST00000049912             3.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.HEC                   1.0000000 ENSMUST00000049912             1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T1_pre_HSC            0.7183839 ENSMUST00000049912             4.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T2_pre_HSC            0.9012611 ENSMUST00000049912             3.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E12                   0.8707161 ENSMUST00000094762             3.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E14                   0.3738217 ENSMUST00000094762             5.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.Adult_HSC             0.9709699 ENSMUST00000049912             2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    pct_multi_iso_cells</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.1                     55.55556</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.AEC                    0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.HEC                  100.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T1_pre_HSC            50.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.T2_pre_HSC            33.33333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E12                  100.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Efcab11.E14                   50.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.1                     14.28571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.AEC                    0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.T1_pre_HSC             0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gm33104.Adult_HSC             42.85714</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.1                        40.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.AEC                     100.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.HEC                     100.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T1_pre_HSC                0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.T2_pre_HSC                0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Gja5.E12                       0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.1                        28.41270</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.AEC                      33.33333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.HEC                       0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T1_pre_HSC               22.22222</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.T2_pre_HSC               16.66667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E12                      50.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.E14                      60.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Relb.Adult_HSC                16.66667</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -106,7 +523,7 @@ data for custom visualisations or statistical analyses.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell multiomics defines tolerogenic extrathymic Aire-expressing populations. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
+  <p><strong>Package License</strong>: <a href="https://opensource.org/licenses/MIT" class="external-link">MIT</a><br><br><strong>Example Data Attribution</strong>:<br> The example datasets included in this package are derived from:<br> Wang et al. (2022). Single-cell architecture and functional requirement of alternative splicing during hematopoietic stem cell formation. <em>Science Advances</em> 8(1):eabg5369<br> Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" class="external-link">CC BY 4.0</a><br> We gratefully acknowledge the authors for making their data publicly available.</p>
 </div>
 
     </footer></div>
