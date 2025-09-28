@@ -27,6 +27,7 @@ complexity in single cells. ScIsoX provides a robust computational
 framework for investigating alternative splicing patterns at
 single-cell resolution.
 ">
+<meta property="og:image" content="https://ThaddeusWu.github.io/ScIsoX/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -36,7 +37,7 @@ single-cell resolution.
 
     <a class="navbar-brand me-2" href="index.html">ScIsoX</a>
 
-    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.1</small>
+    <small class="nav-text text-success me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">1.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +61,7 @@ single-cell resolution.
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-news">
 <li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.3">Version 1.1.3</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/v1.1.1">Version 1.1.1</a></li>
     <li><a class="external-link dropdown-item" href="https://github.com/ThaddeusWu/ScIsoX/releases/tag/V1.1.0">Version 1.1.0</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -80,14 +82,16 @@ single-cell resolution.
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="scisox">ScIsoX<a class="anchor" aria-label="anchor" href="#scisox"></a>
-</h1></div>
-<p><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/ThaddeusWu/ScIsoX" class="external-link"><img src="https://img.shields.io/badge/Version-1.1.1-blue.svg" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D%204.0.0-blue.svg" alt="R"></a> <a href="https://doi.org/10.5281/zenodo.16569859" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16569859.svg" alt="DOI"></a></p>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="scisox">ScIsoX<a class="anchor" aria-label="anchor" href="#scisox"></a>
+</h1>
+</div>
+<p><a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/ThaddeusWu/ScIsoX" class="external-link"><img src="https://img.shields.io/badge/Version-1.1.3-blue.svg" alt="Version"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D%204.0.0-blue.svg" alt="R"></a> <a href="https://doi.org/10.5281/zenodo.16569859" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.16569859.svg" alt="DOI"></a></p>
 <div class="section level2">
 <h2 id="single-cell-hierarchical-tensor-scht-creation-pipeline-and-transcriptomic-complexity-analysis-in-r">Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline and Transcriptomic Complexity Analysis in R<a class="anchor" aria-label="anchor" href="#single-cell-hierarchical-tensor-scht-creation-pipeline-and-transcriptomic-complexity-analysis-in-r"></a>
 </h2>
 <p><em>A comprehensive toolkit for analysing isoform expression patterns at single-cell resolution</em></p>
-<pre><code>Wu S and Schmitz U (2025). ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells.</code></pre>
+<p>Wu, S., Schmitz, U. ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells. <em>Genome Biol</em> <strong>26</strong>, 289 (2025). <a href="https://doi.org/10.1186/s13059-025-03758-5" class="external-link uri">https://doi.org/10.1186/s13059-025-03758-5</a></p>
 <hr>
 </div>
 <div class="section level2">
@@ -163,7 +167,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="from-github">From GitHub<a class="anchor" aria-label="anchor" href="#from-github"></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install devtools if not already installed</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"devtools"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
@@ -176,7 +180,7 @@ single-cell resolution.
 <h3 id="first-time-setup">First Time Setup<a class="anchor" aria-label="anchor" href="#first-time-setup"></a>
 </h3>
 <p>When you first load ScIsoX, it will check for optional packages and provide helpful information:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ThaddeusWu.github.io/ScIsoX/">ScIsoX</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># If some optional packages are missing, you'll see:</span></span>
@@ -208,7 +212,7 @@ single-cell resolution.
 <h4 id="required-dependencies-imports">Required Dependencies (Imports)<a class="anchor" aria-label="anchor" href="#required-dependencies-imports"></a>
 </h4>
 <p>These packages will be automatically installed when you install ScIsoX:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Core dependencies</span></span>
 <span><span class="va">required_packages</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"progress"</span>,   <span class="co"># For progress bars</span></span>
@@ -246,7 +250,7 @@ single-cell resolution.
 <h4 id="optional-dependencies-suggests">Optional Dependencies (Suggests)<a class="anchor" aria-label="anchor" href="#optional-dependencies-suggests"></a>
 </h4>
 <p>These packages provide enhanced functionality. <strong>ScIsoX is designed to work without these packages</strong>, but some visualisations and features will have reduced functionality:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Optional packages for advanced visualisations</span></span>
 <span><span class="va">suggested_packages</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"ggridges"</span>,         <span class="co"># For ridge plots (required for plot_complexity_ridges)</span></span>
@@ -260,7 +264,7 @@ single-cell resolution.
 <span>  <span class="st">"patchwork"</span>         <span class="co"># For combining plots</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><strong>Quick Installation:</strong> ScIsoX provides a convenient function to install all optional packages:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># After installing ScIsoX, run:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ThaddeusWu.github.io/ScIsoX/">ScIsoX</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/install_scisox_suggests.html">install_scisox_suggests</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -269,7 +273,7 @@ single-cell resolution.
 <h4 id="other-packages">Other Packages<a class="anchor" aria-label="anchor" href="#other-packages"></a>
 </h4>
 <p>Some advanced features require packages:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install devtools if needed</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"devtools"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
@@ -309,7 +313,7 @@ single-cell resolution.
 <li>
 <strong>Startup messages</strong>: When loading ScIsoX, you’ll see which optional packages are missing</li>
 </ul>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Example: Using ScIsoX without all optional packages</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ThaddeusWu.github.io/ScIsoX/">ScIsoX</a></span><span class="op">)</span></span>
 <span><span class="co"># You'll see a message about missing packages and how to install them</span></span>
@@ -445,7 +449,7 @@ single-cell resolution.
 <h2 id="id_5-minute-quick-start">5-Minute Quick Start<a class="anchor" aria-label="anchor" href="#id_5-minute-quick-start"></a>
 </h2>
 <p>Want to get started quickly? Here’s a minimal example using the included example data:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load ScIsoX</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ThaddeusWu.github.io/ScIsoX/">ScIsoX</a></span><span class="op">)</span></span>
 <span></span>
@@ -502,7 +506,7 @@ single-cell resolution.
 <h3 id="id_1-data-preparation">1. Data Preparation<a class="anchor" aria-label="anchor" href="#id_1-data-preparation"></a>
 </h3>
 <p>ScIsoX works with single-cell gene and transcript expression matrices. Let’s start by setting up the required data formats:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ThaddeusWu.github.io/ScIsoX/">ScIsoX</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Example data is included with the package</span></span>
@@ -519,7 +523,7 @@ single-cell resolution.
 <div class="section level4">
 <h4 id="working-with-your-own-data">Working with Your Own Data<a class="anchor" aria-label="anchor" href="#working-with-your-own-data"></a>
 </h4>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># If working with a GTF file, create transcript information</span></span>
 <span><span class="va">transcript_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/create_transcript_info.html">create_transcript_info</a></span><span class="op">(</span></span>
 <span>  gtf_path <span class="op">=</span> <span class="st">"path/to/gencode.gtf"</span>,</span>
@@ -550,7 +554,7 @@ single-cell resolution.
 <h3 id="id_2-quality-control-analysis">2. Quality Control Analysis<a class="anchor" aria-label="anchor" href="#id_2-quality-control-analysis"></a>
 </h3>
 <p>Before creating the SCHT object, analyse the distribution of genes per cell to determine appropriate QC parameters:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Visualise genes per cell distribution using example data</span></span>
 <span><span class="va">qc_suggestions</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_genes_per_cell_distribution.html">plot_genes_per_cell_distribution</a></span><span class="op">(</span></span>
 <span>  gene_counts <span class="op">=</span> <span class="va">gene_counts_blood</span>,</span>
@@ -571,7 +575,7 @@ single-cell resolution.
 <li><p><strong>Interval_80</strong>: An aggressive approach using 10th and 90th percentiles. This provides more stringent filtering for higher quality cell selection.</p></li>
 </ol>
 <p>You can choose the strategy that best suits your dataset or use your own expertise to set custom thresholds.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Select a QC strategy</span></span>
 <span><span class="va">selected_strategy</span> <span class="op">&lt;-</span> <span class="va">qc_recommendations</span><span class="op">$</span><span class="va">MAD_strategy</span>  <span class="co"># Conservative approach</span></span>
 <span></span>
@@ -587,7 +591,7 @@ single-cell resolution.
 <h3 id="id_3-create-scht-object">3. Create SCHT Object<a class="anchor" aria-label="anchor" href="#id_3-create-scht-object"></a>
 </h3>
 <p>Use the QC parameters to create the Single-Cell Hierarchical Tensor object:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Using the example data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">gene_counts_blood</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">transcript_counts_blood</span><span class="op">)</span></span>
@@ -620,7 +624,7 @@ single-cell resolution.
 <h3 id="id_4-calculate-complexity-metrics">4. Calculate Complexity Metrics<a class="anchor" aria-label="anchor" href="#id_4-calculate-complexity-metrics"></a>
 </h3>
 <p>Calculate the seven core complexity metrics with flexibility in threshold determination:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Option 1: Calculate transcriptomic complexity metrics with data-driven thresholds</span></span>
 <span><span class="va">tc_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_isoform_complexity_metrics.html">calculate_isoform_complexity_metrics</a></span><span class="op">(</span></span>
 <span>  scht_obj <span class="op">=</span> <span class="va">scht_obj</span>,</span>
@@ -660,7 +664,7 @@ single-cell resolution.
 <h3 id="id_5-basic-visualisation">5. Basic Visualisation<a class="anchor" aria-label="anchor" href="#id_5-basic-visualisation"></a>
 </h3>
 <p>Create standard visualisations for exploring transcriptomic complexity:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create complexity landscape plot with default settings</span></span>
 <span><span class="va">landscape_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_tc_landscape.html">plot_tc_landscape</a></span><span class="op">(</span></span>
 <span>  tc_results <span class="op">=</span> <span class="va">tc_results</span>,</span>
@@ -707,7 +711,7 @@ single-cell resolution.
 <h3 id="exploring-genes-with-specific-complexity-patterns">Exploring Genes with Specific Complexity Patterns<a class="anchor" aria-label="anchor" href="#exploring-genes-with-specific-complexity-patterns"></a>
 </h3>
 <p>Identify genes with interesting complexity patterns:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find genes with high intra-cellular diversity and cell type specificity</span></span>
 <span><span class="va">complex_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/find_complexity_pattern.html">find_complexity_pattern</a></span><span class="op">(</span></span>
 <span>  <span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span>,</span>
@@ -741,7 +745,7 @@ single-cell resolution.
 <h3 id="multi-dimensional-complexity-visualisation">Multi-dimensional Complexity Visualisation<a class="anchor" aria-label="anchor" href="#multi-dimensional-complexity-visualisation"></a>
 </h3>
 <p>Create advanced visualisations for multi-dimensional complexity analysis:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create dual diversity comparison plot</span></span>
 <span><span class="va">diversity_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_diversity_comparison.html">plot_diversity_comparison</a></span><span class="op">(</span></span>
 <span>  tc_results <span class="op">=</span> <span class="va">tc_results</span>,</span>
@@ -796,7 +800,7 @@ single-cell resolution.
 <h3 id="isoform-usage-analysis">Isoform Usage Analysis<a class="anchor" aria-label="anchor" href="#isoform-usage-analysis"></a>
 </h3>
 <p>Analyse isoform usage patterns for genes of interest:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find a gene with multiple isoforms for demonstration</span></span>
 <span><span class="va">multi_iso_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">gene_name</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">multi_iso_genes</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
@@ -846,7 +850,7 @@ single-cell resolution.
 <h3 id="comparing-complexity-across-conditions">Comparing Complexity Across Conditions<a class="anchor" aria-label="anchor" href="#comparing-complexity-across-conditions"></a>
 </h3>
 <p>For experiments comparing different conditions:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># For demonstration, we'll simulate different conditions by subsetting our data</span></span>
 <span><span class="co"># In practice, you would have separate datasets for each condition</span></span>
 <span></span>
@@ -907,7 +911,7 @@ single-cell resolution.
 <h3 id="co-expression-analysis">Co-expression Analysis<a class="anchor" aria-label="anchor" href="#co-expression-analysis"></a>
 </h3>
 <p>ScIsoX provides comprehensive tools for analysing isoform co-expression patterns:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find genes with multiple isoforms for co-expression analysis</span></span>
 <span><span class="va">multi_iso_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">gene_name</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -992,7 +996,7 @@ single-cell resolution.
 <h3 id="performance-analysis--quality-control">Performance Analysis &amp; Quality Control<a class="anchor" aria-label="anchor" href="#performance-analysis--quality-control"></a>
 </h3>
 <p>Monitor performance and generate comprehensive QC reports:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Analyse SCHT sparsity and memory efficiency</span></span>
 <span><span class="va">sparsity_stats</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calculate_scht_sparsity.html">calculate_scht_sparsity</a></span><span class="op">(</span><span class="va">scht_obj</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sparsity_stats</span><span class="op">)</span></span>
@@ -1028,7 +1032,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="threshold-visualisations">Threshold Visualisations<a class="anchor" aria-label="anchor" href="#threshold-visualisations"></a>
 </h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># View threshold determination plots from complexity calculation</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">visualise</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="reference/plot_threshold_visualisations.html">plot_threshold_visualisations</a></span><span class="op">(</span></span>
@@ -1041,7 +1045,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="complexity-landscape-plots">Complexity Landscape Plots<a class="anchor" aria-label="anchor" href="#complexity-landscape-plots"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create landscape plot with marginal distributions</span></span>
 <span><span class="va">landscape</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_tc_landscape.html">plot_tc_landscape</a></span><span class="op">(</span></span>
 <span>  tc_results <span class="op">=</span> <span class="va">tc_results</span>,</span>
@@ -1071,7 +1075,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="diversity-analysis-plots">Diversity Analysis Plots<a class="anchor" aria-label="anchor" href="#diversity-analysis-plots"></a>
 </h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compare intra- vs inter-cellular diversity</span></span>
 <span><span class="va">diversity_comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_diversity_comparison.html">plot_diversity_comparison</a></span><span class="op">(</span></span>
 <span>  tc_results <span class="op">=</span> <span class="va">tc_results</span>,</span>
@@ -1104,7 +1108,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="isoform-co-expression-visualisations">Isoform Co-expression Visualisations<a class="anchor" aria-label="anchor" href="#isoform-co-expression-visualisations"></a>
 </h3>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Find genes with multiple isoforms</span></span>
 <span><span class="va">multi_iso_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">transcript_info</span><span class="op">$</span><span class="va">gene_name</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -1147,10 +1151,11 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="radar-charts-for-multi-dimensional-comparison">Radar Charts for Multi-dimensional Comparison<a class="anchor" aria-label="anchor" href="#radar-charts-for-multi-dimensional-comparison"></a>
 </h3>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Compare top complex genes</span></span>
-<span><span class="va">complex_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">$</span><span class="va">inter_cellular_isoform_diversity</span>, </span>
-<span>                           decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Compare genes from the results</span></span>
+<span><span class="co"># Use genes from the middle of the results to ensure they exist</span></span>
+<span><span class="va">available_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tc_results</span><span class="op">$</span><span class="va">metrics</span><span class="op">)</span></span>
+<span><span class="va">complex_genes</span> <span class="op">&lt;-</span> <span class="va">available_genes</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">200</span>, <span class="fl">300</span>, <span class="fl">400</span>, <span class="fl">500</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># Multi-gene radar chart</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggradar"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1182,7 +1187,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="comparative-analysis-visualisations">Comparative Analysis Visualisations<a class="anchor" aria-label="anchor" href="#comparative-analysis-visualisations"></a>
 </h3>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># For comparing conditions (requires multiple tc_results)</span></span>
 <span><span class="co"># Example with simulated conditions</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sample2stage</span><span class="op">$</span><span class="va">cell_type</span><span class="op">)</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1223,7 +1228,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="co-expression-pattern-visualisations">Co-expression Pattern Visualisations<a class="anchor" aria-label="anchor" href="#co-expression-pattern-visualisations"></a>
 </h3>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot co-expression across cell types</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/exists.html" class="external-link">exists</a></span><span class="op">(</span><span class="st">"multi_coexp"</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">multi_coexp</span><span class="op">$</span><span class="va">cell_types</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">coexp_pattern</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_coexpression_across_celltypes.html">plot_coexpression_across_celltypes</a></span><span class="op">(</span></span>
@@ -1253,7 +1258,7 @@ single-cell resolution.
 <div class="section level3">
 <h3 id="export-visualisations">Export Visualisations<a class="anchor" aria-label="anchor" href="#export-visualisations"></a>
 </h3>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Save plots to PDF</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/grDevices/pdf.html" class="external-link">pdf</a></span><span class="op">(</span><span class="st">"scisox_visualisations.pdf"</span>, width <span class="op">=</span> <span class="fl">10</span>, height <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
 <span></span>
@@ -1265,8 +1270,8 @@ single-cell resolution.
 <span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Save individual plots</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"complexity_landscape.pdf"</span>, <span class="va">landscape</span>, width <span class="op">=</span> <span class="fl">10</span>, height <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"diversity_comparison.pdf"</span>, <span class="va">diversity_comp</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">ggsave</span><span class="op">(</span><span class="st">"complexity_landscape.pdf"</span>, <span class="va">landscape</span>, width <span class="op">=</span> <span class="fl">10</span>, height <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="fu">ggsave</span><span class="op">(</span><span class="st">"diversity_comparison.pdf"</span>, <span class="va">diversity_comp</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 </div>
@@ -1344,26 +1349,16 @@ single-cell resolution.
 </h2>
 <p>If you use ScIsoX in your research, please cite:</p>
 <p><strong>Manuscript:</strong></p>
-<pre><code>ScIsoX: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells
-Wu, S and Schmitz, U
-bioRxiv, 2025
-DOI: 10.1101/2025.04.28.650897
-url: https://www.biorxiv.org/content/10.1101/2025.04.28.650897v2</code></pre>
-<p><strong>Software:</strong></p>
-<pre><code>Wu, S and Schmitz, U (2025). ScIsoX: Single-Cell Hierarchical Tensor (SCHT) Creation Pipeline
-and Transcriptomic Complexity Analysis in R. R package version 1.1.1.
-DOI: 10.5281/zenodo.16569860</code></pre>
+<p>Wu, S., Schmitz, U. ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells. <em>Genome Biol</em> <strong>26</strong>, 289 (2025). <a href="https://doi.org/10.1186/s13059-025-03758-5" class="external-link uri">https://doi.org/10.1186/s13059-025-03758-5</a></p>
 <p>BibTeX entry:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a></span>
-<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">Wu2025</span>.<span class="ot">04</span>.<span class="ot">28</span>.<span class="ot">650897</span>,</span>
-<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a>    <span class="dt">author</span> = {Wu, Siyuan and Schmitz, Ulf},</span>
-<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a>    <span class="dt">doi</span> = {10.1101/2025.04.28.650897},</span>
-<span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>    <span class="dt">eprint</span> = {https://www.biorxiv.org/content/early/2025/05/01/2025.04.28.650897.full.pdf},</span>
-<span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>    <span class="dt">journal</span> = {bioRxiv},</span>
-<span id="cb33-7"><a href="#cb33-7" tabindex="-1"></a>    <span class="dt">title</span> = {{ScIsoX}: A Multidimensional Framework for Measuring Isoform-Level Transcriptomic Complexity in Single Cells},</span>
-<span id="cb33-8"><a href="#cb33-8" tabindex="-1"></a>    <span class="dt">url</span> = {https://www.biorxiv.org/content/early/2025/05/01/2025.04.28.650897},</span>
-<span id="cb33-9"><a href="#cb33-9" tabindex="-1"></a>    <span class="dt">year</span> = {2025}</span>
-<span id="cb33-10"><a href="#cb33-10" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">ScIsoXWu</span>,</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a>    <span class="dt">author</span> = {Wu, Siyuan and Schmitz, Ulf},</span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a>    <span class="dt">journal</span> = {Genome Biology},</span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a>    <span class="dt">pages</span> = {289},</span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a>    <span class="dt">title</span> = {ScIsoX: a multidimensional framework for measuring isoform-level transcriptomic complexity in single cells},</span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a>    <span class="dt">volume</span> = {26},</span>
+<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a>    <span class="dt">doi</span> = {10.1186/s13059-025-03758-5},</span>
+<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a>    <span class="dt">year</span> = {2025}}</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
