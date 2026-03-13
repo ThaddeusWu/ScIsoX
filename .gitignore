@@ -47,6 +47,7 @@ Thumbs.db
 src/*.o
 src/*.so
 src/*.dll
+*.tar.gz
 
 # Documentation build files
 inst/doc
